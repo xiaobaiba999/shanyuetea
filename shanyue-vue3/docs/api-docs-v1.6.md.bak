@@ -1,0 +1,4212 @@
+# 山月茶咖 接口文档 v1.6
+
+> **山月茶咖 SHANYUE TEA & COFFEE** —— 门店扫码点单 + 自取（茶饮 & 咖啡）系统 · slogan「山月入杯，茶咖相宜」
+> 本文档依据《山月茶咖 API-SPEC（内部统一规范 v1.0）》编写，是管理端（Vue3 + Element Plus）与 C 端 H5（Vue3 + Vant 4）前端开发、Mock 数据、后端实现三方的**唯一接口事实来源**。
+> 后端技术栈与风格与苍穹外卖（sky-take-out）保持一致：Spring Boot + MyBatis + MySQL + Redis。
+
+---
+
+## 全局约定
+
+### 基本信息
+
+| 项目 | 说明 |
+| --- | --- |
+| Base URL | `http://localhost:8080` |
+| 管理端接口前缀 | `/admin`（除登录外均需携带 JWT） |
+| C 端接口前缀 | `/user`（无需登录，匿名自取模式） |
+| 数据格式 | 请求/响应均为 `application/json`（图片上传除外，使用 `multipart/form-data`） |
+| 价格单位 | **分**（number），如 `1590` 表示 15.90 元，前端展示时除以 100 |
+| 时间格式 | `"yyyy-MM-dd HH:mm:ss"` 字符串，如 `"2025-09-22 12:30:00"` |
+
+### 统一响应结构 Result
+
+所有接口返回统一结构，`code=1` 成功，`code=0` 失败：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": { }
+}
+```
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码：`1` 成功，`0` 失败 |
+| msg | string | 是 | 响应信息：成功为 `success`，失败为具体错误描述 |
+| data | object | 否 | 业务数据，无数据时为 `null` |
+
+### 分页响应结构
+
+分页查询类接口的 data 统一为 `{ total, records }`：
+
+```json
+{
+  "total": 13,
+  "records": [ ]
+}
+```
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| \|- total | number | 是 | 总记录数 |
+| \|- records | object[] | 是 | 当前页数据列表 |
+
+### 管理端认证（JWT）
+
+- 除「1.1 员工登录」外，**所有 `/admin` 接口**必须在请求头携带登录时颁发的 JWT：
+
+```
+token: <登录接口返回的 jwt 字符串>
+```
+
+- 未携带 token 或 token 过期/非法时，接口返回 HTTP 状态码 `401`，前端应统一拦截并跳转登录页。
+
+### C 端匿名说明
+
+C 端（`/user` 前缀）接口**无需登录**（匿名自取模式）：自取场景不需要配送地址与注册账号，下单可选留手机号，取餐号（按天重置，格式 A01/A02…）作为取餐凭证，避免引入微信登录的开发与审核成本。（面试点：为什么不照搬苍穹外卖的微信登录？——自取模式下性价比最低，先跑通业务闭环。）
+
+### 状态枚举
+
+| 枚举 | 取值 |
+| --- | --- |
+| 订单状态 | `1` 待接单 / `2` 制作中 / `3` 待取餐 / `4` 已完成 / `5` 已取消（自取模式，无派送） |
+| 店铺营业状态 | `1` 营业中 / `0` 已打烊 |
+| 商品状态 | `1` 起售 / `0` 停售 |
+| 员工账号状态 | `1` 启用 / `0` 禁用 |
+| 分类状态 | `1` 启用 / `0` 禁用 |
+
+### 模块目录
+
+| 模块 | 内容 | 接口数 |
+| --- | --- | --- |
+| 1. 员工管理 | 登录、员工 CRUD、启用禁用 | 7 |
+| 2. 分类管理 | 商品分类 CRUD、启用禁用 | 5 |
+| 3. 饮品管理 | 饮品 CRUD、结构化规格组、起售停售 | 6 |
+| 4. 公共 | 图片上传 | 1 |
+| 5. 订单管理 | 订单搜索、状态流转（接单/叫号/取消/完成） | 7 |
+| 6. 数据统计 | 今日数据、营业额趋势、销量 TOP10、订单统计 | 4 |
+| 7. 店铺管理 | 营业状态、公告 | 3 |
+| 8. C端-店铺 | 店铺信息查询 | 1 |
+| 9. C端-菜单 | 分类列表、在售饮品 | 2 |
+| 10. C端-购物车 | 购物车加/查/减/清空 | 4 |
+| 11. C端-订单 | 下单、取餐查询、催单、取消 | 4 |
+| 12. WebSocket 推送 | 来单/催单/叫号实时消息 | - |
+| 13. C端-优惠券与会员【阶段四扩展】 | 券广场、领券、我的券、下单可用券、会员概要 | 5 |
+| 14. 管理端-优惠券模板【阶段四扩展】 | 券模板分页查询、新增、修改、上下架、删除 | 5 |
+| 15. C端-积分【阶段四扩展】 | 积分概要、每日签到、积分明细、兑换货架、积分兑换 | 5 |
+| 16. C端-评价【阶段五扩展】 | 提交评价、查询订单评价、门店评价统计、我的评价 | 4 |
+| 17. 管理端-评价【阶段五扩展】 | 评价分页、评价统计、回复评价、隐藏/恢复 | 4 |
+
+> C 端接口（模块 8~11）对应 API-SPEC 第 2 节 8.1~8.11，本文档按模块重新编号，接口定义与 spec 完全一致。
+
+---
+
+# 1. 员工管理
+
+## 1.1 员工登录
+
+### 1.1.1 基本信息
+
+- 请求路径：`/admin/employee/login`
+- 请求方式：POST
+- 接口描述：管理端登录。校验用户名与密码，成功后返回员工信息与 JWT 令牌，前端保存 token 并在后续所有管理端请求头中携带（`token: <jwt>`）。本接口是唯一**不需要** token 的管理端接口。默认演示账号：`admin / 123456`（教师演示账号）。用户名或密码错误、账号被禁用时返回 `code=0`。
+
+### 1.1.2 请求参数
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| username | string | 是 | 登录账号 |
+| password | string | 是 | 登录密码 |
+
+请求参数样例：
+
+```json
+{
+  "username": "admin",
+  "password": "123456"
+}
+```
+
+### 1.1.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | object | 是 | 登录员工信息与令牌 |
+| \|- id | number | 是 | 员工ID |
+| \|- name | string | 是 | 员工姓名 |
+| \|- userName | string | 是 | 登录账号 |
+| \|- token | string | 是 | JWT 令牌，后续管理端请求放入请求头 `token` |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": {
+    "id": 1,
+    "name": "店长",
+    "userName": "admin",
+    "token": "eyJhbGciOiJIUzI1NiJ9.eyJlbXBsb3llZUlkIjoxfQ.kLi9KJAeSCnMCOxVjBCBPu2lKoHjcCztA57puE9Ov5Y"
+  }
+}
+```
+
+失败响应样例：
+
+```json
+{
+  "code": 0,
+  "msg": "用户名或密码错误",
+  "data": null
+}
+```
+
+## 1.2 退出登录
+
+### 1.2.1 基本信息
+
+- 请求路径：`/admin/employee/logout`
+- 请求方式：POST
+- 接口描述：管理端退出登录。JWT 为无状态令牌，服务端不做失效处理，前端负责清除本地存储的 token 并跳转登录页。权限：需管理端登录。
+
+### 1.2.2 请求参数
+
+无请求参数。
+
+### 1.2.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | object | 否 | 无业务数据，固定为 null |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": null
+}
+```
+
+## 1.3 新增员工
+
+### 1.3.1 基本信息
+
+- 请求路径：`/admin/employee`
+- 请求方式：POST
+- 接口描述：新增门店员工。新增成功后默认状态为启用（status=1），默认密码为 `123456`（与苍穹外卖保持一致）。登录账号 username 全局唯一，重复时返回 `code=0`、msg「用户名已存在」。权限：需管理端登录。
+
+### 1.3.2 请求参数
+
+参数格式：application/json（EmployeeDTO）
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| name | string | 是 | 员工姓名 |
+| username | string | 是 | 登录账号，全局唯一 |
+| phone | string | 否 | 手机号 |
+| sex | string | 否 | 性别：`1` 男 / `0` 女 |
+| idNumber | string | 否 | 身份证号 |
+
+请求参数样例：
+
+```json
+{
+  "name": "店员小月",
+  "username": "xiaoyue",
+  "phone": "13800000003",
+  "sex": "0",
+  "idNumber": "330106199803034567"
+}
+```
+
+### 1.3.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | object | 否 | 无业务数据，固定为 null |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": null
+}
+```
+
+## 1.4 员工分页查询
+
+### 1.4.1 基本信息
+
+- 请求路径：`/admin/employee/page`
+- 请求方式：GET
+- 接口描述：分页查询员工列表，支持按姓名模糊搜索。权限：需管理端登录。
+
+### 1.4.2 请求参数
+
+参数格式：query（URL 查询参数）
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| name | string | 否 | 员工姓名，模糊匹配 |
+| page | number | 否 | 页码，默认 1 |
+| pageSize | number | 否 | 每页条数，默认 10 |
+
+请求参数样例：
+
+```
+GET /admin/employee/page?page=1&pageSize=10&name=店
+```
+
+### 1.4.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | object | 是 | 分页结构 |
+| \|- total | number | 是 | 总记录数 |
+| \|- records | object[] | 是 | 当前页员工列表（EmployeeVO） |
+| \|- \|- id | number | 是 | 员工ID |
+| \|- \|- name | string | 是 | 员工姓名 |
+| \|- \|- username | string | 是 | 登录账号 |
+| \|- \|- phone | string | 否 | 手机号 |
+| \|- \|- sex | string | 否 | 性别：1 男 / 0 女 |
+| \|- \|- status | number | 是 | 账号状态：1 启用 / 0 禁用 |
+| \|- \|- createTime | string | 是 | 创建时间 |
+| \|- \|- updateTime | string | 是 | 最后修改时间 |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": {
+    "total": 2,
+    "records": [
+      {
+        "id": 1,
+        "name": "店长",
+        "username": "admin",
+        "phone": "13800000001",
+        "sex": "1",
+        "status": 1,
+        "createTime": "2025-09-01 09:00:00",
+        "updateTime": "2025-09-22 12:30:00"
+      },
+      {
+        "id": 2,
+        "name": "店员小山",
+        "username": "shanyue",
+        "phone": "13800000002",
+        "sex": "0",
+        "status": 1,
+        "createTime": "2025-09-03 14:20:00",
+        "updateTime": "2025-09-03 14:20:00"
+      }
+    ]
+  }
+}
+```
+
+## 1.5 根据ID查询员工
+
+### 1.5.1 基本信息
+
+- 请求路径：`/admin/employee/{id}`
+- 请求方式：GET
+- 接口描述：按 ID 查询员工详情，用于编辑页数据回显。权限：需管理端登录。
+
+### 1.5.2 请求参数
+
+参数格式：path（路径参数）
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| id | number | 是 | 路径参数，员工ID |
+
+请求参数样例：
+
+```
+GET /admin/employee/1
+```
+
+### 1.5.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | object | 是 | 员工详情（EmployeeVO，字段同 1.4.3 records 元素） |
+| \|- id | number | 是 | 员工ID |
+| \|- name | string | 是 | 员工姓名 |
+| \|- username | string | 是 | 登录账号 |
+| \|- phone | string | 否 | 手机号 |
+| \|- sex | string | 否 | 性别：1 男 / 0 女 |
+| \|- status | number | 是 | 账号状态：1 启用 / 0 禁用 |
+| \|- createTime | string | 是 | 创建时间 |
+| \|- updateTime | string | 是 | 最后修改时间 |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": {
+    "id": 1,
+    "name": "店长",
+    "username": "admin",
+    "phone": "13800000001",
+    "sex": "1",
+    "status": 1,
+    "createTime": "2025-09-01 09:00:00",
+    "updateTime": "2025-09-22 12:30:00"
+  }
+}
+```
+
+## 1.6 编辑员工
+
+### 1.6.1 基本信息
+
+- 请求路径：`/admin/employee`
+- 请求方式：PUT
+- 接口描述：编辑员工资料，按 id 更新，字段含义同新增员工。权限：需管理端登录。
+
+### 1.6.2 请求参数
+
+参数格式：application/json（EmployeeDTO）
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| id | number | 是 | 员工ID（编辑必须） |
+| name | string | 是 | 员工姓名 |
+| username | string | 是 | 登录账号，全局唯一 |
+| phone | string | 否 | 手机号 |
+| sex | string | 否 | 性别：`1` 男 / `0` 女 |
+| idNumber | string | 否 | 身份证号 |
+
+请求参数样例：
+
+```json
+{
+  "id": 2,
+  "name": "店员小山",
+  "username": "shanyue",
+  "phone": "13800000002",
+  "sex": "0",
+  "idNumber": "330106199803034567"
+}
+```
+
+### 1.6.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | object | 否 | 无业务数据，固定为 null |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": null
+}
+```
+
+## 1.7 启用/禁用员工
+
+### 1.7.1 基本信息
+
+- 请求路径：`/admin/employee/status/{status}?id=`
+- 请求方式：POST
+- 接口描述：启用或禁用员工账号，status=1 启用、0 禁用；禁用后该员工无法登录系统。权限：需管理端登录。
+
+### 1.7.2 请求参数
+
+参数格式：path（路径参数）+ query（URL 查询参数）
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| status | number | 是 | 路径参数，目标状态：`1` 启用 / `0` 禁用 |
+| id | number | 是 | 查询参数，员工ID |
+
+请求参数样例：
+
+```
+POST /admin/employee/status/0?id=2
+```
+
+### 1.7.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | object | 否 | 无业务数据，固定为 null |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": null
+}
+```
+
+---
+
+# 2. 分类管理
+
+## 2.1 新增分类
+
+### 2.1.1 基本信息
+
+- 请求路径：`/admin/category`
+- 请求方式：POST
+- 接口描述：新增商品分类（如：招牌推荐 / 经典咖啡 / 创意特调 / 茶饮 / 轻食甜点 / 季节限定）。新增后默认启用（status=1）；sort 值越小排序越靠前，C 端分类侧栏（9.1）按 sort 升序展示。权限：需管理端登录。
+
+### 2.1.2 请求参数
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| name | string | 是 | 分类名称 |
+| sort | number | 是 | 排序值，越小越靠前 |
+
+请求参数样例：
+
+```json
+{
+  "name": "季节限定",
+  "sort": 6
+}
+```
+
+### 2.1.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | object | 否 | 无业务数据，固定为 null |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": null
+}
+```
+
+## 2.2 分类分页查询
+
+### 2.2.1 基本信息
+
+- 请求路径：`/admin/category/page`
+- 请求方式：GET
+- 接口描述：分页查询商品分类，支持按分类名称模糊搜索。权限：需管理端登录。
+
+### 2.2.2 请求参数
+
+参数格式：query（URL 查询参数）
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| name | string | 否 | 分类名称，模糊匹配 |
+| page | number | 否 | 页码，默认 1 |
+| pageSize | number | 否 | 每页条数，默认 10 |
+
+请求参数样例：
+
+```
+GET /admin/category/page?page=1&pageSize=10
+```
+
+### 2.2.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | object | 是 | 分页结构 |
+| \|- total | number | 是 | 总记录数 |
+| \|- records | object[] | 是 | 当前页分类列表（CategoryVO） |
+| \|- \|- id | number | 是 | 分类ID |
+| \|- \|- name | string | 是 | 分类名称 |
+| \|- \|- sort | number | 是 | 排序值，越小越靠前 |
+| \|- \|- status | number | 是 | 分类状态：1 启用 / 0 禁用 |
+| \|- \|- createTime | string | 是 | 创建时间 |
+| \|- \|- updateTime | string | 是 | 最后修改时间 |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": {
+    "total": 5,
+    "records": [
+      { "id": 1, "name": "招牌推荐", "sort": 1, "status": 1, "createTime": "2025-09-01 10:00:00", "updateTime": "2025-09-01 10:00:00" },
+      { "id": 2, "name": "经典咖啡", "sort": 2, "status": 1, "createTime": "2025-09-01 10:00:00", "updateTime": "2025-09-01 10:00:00" },
+      { "id": 3, "name": "创意特调", "sort": 3, "status": 1, "createTime": "2025-09-01 10:00:00", "updateTime": "2025-09-01 10:00:00" },
+      { "id": 4, "name": "茶饮", "sort": 4, "status": 1, "createTime": "2025-09-01 10:00:00", "updateTime": "2025-09-01 10:00:00" },
+      { "id": 5, "name": "轻食甜点", "sort": 5, "status": 1, "createTime": "2025-09-01 10:00:00", "updateTime": "2025-09-01 10:00:00" }
+    ]
+  }
+}
+```
+
+## 2.3 删除分类
+
+### 2.3.1 基本信息
+
+- 请求路径：`/admin/category?id=`
+- 请求方式：DELETE
+- 接口描述：删除分类。**业务约束：分类下存在商品时删除失败，返回 `code=0`、msg「该分类下存在商品，无法删除」**。权限：需管理端登录。
+
+### 2.3.2 请求参数
+
+参数格式：query（URL 查询参数）
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| id | number | 是 | 查询参数，分类ID |
+
+请求参数样例：
+
+```
+DELETE /admin/category?id=6
+```
+
+### 2.3.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | object | 否 | 无业务数据，固定为 null |
+
+成功响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": null
+}
+```
+
+失败响应数据样例（分类下有商品）：
+
+```json
+{
+  "code": 0,
+  "msg": "该分类下存在商品，无法删除",
+  "data": null
+}
+```
+
+## 2.4 修改分类
+
+### 2.4.1 基本信息
+
+- 请求路径：`/admin/category`
+- 请求方式：PUT
+- 接口描述：修改分类名称或排序值，按 id 更新。权限：需管理端登录。
+
+### 2.4.2 请求参数
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| id | number | 是 | 分类ID（编辑必须） |
+| name | string | 是 | 分类名称 |
+| sort | number | 否 | 排序值，越小越靠前 |
+
+请求参数样例：
+
+```json
+{
+  "id": 6,
+  "name": "季节限定",
+  "sort": 6
+}
+```
+
+### 2.4.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | object | 否 | 无业务数据，固定为 null |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": null
+}
+```
+
+## 2.5 启用/禁用分类
+
+### 2.5.1 基本信息
+
+- 请求路径：`/admin/category/status/{status}?id=`
+- 请求方式：POST
+- 接口描述：启用或禁用分类。禁用（status=0）后，C 端分类列表（9.1）不再返回该分类。权限：需管理端登录。
+
+### 2.5.2 请求参数
+
+参数格式：path（路径参数）+ query（URL 查询参数）
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| status | number | 是 | 路径参数，目标状态：`1` 启用 / `0` 禁用 |
+| id | number | 是 | 查询参数，分类ID |
+
+请求参数样例：
+
+```
+POST /admin/category/status/0?id=6
+```
+
+### 2.5.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | object | 否 | 无业务数据，固定为 null |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": null
+}
+```
+
+---
+
+# 3. 饮品管理
+
+> **规格模型说明**：山月茶咖将苍穹外卖的 Drink（菜品）+ 文本 flavors，改造为 Drink（饮品）+ **结构化规格组**：每个饮品可配置多个规格组 specGroups（如 杯型/温度/糖度/浓度），每组内含若干规格选项 specOptions（如 中杯/大杯），选项通过 priceDelta（分）表达加价。最终售价 = 饮品 price + 所选选项 priceDelta 之和（如 生椰拿铁 1590 + 大杯 300 = 1890 分）。
+>
+> **规格组合键 specKey**：格式为 `{drinkId}-{选项id,选项id,…}`，选项 id 按所属规格组 sort 升序拼接；同一饮品同一规格组合得到唯一 specKey，用于购物车同规格合并（幂等）与订单明细对应。示例：生椰拿铁（id=1）选「大杯/冰/五分糖/标准浓度」→ `"1-12,31,45,67"`；无规格商品（如轻食甜点）specKey 为 `"{drinkId}-"`（如 `"14-"`）。
+>
+> **覆盖策略**：新增/修改饮品时 specGroups **整体提交**，服务端按「先删旧后插新」整体覆盖。原因：保证规格组与选项数据与前端提交完全一致，避免修改后残留旧选项、导致 specKey 对不上或渲染错乱。
+
+## 3.1 饮品分页查询
+
+### 3.1.1 基本信息
+
+- 请求路径：`/admin/drink/page`
+- 请求方式：GET
+- 接口描述：分页查询饮品列表，支持名称模糊、分类、状态筛选；返回完整 DrinkVO（含规格组）。权限：需管理端登录。
+
+### 3.1.2 请求参数
+
+参数格式：query（URL 查询参数）
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| name | string | 否 | 饮品名称，模糊匹配 |
+| categoryId | number | 否 | 分类ID |
+| status | number | 否 | 商品状态：1 起售 / 0 停售 |
+| page | number | 否 | 页码，默认 1 |
+| pageSize | number | 否 | 每页条数，默认 10 |
+
+请求参数样例：
+
+```
+GET /admin/drink/page?page=1&pageSize=10&categoryId=2&status=1
+```
+
+### 3.1.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | object | 是 | 分页结构 |
+| \|- total | number | 是 | 总记录数 |
+| \|- records | object[] | 是 | 当前页饮品列表（DrinkVO） |
+| \|- \|- id | number | 是 | 饮品ID |
+| \|- \|- name | string | 是 | 饮品名称 |
+| \|- \|- categoryId | number | 是 | 分类ID |
+| \|- \|- price | number | 是 | 基础价格（分） |
+| \|- \|- image | string | 否 | 图片 URL |
+| \|- \|- description | string | 否 | 饮品描述 |
+| \|- \|- featured | number | 是 | 是否招牌推荐：1 是 / 0 否 |
+| \|- \|- status | number | 是 | 商品状态：1 起售 / 0 停售 |
+| \|- \|- sold | number | 是 | 累计销量 |
+| \|- \|- createTime | string | 是 | 创建时间 |
+| \|- \|- specGroups | object[] | 否 | 规格组列表 |
+| \|- \|- \|- id | number | 是 | 规格组ID |
+| \|- \|- \|- name | string | 是 | 规格组名称，如 杯型 |
+| \|- \|- \|- required | number | 是 | 是否必选：1 必选 / 0 可选 |
+| \|- \|- \|- sort | number | 是 | 组内排序 |
+| \|- \|- \|- specOptions | object[] | 是 | 规格选项列表 |
+| \|- \|- \|- \|- id | number | 是 | 选项ID |
+| \|- \|- \|- \|- name | string | 是 | 选项名称，如 大杯 |
+| \|- \|- \|- \|- priceDelta | number | 是 | 加价（分），0 表示不加价 |
+| \|- \|- \|- \|- sort | number | 是 | 选项排序 |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": {
+    "total": 6,
+    "records": [
+      {
+        "id": 1,
+        "name": "生椰拿铁",
+        "categoryId": 2,
+        "price": 1590,
+        "image": "/menu/coconut-latte.png",
+        "description": "厚椰乳与浓缩的经典组合",
+        "featured": 1,
+        "status": 1,
+        "sold": 321,
+        "createTime": "2025-09-01 10:00:00",
+        "specGroups": [
+          {
+            "id": 1,
+            "name": "杯型",
+            "required": 1,
+            "sort": 1,
+            "specOptions": [
+              { "id": 11, "name": "中杯", "priceDelta": 0, "sort": 1 },
+              { "id": 12, "name": "大杯", "priceDelta": 300, "sort": 2 }
+            ]
+          },
+          {
+            "id": 2,
+            "name": "温度",
+            "required": 1,
+            "sort": 2,
+            "specOptions": [
+              { "id": 31, "name": "冰", "priceDelta": 0, "sort": 1 },
+              { "id": 32, "name": "热", "priceDelta": 0, "sort": 2 }
+            ]
+          },
+          {
+            "id": 3,
+            "name": "糖度",
+            "required": 0,
+            "sort": 3,
+            "specOptions": [
+              { "id": 41, "name": "标准糖", "priceDelta": 0, "sort": 1 },
+              { "id": 45, "name": "五分糖", "priceDelta": 0, "sort": 2 },
+              { "id": 47, "name": "不另加糖", "priceDelta": 0, "sort": 3 }
+            ]
+          },
+          {
+            "id": 4,
+            "name": "浓度",
+            "required": 0,
+            "sort": 4,
+            "specOptions": [
+              { "id": 67, "name": "标准浓度", "priceDelta": 0, "sort": 1 },
+              { "id": 68, "name": "加倍浓度", "priceDelta": 200, "sort": 2 }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "name": "美式",
+        "categoryId": 2,
+        "price": 990,
+        "image": "/menu/americano.png",
+        "description": "双份浓缩加冰，干净利落的美式风味",
+        "featured": 0,
+        "status": 1,
+        "sold": 4520,
+        "createTime": "2025-09-01 10:20:00",
+        "specGroups": [
+          {
+            "id": 9,
+            "name": "杯型",
+            "required": 1,
+            "sort": 1,
+            "specOptions": [
+              { "id": 15, "name": "中杯", "priceDelta": 0, "sort": 1 },
+              { "id": 16, "name": "大杯", "priceDelta": 300, "sort": 2 }
+            ]
+          },
+          {
+            "id": 10,
+            "name": "温度",
+            "required": 1,
+            "sort": 2,
+            "specOptions": [
+              { "id": 35, "name": "冰", "priceDelta": 0, "sort": 1 },
+              { "id": 36, "name": "热", "priceDelta": 0, "sort": 2 }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+## 3.2 新增饮品
+
+### 3.2.1 基本信息
+
+- 请求路径：`/admin/drink`
+- 请求方式：POST
+- 接口描述：新增饮品，可同时提交规格组。specGroups **整体提交，服务端按「先删旧后插新」整体覆盖**（策略与原因见模块 3 开头说明）。新增时无需传 id（包括规格组/选项的 id），由服务端生成。图片 URL 来自 4.1 上传接口。权限：需管理端登录。
+
+### 3.2.2 请求参数
+
+参数格式：application/json（DrinkDTO）
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| name | string | 是 | 饮品名称 |
+| categoryId | number | 是 | 分类ID |
+| price | number | 是 | 基础价格（分） |
+| image | string | 否 | 图片 URL（由 4.1 上传接口返回） |
+| description | string | 否 | 饮品描述 |
+| featured | number | 否 | 是否招牌推荐：1 是 / 0 否，默认 0 |
+| status | number | 否 | 商品状态：1 起售 / 0 停售，默认 1 |
+| specGroups | object[] | 否 | 规格组列表，整体提交 |
+| \|- name | string | 是 | 规格组名称，如 杯型 |
+| \|- required | number | 否 | 是否必选：1 必选 / 0 可选 |
+| \|- sort | number | 是 | 组内排序 |
+| \|- specOptions | object[] | 是 | 规格选项列表 |
+| \|- \|- name | string | 是 | 选项名称，如 大杯 |
+| \|- \|- priceDelta | number | 否 | 加价（分），0 表示不加价 |
+| \|- \|- sort | number | 是 | 选项排序 |
+
+请求参数样例：
+
+```json
+{
+  "name": "抹茶拿铁",
+  "categoryId": 3,
+  "price": 1690,
+  "image": "/menu/matcha-latte.png",
+  "description": "石臼抹茶与鲜奶的清新相遇",
+  "featured": 0,
+  "status": 1,
+  "specGroups": [
+    {
+      "name": "杯型",
+      "required": 1,
+      "sort": 1,
+      "specOptions": [
+        { "name": "中杯", "priceDelta": 0, "sort": 1 },
+        { "name": "大杯", "priceDelta": 300, "sort": 2 }
+      ]
+    },
+    {
+      "name": "温度",
+      "required": 1,
+      "sort": 2,
+      "specOptions": [
+        { "name": "冰", "priceDelta": 0, "sort": 1 },
+        { "name": "热", "priceDelta": 0, "sort": 2 }
+      ]
+    },
+    {
+      "name": "糖度",
+      "required": 0,
+      "sort": 3,
+      "specOptions": [
+        { "name": "标准糖", "priceDelta": 0, "sort": 1 },
+        { "name": "五分糖", "priceDelta": 0, "sort": 2 },
+        { "name": "不另加糖", "priceDelta": 0, "sort": 3 }
+      ]
+    }
+  ]
+}
+```
+
+### 3.2.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | object | 否 | 无业务数据，固定为 null |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": null
+}
+```
+
+## 3.3 根据ID查询饮品（含规格组）
+
+### 3.3.1 基本信息
+
+- 请求路径：`/admin/drink/{id}`
+- 请求方式：GET
+- 接口描述：按 ID 查询饮品详情，返回完整 DrinkVO（含规格组与选项），用于编辑页数据回显，也是 C 端规格弹窗渲染的数据参照。权限：需管理端登录。
+
+### 3.3.2 请求参数
+
+参数格式：path（路径参数）
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| id | number | 是 | 路径参数，饮品ID |
+
+请求参数样例：
+
+```
+GET /admin/drink/2
+```
+
+### 3.3.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | object | 是 | 饮品详情（DrinkVO，字段同 3.1.3 records 元素） |
+| \|- id | number | 是 | 饮品ID |
+| \|- name | string | 是 | 饮品名称 |
+| \|- categoryId | number | 是 | 分类ID |
+| \|- price | number | 是 | 基础价格（分） |
+| \|- image | string | 否 | 图片 URL |
+| \|- description | string | 否 | 饮品描述 |
+| \|- featured | number | 是 | 是否招牌推荐：1 是 / 0 否 |
+| \|- status | number | 是 | 商品状态：1 起售 / 0 停售 |
+| \|- sold | number | 是 | 累计销量 |
+| \|- createTime | string | 是 | 创建时间 |
+| \|- specGroups | object[] | 否 | 规格组列表 |
+| \|- \|- id | number | 是 | 规格组ID |
+| \|- \|- name | string | 是 | 规格组名称 |
+| \|- \|- required | number | 是 | 是否必选：1 必选 / 0 可选 |
+| \|- \|- sort | number | 是 | 组内排序 |
+| \|- \|- specOptions | object[] | 是 | 规格选项列表 |
+| \|- \|- \|- id | number | 是 | 选项ID |
+| \|- \|- \|- name | string | 是 | 选项名称 |
+| \|- \|- \|- priceDelta | number | 是 | 加价（分），0 表示不加价 |
+| \|- \|- \|- sort | number | 是 | 选项排序 |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": {
+    "id": 2,
+    "name": "桂花冰酿拿铁",
+    "categoryId": 1,
+    "price": 1790,
+    "image": "/menu/osmanthus-latte.png",
+    "description": "金桂酒酿入奶，一口秋天的温柔",
+    "featured": 1,
+    "status": 1,
+    "sold": 1865,
+    "createTime": "2025-09-01 10:05:00",
+    "specGroups": [
+      {
+        "id": 5,
+        "name": "杯型",
+        "required": 1,
+        "sort": 1,
+        "specOptions": [
+          { "id": 13, "name": "中杯", "priceDelta": 0, "sort": 1 },
+          { "id": 14, "name": "大杯", "priceDelta": 300, "sort": 2 }
+        ]
+      },
+      {
+        "id": 6,
+        "name": "温度",
+        "required": 1,
+        "sort": 2,
+        "specOptions": [
+          { "id": 33, "name": "冰", "priceDelta": 0, "sort": 1 },
+          { "id": 34, "name": "热", "priceDelta": 0, "sort": 2 }
+        ]
+      },
+      {
+        "id": 7,
+        "name": "糖度",
+        "required": 0,
+        "sort": 3,
+        "specOptions": [
+          { "id": 42, "name": "标准糖", "priceDelta": 0, "sort": 1 },
+          { "id": 44, "name": "五分糖", "priceDelta": 0, "sort": 2 },
+          { "id": 48, "name": "不另加糖", "priceDelta": 0, "sort": 3 }
+        ]
+      },
+      {
+        "id": 8,
+        "name": "浓度",
+        "required": 0,
+        "sort": 4,
+        "specOptions": [
+          { "id": 69, "name": "标准浓度", "priceDelta": 0, "sort": 1 },
+          { "id": 70, "name": "加倍浓度", "priceDelta": 200, "sort": 2 }
+        ]
+      }
+    ]
+  }
+}
+```
+
+## 3.4 修改饮品
+
+### 3.4.1 基本信息
+
+- 请求路径：`/admin/drink`
+- 请求方式：PUT
+- 接口描述：编辑饮品，id 必传。specGroups **整体提交，服务端按「先删旧后插新」整体覆盖**（策略与原因见模块 3 开头说明）。sold、createTime 等服务端维护字段无需提交。权限：需管理端登录。
+
+### 3.4.2 请求参数
+
+参数格式：application/json（DrinkDTO）
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| id | number | 是 | 饮品ID（编辑必须） |
+| name | string | 是 | 饮品名称 |
+| categoryId | number | 是 | 分类ID |
+| price | number | 是 | 基础价格（分） |
+| image | string | 否 | 图片 URL |
+| description | string | 否 | 饮品描述 |
+| featured | number | 否 | 是否招牌推荐：1 是 / 0 否 |
+| status | number | 否 | 商品状态：1 起售 / 0 停售 |
+| specGroups | object[] | 否 | 规格组列表，整体提交（无需携带组/选项 id，由服务端覆盖重建） |
+| \|- name | string | 是 | 规格组名称 |
+| \|- required | number | 否 | 是否必选：1 必选 / 0 可选 |
+| \|- sort | number | 是 | 组内排序 |
+| \|- specOptions | object[] | 是 | 规格选项列表 |
+| \|- \|- name | string | 是 | 选项名称 |
+| \|- \|- priceDelta | number | 否 | 加价（分），0 表示不加价 |
+| \|- \|- sort | number | 是 | 选项排序 |
+
+请求参数样例：
+
+```json
+{
+  "id": 1,
+  "name": "生椰拿铁",
+  "categoryId": 2,
+  "price": 1590,
+  "image": "/menu/coconut-latte.png",
+  "description": "厚椰乳与浓缩的经典组合",
+  "featured": 1,
+  "status": 1,
+  "specGroups": [
+    {
+      "name": "杯型",
+      "required": 1,
+      "sort": 1,
+      "specOptions": [
+        { "name": "中杯", "priceDelta": 0, "sort": 1 },
+        { "name": "大杯", "priceDelta": 300, "sort": 2 }
+      ]
+    },
+    {
+      "name": "温度",
+      "required": 1,
+      "sort": 2,
+      "specOptions": [
+        { "name": "冰", "priceDelta": 0, "sort": 1 },
+        { "name": "热", "priceDelta": 0, "sort": 2 }
+      ]
+    },
+    {
+      "name": "糖度",
+      "required": 0,
+      "sort": 3,
+      "specOptions": [
+        { "name": "标准糖", "priceDelta": 0, "sort": 1 },
+        { "name": "五分糖", "priceDelta": 0, "sort": 2 },
+        { "name": "不另加糖", "priceDelta": 0, "sort": 3 }
+      ]
+    },
+    {
+      "name": "浓度",
+      "required": 0,
+      "sort": 4,
+      "specOptions": [
+        { "name": "标准浓度", "priceDelta": 0, "sort": 1 },
+        { "name": "加倍浓度", "priceDelta": 200, "sort": 2 }
+      ]
+    }
+  ]
+}
+```
+
+### 3.4.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | object | 否 | 无业务数据，固定为 null |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": null
+}
+```
+
+## 3.5 批量删除饮品
+
+### 3.5.1 基本信息
+
+- 请求路径：`/admin/drink?ids=1,2,3`
+- 请求方式：DELETE
+- 接口描述：批量删除饮品，ids 为英文逗号分隔的饮品 ID；删除饮品时同步清理其规格组与选项数据。权限：需管理端登录。
+
+### 3.5.2 请求参数
+
+参数格式：query（URL 查询参数）
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| ids | string | 是 | 查询参数，饮品ID 列表，英文逗号分隔，如 `7,8` |
+
+请求参数样例：
+
+```
+DELETE /admin/drink?ids=7,8
+```
+
+### 3.5.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | object | 否 | 无业务数据，固定为 null |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": null
+}
+```
+
+## 3.6 起售/停售
+
+### 3.6.1 基本信息
+
+- 请求路径：`/admin/drink/status/{status}?id=`
+- 请求方式：POST
+- 接口描述：设置饮品起售（1）/ 停售（0）。停售后：C 端在售饮品列表（9.2）不再返回该饮品；C 端添加购物车（10.1）的「饮品在售」校验失败，返回 code=0。权限：需管理端登录。
+
+### 3.6.2 请求参数
+
+参数格式：path（路径参数）+ query（URL 查询参数）
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| status | number | 是 | 路径参数，目标状态：`1` 起售 / `0` 停售 |
+| id | number | 是 | 查询参数，饮品ID |
+
+请求参数样例：
+
+```
+POST /admin/drink/status/0?id=8
+```
+
+### 3.6.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | object | 否 | 无业务数据，固定为 null |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": null
+}
+```
+
+---
+
+# 4. 公共
+
+## 4.1 图片上传
+
+### 4.1.1 基本信息
+
+- 请求路径：`/admin/common/upload`
+- 请求方式：POST
+- 接口描述：上传图片（饮品图等），请求格式为 `multipart/form-data`，文件字段名固定为 `file`。学习项目开发阶段使用本地磁盘存储（存储目录与静态资源映射见开发指引），返回可直接访问的 URL；后续可平滑替换为阿里云 OSS，接口契约不变。前端上传成功后将返回的 url 填入饮品的 image 字段。权限：需管理端登录。
+
+### 4.1.2 请求参数
+
+参数格式：multipart/form-data
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| file | file | 是 | 图片文件，字段名固定为 `file` |
+
+请求参数样例：
+
+```
+POST /admin/common/upload
+Content-Type: multipart/form-data
+
+file=@/Users/demo/Pictures/matcha-latte.png
+```
+
+### 4.1.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | object | 是 | 上传结果 |
+| \|- url | string | 是 | 图片访问地址 |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": {
+    "url": "http://localhost:8080/upload/2025/09/22/b5d1a2c3.png"
+  }
+}
+```
+
+---
+
+# 5. 订单管理
+
+> **订单状态流转**（自取模式，无派送）：
+> `1 待接单` →（5.4 接单）→ `2 制作中` →（5.5 出餐叫号）→ `3 待取餐` →（5.7 完成订单）→ `4 已完成`；
+> `1 待接单` / `2 制作中` →（5.6 取消订单）→ `5 已取消`。
+> 所有流转接口均校验前置状态，非法流转返回 `code=0`。
+
+## 5.1 订单分页搜索
+
+### 5.1.1 基本信息
+
+- 请求路径：`/admin/order/conditionSearch`
+- 请求方式：GET
+- 接口描述：多条件分页搜索订单（订单号 / 取餐号 / 状态 / 手机号 / 时间区间），供管理端订单看板使用，各条件均为可选。权限：需管理端登录。
+
+### 5.1.2 请求参数
+
+参数格式：query（URL 查询参数）
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| page | number | 是 | 页码，默认 1 |
+| pageSize | number | 是 | 每页条数，默认 10 |
+| number | string | 否 | 订单号，如 20250922001 |
+| pickUpCode | string | 否 | 取餐号，如 A01 |
+| orderStatus | number | 否 | 订单状态：1 待接单 / 2 制作中 / 3 待取餐 / 4 已完成 / 5 已取消 |
+| phone | string | 否 | 下单留的联系手机号 |
+| beginTime | string | 否 | 开始时间，格式 yyyy-MM-dd HH:mm:ss |
+| endTime | string | 否 | 结束时间，格式 yyyy-MM-dd HH:mm:ss |
+
+请求参数样例：
+
+```
+GET /admin/order/conditionSearch?page=1&pageSize=10&orderStatus=1
+```
+
+### 5.1.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | object | 是 | 分页结构 |
+| \|- total | number | 是 | 总记录数 |
+| \|- records | object[] | 是 | 当前页订单列表（OrderVO） |
+| \|- \|- id | number | 是 | 订单ID |
+| \|- \|- orderNumber | string | 是 | 订单号：yyyyMMdd + 当日 3 位序号，如 20250922001 |
+| \|- \|- pickUpCode | string | 是 | 取餐号：按天重置自增，A01/A02… |
+| \|- \|- status | number | 是 | 订单状态：1 待接单 / 2 制作中 / 3 待取餐 / 4 已完成 / 5 已取消 |
+| \|- \|- orderAmount | number | 是 | 订单金额（分） |
+| \|- \|- remark | string | 否 | 订单备注 |
+| \|- \|- phone | string | 否 | 下单留的联系手机号 |
+| \|- \|- cancelReason | string | 否 | 取消原因（仅已取消订单有值） |
+| \|- \|- orderTime | string | 是 | 下单时间 |
+| \|- \|- checkoutTime | string | 是 | 结算时间（自取模式无在线支付，与下单时间一致） |
+| \|- \|- estimatedWaitMinutes | number | 是 | 预计等待分钟数 |
+| \|- \|- orderItems | object[] | 是 | 订单明细列表 |
+| \|- \|- \|- id | number | 是 | 明细ID |
+| \|- \|- \|- drinkId | number | 是 | 饮品ID |
+| \|- \|- \|- drinkName | string | 是 | 饮品名称快照 |
+| \|- \|- \|- image | string | 否 | 饮品图片 |
+| \|- \|- \|- specText | string | 是 | 规格文案，如 大杯/冰/五分糖/标准浓度（无规格为空字符串） |
+| \|- \|- \|- specKey | string | 是 | 规格组合键，如 1-12,31,45,67（无规格为 "14-" 形式） |
+| \|- \|- \|- price | number | 是 | 单价（分，含规格加价） |
+| \|- \|- \|- number | number | 是 | 数量 |
+| \|- \|- \|- amount | number | 是 | 小计（分）= price × number |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": {
+    "total": 26,
+    "records": [
+      {
+        "id": 102,
+        "orderNumber": "20250922003",
+        "pickUpCode": "A03",
+        "status": 1,
+        "orderAmount": 3680,
+        "remark": "免吸管，谢谢",
+        "phone": "13800001234",
+        "cancelReason": null,
+        "orderTime": "2025-09-22 12:30:00",
+        "checkoutTime": "2025-09-22 12:30:00",
+        "estimatedWaitMinutes": 10,
+        "orderItems": [
+          {
+            "id": 3001,
+            "drinkId": 2,
+            "drinkName": "桂花冰酿拿铁",
+            "image": "/menu/osmanthus-latte.png",
+            "specText": "大杯/冰/五分糖/标准浓度",
+            "specKey": "2-14,33,44,69",
+            "price": 1790,
+            "number": 1,
+            "amount": 2090
+          },
+          {
+            "id": 3002,
+            "drinkId": 1,
+            "drinkName": "生椰拿铁",
+            "image": "/menu/coconut-latte.png",
+            "specText": "中杯/热/标准糖/标准浓度",
+            "specKey": "1-11,32,41,67",
+            "price": 1590,
+            "number": 1,
+            "amount": 1590
+          }
+        ]
+      },
+      {
+        "id": 101,
+        "orderNumber": "20250922002",
+        "pickUpCode": "A02",
+        "status": 2,
+        "orderAmount": 2580,
+        "remark": "打包",
+        "phone": "13900005678",
+        "cancelReason": null,
+        "orderTime": "2025-09-22 12:26:00",
+        "checkoutTime": "2025-09-22 12:26:00",
+        "estimatedWaitMinutes": 8,
+        "orderItems": [
+          {
+            "id": 2001,
+            "drinkId": 1,
+            "drinkName": "生椰拿铁",
+            "image": "/menu/coconut-latte.png",
+            "specText": "中杯/冰/标准糖/标准浓度",
+            "specKey": "1-11,31,41,67",
+            "price": 1590,
+            "number": 1,
+            "amount": 1590
+          },
+          {
+            "id": 2002,
+            "drinkId": 14,
+            "drinkName": "黄油可颂",
+            "image": "/menu/butter-croissant.png",
+            "specText": "",
+            "specKey": "14-",
+            "price": 990,
+            "number": 1,
+            "amount": 990
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+## 5.2 各状态订单数量统计
+
+### 5.2.1 基本信息
+
+- 请求路径：`/admin/order/statistics`
+- 请求方式：GET
+- 接口描述：统计各状态订单数量，用于订单看板顶部的状态徽标与角标刷新；接单/叫号/完成/取消等操作后应重新拉取。权限：需管理端登录。
+
+### 5.2.2 请求参数
+
+无请求参数。
+
+### 5.2.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | object | 是 | 各状态订单数量 |
+| \|- toBeConfirmed | number | 是 | 待接单数量 |
+| \|- making | number | 是 | 制作中数量 |
+| \|- ready | number | 是 | 待取餐数量 |
+| \|- completed | number | 是 | 已完成数量 |
+| \|- cancelled | number | 是 | 已取消数量 |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": {
+    "toBeConfirmed": 2,
+    "making": 1,
+    "ready": 3,
+    "completed": 20,
+    "cancelled": 1
+  }
+}
+```
+
+## 5.3 订单详情
+
+### 5.3.1 基本信息
+
+- 请求路径：`/admin/order/details/{id}`
+- 请求方式：GET
+- 接口描述：按订单 ID 查询订单详情（含订单明细），用于详情弹窗展示。权限：需管理端登录。
+
+### 5.3.2 请求参数
+
+参数格式：path（路径参数）
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| id | number | 是 | 路径参数，订单ID |
+
+请求参数样例：
+
+```
+GET /admin/order/details/100
+```
+
+### 5.3.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | object | 是 | 订单详情（OrderVO，字段同 5.1.3 records 元素） |
+| \|- id | number | 是 | 订单ID |
+| \|- orderNumber | string | 是 | 订单号 |
+| \|- pickUpCode | string | 是 | 取餐号 |
+| \|- status | number | 是 | 订单状态 |
+| \|- orderAmount | number | 是 | 订单金额（分） |
+| \|- remark | string | 否 | 订单备注 |
+| \|- phone | string | 否 | 联系手机号 |
+| \|- cancelReason | string | 否 | 取消原因 |
+| \|- orderTime | string | 是 | 下单时间 |
+| \|- checkoutTime | string | 是 | 结算时间 |
+| \|- estimatedWaitMinutes | number | 是 | 预计等待分钟数 |
+| \|- orderItems | object[] | 是 | 订单明细列表 |
+| \|- \|- id | number | 是 | 明细ID |
+| \|- \|- drinkId | number | 是 | 饮品ID |
+| \|- \|- drinkName | string | 是 | 饮品名称快照 |
+| \|- \|- image | string | 否 | 饮品图片 |
+| \|- \|- specText | string | 是 | 规格文案 |
+| \|- \|- specKey | string | 是 | 规格组合键 |
+| \|- \|- price | number | 是 | 单价（分，含规格加价） |
+| \|- \|- number | number | 是 | 数量 |
+| \|- \|- amount | number | 是 | 小计（分） |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": {
+    "id": 100,
+    "orderNumber": "20250922001",
+    "pickUpCode": "A01",
+    "status": 3,
+    "orderAmount": 1890,
+    "remark": "",
+    "phone": "13800001234",
+    "cancelReason": null,
+    "orderTime": "2025-09-22 11:58:00",
+    "checkoutTime": "2025-09-22 11:58:00",
+    "estimatedWaitMinutes": 10,
+    "orderItems": [
+      {
+        "id": 1001,
+        "drinkId": 1,
+        "drinkName": "生椰拿铁",
+        "image": "/menu/coconut-latte.png",
+        "specText": "大杯/冰/五分糖/标准浓度",
+        "specKey": "1-12,31,45,67",
+        "price": 1590,
+        "number": 1,
+        "amount": 1890
+      }
+    ]
+  }
+}
+```
+
+## 5.4 接单
+
+### 5.4.1 基本信息
+
+- 请求路径：`/admin/order/confirm`
+- 请求方式：PUT
+- 接口描述：商家接单，状态流转 **仅允许 待接单（1）→ 制作中（2）**；其他状态调用返回 `code=0`、msg 如「当前状态不可接单」。接单成功后 C 端订单状态同步更新。权限：需管理端登录。
+
+### 5.4.2 请求参数
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| id | number | 是 | 订单ID |
+
+请求参数样例：
+
+```json
+{
+  "id": 102
+}
+```
+
+### 5.4.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | object | 否 | 无业务数据，固定为 null |
+
+成功响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": null
+}
+```
+
+失败响应数据样例（非法流转）：
+
+```json
+{
+  "code": 0,
+  "msg": "当前状态不可接单",
+  "data": null
+}
+```
+
+## 5.5 出餐叫号
+
+### 5.5.1 基本信息
+
+- 请求路径：`/admin/order/ready`
+- 请求方式：PUT
+- 接口描述：制作完成、出餐叫号，状态流转 **仅允许 制作中（2）→ 待取餐（3）**；成功后服务端通过 WebSocket 向管理端/取餐屏推送 `READY_CALL` 叫号消息（见模块 12），顾客凭取餐号取餐。其他状态返回 code=0（如「当前状态不可叫号」）。权限：需管理端登录。
+
+### 5.5.2 请求参数
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| id | number | 是 | 订单ID |
+
+请求参数样例：
+
+```json
+{
+  "id": 101
+}
+```
+
+### 5.5.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | object | 否 | 无业务数据，固定为 null |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": null
+}
+```
+
+## 5.6 取消订单
+
+### 5.6.1 基本信息
+
+- 请求路径：`/admin/order/cancel`
+- 请求方式：PUT
+- 接口描述：商家取消订单，状态流转 **允许 待接单（1）或 制作中（2）→ 已取消（5）**；**必须传取消原因**（取消原因会同步展示给 C 端）。已完成/已取消订单不可取消。权限：需管理端登录。
+
+### 5.6.2 请求参数
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| id | number | 是 | 订单ID |
+| cancelReason | string | 是 | 取消原因，如「原料售罄」 |
+
+请求参数样例：
+
+```json
+{
+  "id": 102,
+  "cancelReason": "原料售罄"
+}
+```
+
+### 5.6.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | object | 否 | 无业务数据，固定为 null |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": null
+}
+```
+
+## 5.7 完成订单
+
+### 5.7.1 基本信息
+
+- 请求路径：`/admin/order/complete`
+- 请求方式：PUT
+- 接口描述：顾客凭取餐号取走餐品后，商家点击完成，状态流转 **仅允许 待取餐（3）→ 已完成（4）**。权限：需管理端登录。
+
+### 5.7.2 请求参数
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| id | number | 是 | 订单ID |
+
+请求参数样例：
+
+```json
+{
+  "id": 100
+}
+```
+
+### 5.7.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | object | 否 | 无业务数据，固定为 null |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": null
+}
+```
+
+---
+
+# 6. 数据统计
+
+## 6.1 今日数据
+
+### 6.1.1 基本信息
+
+- 请求路径：`/admin/report/todayData`
+- 请求方式：GET
+- 接口描述：工作台「今日数据」一览：今日营业额、订单总数、已完成订单数、待接单数量。权限：需管理端登录。
+
+### 6.1.2 请求参数
+
+无请求参数。
+
+### 6.1.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | object | 是 | 今日数据 |
+| \|- turnover | number | 是 | 今日营业额（分），38650 = 386.50 元 |
+| \|- orderCount | number | 是 | 今日订单总数 |
+| \|- completedCount | number | 是 | 今日已完成订单数 |
+| \|- toBeConfirmedCount | number | 是 | 今日待接单数量 |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": {
+    "turnover": 38650,
+    "orderCount": 21,
+    "completedCount": 15,
+    "toBeConfirmedCount": 2
+  }
+}
+```
+
+## 6.2 营业额趋势【阶段三扩展】
+
+### 6.2.1 基本信息
+
+- 请求路径：`/admin/report/turnoverStatistics`
+- 请求方式：GET
+- 接口描述：统计时间区间内每日营业额趋势，供管理端 ECharts 折线图使用。营业额口径：区间内已完成（status=4）订单的 orderAmount 之和（与苍穹外卖一致）。**阶段三实现，前端可先基于 mock 开发。**权限：需管理端登录。
+
+### 6.2.2 请求参数
+
+参数格式：query（URL 查询参数）
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| begin | string | 是 | 开始日期，格式 yyyy-MM-dd |
+| end | string | 是 | 结束日期，格式 yyyy-MM-dd |
+
+请求参数样例：
+
+```
+GET /admin/report/turnoverStatistics?begin=2025-09-16&end=2025-09-22
+```
+
+### 6.2.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | object | 是 | 营业额趋势数据 |
+| \|- totalTurnover | number | 是 | 区间总营业额（分） |
+| \|- dateList | array | 是 | 日期列表（string，yyyy-MM-dd），与 turnoverList 一一对应 |
+| \|- turnoverList | array | 是 | 每日营业额（number，分），与 dateList 一一对应 |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": {
+    "totalTurnover": 205750,
+    "dateList": ["2025-09-16", "2025-09-17", "2025-09-18", "2025-09-19", "2025-09-20", "2025-09-21", "2025-09-22"],
+    "turnoverList": [21500, 26800, 24300, 30200, 28900, 35400, 38650]
+  }
+}
+```
+
+## 6.3 销量TOP10【阶段三扩展】
+
+### 6.3.1 基本信息
+
+- 请求路径：`/admin/report/top10`
+- 请求方式：GET
+- 接口描述：统计时间区间内销量最高的 10 款商品（按已完成订单明细的 number 汇总，降序取前 10），供管理端 ECharts 柱状图使用。**阶段三实现，前端可先基于 mock 开发。**权限：需管理端登录。
+
+### 6.3.2 请求参数
+
+参数格式：query（URL 查询参数）
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| begin | string | 是 | 开始日期，格式 yyyy-MM-dd |
+| end | string | 是 | 结束日期，格式 yyyy-MM-dd |
+
+请求参数样例：
+
+```
+GET /admin/report/top10?begin=2025-09-16&end=2025-09-22
+```
+
+### 6.3.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | object | 是 | 销量 TOP10 数据 |
+| \|- nameList | array | 是 | 商品名称列表（string），按销量降序 |
+| \|- numberList | array | 是 | 对应销量（number），与 nameList 一一对应 |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": {
+    "nameList": ["美式", "生椰拿铁", "黑糖珍珠奶茶", "卡布奇诺", "茉莉奶白", "黄油可颂", "澳白", "桂花乌龙", "抹茶拿铁", "巴斯克芝士蛋糕"],
+    "numberList": [86, 74, 52, 47, 41, 39, 33, 30, 26, 18]
+  }
+}
+```
+
+## 6.4 订单统计【阶段三扩展】
+
+### 6.4.1 基本信息
+
+- 请求路径：`/admin/report/ordersStatistics`
+- 请求方式：GET
+- 接口描述：统计时间区间内每日有效订单数趋势，供管理端 ECharts 柱状图使用。**有效订单口径：status ≠ 5（已取消）**，与苍穹外卖订单统计一致（苍穹原版还会同时统计总订单数，这里简化为一条有效订单曲线；如需对比，可在同一接口追加 totalOrderCountList 字段）。**阶段三实现，前端可先基于 mock 开发。**权限：需管理端登录。
+
+### 6.4.2 请求参数
+
+参数格式：query（URL 查询参数）
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| begin | string | 是 | 开始日期，格式 yyyy-MM-dd |
+| end | string | 是 | 结束日期，格式 yyyy-MM-dd |
+
+请求参数样例：
+
+```
+GET /admin/report/ordersStatistics?begin=2025-09-16&end=2025-09-22
+```
+
+### 6.4.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | object | 是 | 订单统计趋势数据 |
+| \|- totalOrderCount | number | 是 | 区间有效订单总数 |
+| \|- dateList | array | 是 | 日期列表（string，yyyy-MM-dd），与 orderCountList 一一对应 |
+| \|- orderCountList | array | 是 | 每日有效订单数（number），与 dateList 一一对应 |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": {
+    "totalOrderCount": 428,
+    "dateList": ["2025-09-16", "2025-09-17", "2025-09-18", "2025-09-19", "2025-09-20", "2025-09-21", "2025-09-22"],
+    "orderCountList": [45, 52, 49, 61, 58, 71, 92]
+  }
+}
+```
+
+---
+
+# 7. 店铺管理
+
+## 7.1 获取营业状态
+
+### 7.1.1 基本信息
+
+- 请求路径：`/admin/shop/status`
+- 请求方式：GET
+- 接口描述：查询店铺营业状态。注意：状态值**直接作为 data 返回（数值，不是对象）**。权限：需管理端登录。
+
+### 7.1.2 请求参数
+
+无请求参数。
+
+### 7.1.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | number | 是 | 营业状态：`1` 营业中 / `0` 已打烊（直接为数值） |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": 1
+}
+```
+
+## 7.2 修改营业状态
+
+### 7.2.1 基本信息
+
+- 请求路径：`/admin/shop/status/{status}`
+- 请求方式：PUT
+- 接口描述：设置店铺营业状态。打烊后 C 端店铺信息接口（8.1）同步返回 status=0，C 端页面展示「已打烊」。权限：需管理端登录。
+
+### 7.2.2 请求参数
+
+参数格式：path（路径参数）
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| status | number | 是 | 路径参数，目标状态：`1` 营业中 / `0` 已打烊 |
+
+请求参数样例：
+
+```
+PUT /admin/shop/status/0
+```
+
+### 7.2.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | object | 否 | 无业务数据，固定为 null |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": null
+}
+```
+
+## 7.3 修改公告
+
+### 7.3.1 基本信息
+
+- 请求路径：`/admin/shop/notice`
+- 请求方式：PUT
+- 接口描述：修改门店公告，C 端店铺信息接口（8.1）同步展示最新公告。权限：需管理端登录。
+
+### 7.3.2 请求参数
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| notice | string | 是 | 公告文案 |
+
+请求参数样例：
+
+```json
+{
+  "notice": "今日桂花限定买一送一，欢迎品尝"
+}
+```
+
+### 7.3.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | object | 否 | 无业务数据，固定为 null |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": null
+}
+```
+
+---
+
+# 8. C端-店铺
+
+## 8.1 查询店铺信息
+
+### 8.1.1 基本信息
+
+- 请求路径：`/user/shop/status`
+- 请求方式：GET
+- 接口描述：C 端查询门店信息（名称 / 营业状态 / 公告 / 营业时间），用于首页与点单页顶部门店条展示。已打烊（status=0）时前端展示「已打烊」并禁止进入点单流程。权限：无需登录（匿名）。
+
+### 8.1.2 请求参数
+
+无请求参数。
+
+### 8.1.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | object | 是 | 店铺信息（ShopVO） |
+| \|- name | string | 是 | 门店名称 |
+| \|- status | number | 是 | 营业状态：1 营业中 / 0 已打烊 |
+| \|- notice | string | 否 | 门店公告 |
+| \|- openHours | string | 否 | 营业时间 |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": {
+    "name": "山月茶咖·科创园区店",
+    "status": 1,
+    "notice": "今日桂花限定买一送一",
+    "openHours": "09:00-22:00"
+  }
+}
+```
+
+---
+
+# 9. C端-菜单
+
+## 9.1 查询分类列表
+
+### 9.1.1 基本信息
+
+- 请求路径：`/user/category/list`
+- 请求方式：GET
+- 接口描述：C 端点单页左侧分类导航数据。**只返回启用（status=1）的分类，按 sort 升序**；icon 为前端渲染分类图标用的 emoji。权限：无需登录（匿名）。
+
+### 9.1.2 请求参数
+
+无请求参数。
+
+### 9.1.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | object[] | 是 | 分类列表（只含 status=1，按 sort 升序） |
+| \|- id | number | 是 | 分类ID |
+| \|- name | string | 是 | 分类名称 |
+| \|- icon | string | 否 | 分类图标（emoji，前端展示用） |
+| \|- sort | number | 是 | 排序值，越小越靠前 |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": [
+    { "id": 1, "name": "招牌推荐", "icon": "⭐", "sort": 1 },
+    { "id": 2, "name": "经典咖啡", "icon": "☕", "sort": 2 },
+    { "id": 3, "name": "创意特调", "icon": "🧋", "sort": 3 },
+    { "id": 4, "name": "茶饮", "icon": "🍵", "sort": 4 },
+    { "id": 5, "name": "轻食甜点", "icon": "🍰", "sort": 5 }
+  ]
+}
+```
+
+## 9.2 查询在售饮品（含规格组）
+
+### 9.2.1 基本信息
+
+- 请求路径：`/user/drink/list`
+- 请求方式：GET
+- 接口描述：C 端菜单数据。**只返回起售（status=1）的饮品，按销量 sold 降序**，返回完整 DrinkVO（含规格组 specGroups，前端据此渲染规格弹窗并本地试算价格）。categoryId 不传时返回全部在售饮品。权限：无需登录（匿名）。
+
+### 9.2.2 请求参数
+
+参数格式：query（URL 查询参数）
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| categoryId | number | 否 | 分类ID，不传返回全部在售饮品 |
+
+请求参数样例：
+
+```
+GET /user/drink/list
+```
+
+### 9.2.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | object[] | 是 | 在售饮品列表（DrinkVO，同管理端 3.1.3 records 元素，只含 status=1，按 sold 降序） |
+| \|- id | number | 是 | 饮品ID |
+| \|- name | string | 是 | 饮品名称 |
+| \|- categoryId | number | 是 | 分类ID |
+| \|- price | number | 是 | 基础价格（分） |
+| \|- image | string | 否 | 图片 URL |
+| \|- description | string | 否 | 饮品描述 |
+| \|- featured | number | 是 | 是否招牌推荐：1 是 / 0 否 |
+| \|- status | number | 是 | 商品状态：固定为 1（只返回在售） |
+| \|- sold | number | 是 | 累计销量 |
+| \|- createTime | string | 是 | 创建时间 |
+| \|- specGroups | object[] | 否 | 规格组列表 |
+| \|- \|- id | number | 是 | 规格组ID |
+| \|- \|- name | string | 是 | 规格组名称，如 杯型 |
+| \|- \|- required | number | 是 | 是否必选：1 必选 / 0 可选 |
+| \|- \|- sort | number | 是 | 组内排序 |
+| \|- \|- specOptions | object[] | 是 | 规格选项列表 |
+| \|- \|- \|- id | number | 是 | 选项ID |
+| \|- \|- \|- name | string | 是 | 选项名称，如 大杯 |
+| \|- \|- \|- priceDelta | number | 是 | 加价（分），0 表示不加价 |
+| \|- \|- \|- sort | number | 是 | 选项排序 |
+
+响应数据样例（节选 3 款展示，实际返回全部在售饮品）：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": [
+    {
+      "id": 3,
+      "name": "美式",
+      "categoryId": 2,
+      "price": 990,
+      "image": "/menu/americano.png",
+      "description": "双份浓缩加冰，干净利落的美式风味",
+      "featured": 0,
+      "status": 1,
+      "sold": 4520,
+      "createTime": "2025-09-01 10:20:00",
+      "specGroups": [
+        {
+          "id": 9,
+          "name": "杯型",
+          "required": 1,
+          "sort": 1,
+          "specOptions": [
+            { "id": 15, "name": "中杯", "priceDelta": 0, "sort": 1 },
+            { "id": 16, "name": "大杯", "priceDelta": 300, "sort": 2 }
+          ]
+        },
+        {
+          "id": 10,
+          "name": "温度",
+          "required": 1,
+          "sort": 2,
+          "specOptions": [
+            { "id": 35, "name": "冰", "priceDelta": 0, "sort": 1 },
+            { "id": 36, "name": "热", "priceDelta": 0, "sort": 2 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "name": "澳白",
+      "categoryId": 2,
+      "price": 1590,
+      "image": "/menu/flat-white.png",
+      "description": "双份浓缩配丝绒奶泡，咖啡感更强",
+      "featured": 0,
+      "status": 1,
+      "sold": 1580,
+      "createTime": "2025-09-01 10:25:00",
+      "specGroups": [
+        {
+          "id": 11,
+          "name": "杯型",
+          "required": 1,
+          "sort": 1,
+          "specOptions": [
+            { "id": 17, "name": "中杯", "priceDelta": 0, "sort": 1 },
+            { "id": 18, "name": "大杯", "priceDelta": 300, "sort": 2 }
+          ]
+        },
+        {
+          "id": 12,
+          "name": "温度",
+          "required": 1,
+          "sort": 2,
+          "specOptions": [
+            { "id": 37, "name": "冰", "priceDelta": 0, "sort": 1 },
+            { "id": 38, "name": "热", "priceDelta": 0, "sort": 2 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "name": "生椰拿铁",
+      "categoryId": 2,
+      "price": 1590,
+      "image": "/menu/coconut-latte.png",
+      "description": "厚椰乳与浓缩的经典组合",
+      "featured": 1,
+      "status": 1,
+      "sold": 321,
+      "createTime": "2025-09-01 10:00:00",
+      "specGroups": [
+        {
+          "id": 1,
+          "name": "杯型",
+          "required": 1,
+          "sort": 1,
+          "specOptions": [
+            { "id": 11, "name": "中杯", "priceDelta": 0, "sort": 1 },
+            { "id": 12, "name": "大杯", "priceDelta": 300, "sort": 2 }
+          ]
+        },
+        {
+          "id": 2,
+          "name": "温度",
+          "required": 1,
+          "sort": 2,
+          "specOptions": [
+            { "id": 31, "name": "冰", "priceDelta": 0, "sort": 1 },
+            { "id": 32, "name": "热", "priceDelta": 0, "sort": 2 }
+          ]
+        },
+        {
+          "id": 3,
+          "name": "糖度",
+          "required": 0,
+          "sort": 3,
+          "specOptions": [
+            { "id": 41, "name": "标准糖", "priceDelta": 0, "sort": 1 },
+            { "id": 45, "name": "五分糖", "priceDelta": 0, "sort": 2 },
+            { "id": 47, "name": "不另加糖", "priceDelta": 0, "sort": 3 }
+          ]
+        },
+        {
+          "id": 4,
+          "name": "浓度",
+          "required": 0,
+          "sort": 4,
+          "specOptions": [
+            { "id": 67, "name": "标准浓度", "priceDelta": 0, "sort": 1 },
+            { "id": 68, "name": "加倍浓度", "priceDelta": 200, "sort": 2 }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+---
+
+# 10. C端-购物车
+
+> **匿名购物车说明**：C 端无需登录，购物车归属在阶段一按单用户演示处理（前端 mock 存 localStorage，后端可按单用户或设备号实现）。购物车行的唯一业务键为 `drinkId + specKey`：相同饮品相同规格合并数量（number+1），不同规格分行。金额一律由**服务端按规格价重算**，前端传值不作为依据。
+
+## 10.1 添加购物车
+
+### 10.1.1 基本信息
+
+- 请求路径：`/user/shoppingCart/add`
+- 请求方式：POST
+- 接口描述：将某个饮品的指定规格加入购物车。无需登录（匿名）。**服务端职责（重点，防止前端篡改）**：
+  1. 校验饮品在售（status=1），停售返回 code=0；
+  2. 按 groupName + optionName 匹配规格选项的 priceDelta，**重算金额 amount（金额以服务端为准，防篡改）**；
+  3. 拼接 specKey（选项 id 按 group.sort 排序后拼接，格式见模块 3 说明，如 `1-12,31`）；
+  4. 购物车中已存在相同 drinkId + specKey 的行则 number+1，否则插入新行。
+- 示例：给生椰拿铁（id=1，price 1590）选「大杯（+300）/ 冰」，服务端重算金额 = 1590 + 300 = 1890 分，specKey = `"1-12,31"`。
+
+### 10.1.2 请求参数
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| drinkId | number | 是 | 饮品ID |
+| specs | object[] | 是 | 所选规格列表（按规格组顺序给出；无规格商品传空数组 `[]`） |
+| \|- groupName | string | 是 | 规格组名称，如 杯型 |
+| \|- optionName | string | 是 | 选项名称，如 大杯 |
+
+请求参数样例：
+
+```json
+{
+  "drinkId": 1,
+  "specs": [
+    { "groupName": "杯型", "optionName": "大杯" },
+    { "groupName": "温度", "optionName": "冰" }
+  ]
+}
+```
+
+### 10.1.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败（饮品停售时为 0） |
+| msg | string | 是 | 响应信息 |
+| data | object | 否 | 无业务数据，固定为 null |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": null
+}
+```
+
+## 10.2 查看购物车
+
+### 10.2.1 基本信息
+
+- 请求路径：`/user/shoppingCart/list`
+- 请求方式：GET
+- 接口描述：查询当前购物车列表，按加入时间排序，用于购物车浮层展示与金额汇总（合计由前端按各行 amount 求和）。无需登录（匿名）。
+
+### 10.2.2 请求参数
+
+无请求参数。
+
+### 10.2.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | object[] | 是 | 购物车列表（ShoppingCartVO） |
+| \|- id | number | 是 | 购物车行ID |
+| \|- drinkId | number | 是 | 饮品ID |
+| \|- drinkName | string | 是 | 饮品名称快照 |
+| \|- image | string | 否 | 饮品图片 |
+| \|- specText | string | 是 | 规格文案，如 大杯/冰（无规格为空字符串） |
+| \|- specKey | string | 是 | 规格组合键，如 1-12,31（无规格为 "14-" 形式） |
+| \|- amount | number | 是 | 该行小计（分）= 单价 × 数量，服务端按规格价重算 |
+| \|- number | number | 是 | 数量 |
+| \|- createTime | string | 是 | 加入时间 |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": [
+    {
+      "id": 501,
+      "drinkId": 1,
+      "drinkName": "生椰拿铁",
+      "image": "/menu/coconut-latte.png",
+      "specText": "大杯/冰",
+      "specKey": "1-12,31",
+      "amount": 1890,
+      "number": 1,
+      "createTime": "2025-09-22 12:31:05"
+    },
+    {
+      "id": 502,
+      "drinkId": 14,
+      "drinkName": "黄油可颂",
+      "image": "/menu/butter-croissant.png",
+      "specText": "",
+      "specKey": "14-",
+      "amount": 1980,
+      "number": 2,
+      "createTime": "2025-09-22 12:31:40"
+    }
+  ]
+}
+```
+
+## 10.3 购物车减一个
+
+### 10.3.1 基本信息
+
+- 请求路径：`/user/shoppingCart/sub`
+- 请求方式：POST
+- 接口描述：将购物车中「指定饮品 + 指定规格」的一行数量减 1，按 drinkId + specKey 定位；**number 减到 0 时删除该行**。无需登录（匿名）。
+
+### 10.3.2 请求参数
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| drinkId | number | 是 | 饮品ID |
+| specKey | string | 是 | 规格组合键，如 1-12,31,45 |
+
+请求参数样例（减少一行「生椰拿铁 大杯/冰/五分糖」）：
+
+```json
+{
+  "drinkId": 1,
+  "specKey": "1-12,31,45"
+}
+```
+
+### 10.3.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | object | 否 | 无业务数据，固定为 null |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": null
+}
+```
+
+## 10.4 清空购物车
+
+### 10.4.1 基本信息
+
+- 请求路径：`/user/shoppingCart/clean`
+- 请求方式：DELETE
+- 接口描述：清空当前购物车（购物车浮层的「清空」按钮）。无需登录（匿名）。
+
+### 10.4.2 请求参数
+
+无请求参数。
+
+### 10.4.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | object | 否 | 无业务数据，固定为 null |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": null
+}
+```
+
+---
+
+# 11. C端-订单
+
+## 11.1 提交订单
+
+### 11.1.1 基本信息
+
+- 请求路径：`/user/order/submit`
+- 请求方式：POST
+- 接口描述：从购物车结算下单（自取模式，无配送地址、无在线支付）。业务规则：
+  - 按购物车明细生成订单，**金额由服务端按规格价（price + priceDelta）重算，以服务端为准**；
+  - **下单成功后自动清空该用户购物车**（与苍穹外卖逻辑一致）；
+  - 取餐号 pickUpCode：**按天重置、当天自增，格式 A01/A02…**（推荐用 Redis INCR 实现，key 按天设置过期）；
+  - 订单号 orderNumber：yyyyMMdd + 当日 3 位序号，如 20250922001；
+  - estimatedWaitMinutes：预计等待分钟数，由服务端按当前单量估算；
+  - 购物车为空时不允许下单，返回 code=0；
+  - 优惠券（模块 13）：请求可选携 userCouponId，服务端校验可用性（可用/未过期/满足门槛）并重算实付金额 = 商品总额 - 券抵扣，成功后**同事务核销**该券；客户端传的金额不可信；
+  - 下单成功后服务端通过 WebSocket 推送 NEW_ORDER 提醒商家（见模块 12）。权限：无需登录（匿名）。
+
+### 11.1.2 请求参数
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| remark | string | 否 | 订单备注，如「少冰」 |
+| phone | string | 否 | 联系手机号（选填，供商家取餐联系） |
+| userCouponId | number | 否 | 使用的用户优惠券 id（见模块 13；服务端校验可用性并重算金额） |
+
+请求参数样例：
+
+```json
+{
+  "remark": "少冰",
+  "phone": "13800001234",
+  "userCouponId": 1758873600000
+}
+```
+
+### 11.1.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | object | 是 | 下单结果 |
+| \|- id | number | 是 | 订单ID |
+| \|- orderNumber | string | 是 | 订单号：yyyyMMdd + 当日 3 位序号 |
+| \|- pickUpCode | string | 是 | 取餐号：按天重置自增，A01/A02… |
+| \|- orderAmount | number | 是 | **实付**金额（分，商品总额 - 券抵扣，服务端重算） |
+| \|- discountAmount | number | 是 | 优惠券抵扣金额（分），未用券为 0 |
+| \|- estimatedWaitMinutes | number | 是 | 预计等待分钟数 |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": {
+    "id": 100,
+    "orderNumber": "20250922001",
+    "pickUpCode": "A01",
+    "orderAmount": 1090,
+    "discountAmount": 500,
+    "estimatedWaitMinutes": 10
+  }
+}
+```
+
+## 11.2 按取餐号查询订单
+
+### 11.2.1 基本信息
+
+- 请求路径：`/user/order/byPickUpCode/{code}`
+- 请求方式：GET
+- 接口描述：顾客按取餐号查询订单及其进度（待接单/制作中/待取餐…），用于「我的/订单查询」页。OrderVO 结构同管理端订单详情（5.3）；学习项目 phone 不做脱敏，直接返回。权限：无需登录（匿名）。
+
+### 11.2.2 请求参数
+
+参数格式：path（路径参数）
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | string | 是 | 路径参数，取餐号，如 A01 |
+
+请求参数样例：
+
+```
+GET /user/order/byPickUpCode/A01
+```
+
+### 11.2.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败（取餐号不存在时为 0） |
+| msg | string | 是 | 响应信息 |
+| data | object | 是 | 订单详情（OrderVO，字段同 5.3.3） |
+| \|- id | number | 是 | 订单ID |
+| \|- orderNumber | string | 是 | 订单号 |
+| \|- pickUpCode | string | 是 | 取餐号 |
+| \|- status | number | 是 | 订单状态 |
+| \|- orderAmount | number | 是 | 订单实付金额（分，商品总额 - 券抵扣） |
+| \|- discountAmount | number | 是 | 优惠券抵扣金额（分），未用券为 0 |
+| \|- remark | string | 否 | 订单备注 |
+| \|- phone | string | 否 | 联系手机号（学习项目直接返回） |
+| \|- cancelReason | string | 否 | 取消原因 |
+| \|- orderTime | string | 是 | 下单时间 |
+| \|- checkoutTime | string | 是 | 结算时间 |
+| \|- estimatedWaitMinutes | number | 是 | 预计等待分钟数 |
+| \|- orderItems | object[] | 是 | 订单明细列表 |
+| \|- \|- id | number | 是 | 明细ID |
+| \|- \|- drinkId | number | 是 | 饮品ID |
+| \|- \|- drinkName | string | 是 | 饮品名称快照 |
+| \|- \|- image | string | 否 | 饮品图片 |
+| \|- \|- specText | string | 是 | 规格文案 |
+| \|- \|- specKey | string | 是 | 规格组合键 |
+| \|- \|- price | number | 是 | 单价（分，含规格加价） |
+| \|- \|- number | number | 是 | 数量 |
+| \|- \|- amount | number | 是 | 小计（分） |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": {
+    "id": 100,
+    "orderNumber": "20250922001",
+    "pickUpCode": "A01",
+    "status": 3,
+    "orderAmount": 1090,
+    "discountAmount": 500,
+    "remark": "",
+    "phone": "13800001234",
+    "cancelReason": null,
+    "orderTime": "2025-09-22 11:58:00",
+    "checkoutTime": "2025-09-22 11:58:00",
+    "estimatedWaitMinutes": 10,
+    "orderItems": [
+      {
+        "id": 1001,
+        "drinkId": 1,
+        "drinkName": "生椰拿铁",
+        "image": "/menu/coconut-latte.png",
+        "specText": "大杯/冰/五分糖/标准浓度",
+        "specKey": "1-12,31,45,67",
+        "price": 1590,
+        "number": 1,
+        "amount": 1890
+      }
+    ]
+  }
+}
+```
+
+## 11.3 催单
+
+### 11.3.1 基本信息
+
+- 请求路径：`/user/order/reminder/{id}`
+- 请求方式：PUT
+- 接口描述：顾客催单。**仅允许状态 1（待接单）或 2（制作中）的订单催单，其他状态返回 code=0**（如「当前状态不可催单」）。催单成功后服务端通过 WebSocket 向管理端推送 REMINDER 消息（见模块 12）。权限：无需登录（匿名）。
+
+### 11.3.2 请求参数
+
+参数格式：path（路径参数）
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| id | number | 是 | 路径参数，订单ID |
+
+请求参数样例：
+
+```
+PUT /user/order/reminder/102
+```
+
+### 11.3.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | object | 否 | 无业务数据，固定为 null |
+
+成功响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": null
+}
+```
+
+失败响应数据样例（状态不允许）：
+
+```json
+{
+  "code": 0,
+  "msg": "当前状态不可催单",
+  "data": null
+}
+```
+
+## 11.4 用户取消订单
+
+### 11.4.1 基本信息
+
+- 请求路径：`/user/order/cancel/{id}`
+- 请求方式：PUT
+- 接口描述：顾客取消订单。**仅允许状态 1（待接单）取消，其他状态返回 code=0**（如「当前状态不可取消」）。对比商家侧 5.6：商家可在 1/2 状态取消且必须传取消原因；用户取消无需传原因。无需登录（匿名）。
+
+### 11.4.2 请求参数
+
+参数格式：path（路径参数）
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| id | number | 是 | 路径参数，订单ID |
+
+请求参数样例：
+
+```
+PUT /user/order/cancel/102
+```
+
+### 11.4.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | object | 否 | 无业务数据，固定为 null |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": null
+}
+```
+
+---
+
+# 12. WebSocket 推送
+
+## 12.1 连接方式
+
+- 连接路径：`ws://localhost:8080/ws/{shopId}`（如 `ws://localhost:8080/ws/1`）
+- 由**管理端**建立连接（登录成功后连接并保活），服务端通过该连接单向推送 JSON 文本消息。
+- 使用场景：来单提醒、催单提醒、出餐叫号语音提示。
+- **阶段二实现，前端已预留接收逻辑（mock 下用定时模拟）**。
+
+## 12.2 推送消息格式
+
+服务端推送的消息为统一 JSON 结构：
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| type | string | 是 | 消息类型：NEW_ORDER / REMINDER / READY_CALL |
+| data | object | 是 | 消息体，随 type 不同，当前约定含订单 id 与取餐号 |
+
+消息样例：
+
+```json
+{
+  "type": "NEW_ORDER",
+  "data": {
+    "id": 103,
+    "orderNumber": "20250922004",
+    "pickUpCode": "A04"
+  }
+}
+```
+
+## 12.3 消息类型说明
+
+| type | 含义 | 触发时机 | 前端处理建议 |
+| --- | --- | --- | --- |
+| NEW_ORDER | 新订单提醒 | C 端提交订单成功后（11.1） | 管理端播放提示音、刷新待接单列表与角标 |
+| REMINDER | 催单提醒 | C 端催单成功后（11.3） | 管理端弹出催单提示、刷新对应订单 |
+| READY_CALL | 出餐叫号 | 管理端出餐叫号成功后（5.5） | 取餐屏/语音播报取餐号 |
+
+三种消息的推送样例：
+
+```json
+{
+  "type": "NEW_ORDER",
+  "data": { "id": 103, "orderNumber": "20250922004", "pickUpCode": "A04" }
+}
+```
+
+```json
+{
+  "type": "REMINDER",
+  "data": { "id": 101, "pickUpCode": "A02" }
+}
+```
+
+```json
+{
+  "type": "READY_CALL",
+  "data": { "id": 100, "pickUpCode": "A01" }
+}
+```
+
+---
+
+---
+
+# 13. C端-优惠券与会员【阶段四扩展】
+
+> 优惠券是茶咖点单系统相对苍穹外卖的**业务增量**（简历亮点）。模型分两层：`coupon`（券模板，管理端配置）与 `user_coupon`（用户券，领取后生成，含有效期与状态机）。
+> 用户券状态：`1` 可用 / `2` 已核销 / `3` 已过期。**每张模板限领 1 张**（防刷）；下单核销由服务端在同一事务中完成（见 11.1）。
+> 面试讲点：高并发领券如何防超发？——`remain_count` 扣减用数据库乐观锁 `UPDATE ... SET remain_count = remain_count - 1 WHERE id = ? AND remain_count > 0`，或 Redis `DECR` 原子扣减 + 异步落库；领券接口可加分布式锁（同一用户同一模板幂等）。
+
+## 13.1 券广场：可领模板列表【阶段四扩展】
+
+### 13.1.1 基本信息
+
+- 请求路径：`/user/coupon/templates`
+- 请求方式：GET
+- 接口描述：查询券广场展示的优惠券模板列表（含剩余可领数量）。前端用「我的券」判断是否已领取（receivedIds）。权限：无需登录（匿名）。
+
+### 13.1.2 请求参数
+
+无请求参数。
+
+### 13.1.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | object[] | 是 | 券模板列表 |
+| \|- id | number | 是 | 模板ID |
+| \|- name | string | 是 | 券名称，如「山月新人礼」 |
+| \|- type | number | 是 | 券类型：`1` 满减券 / `2` 无门槛券 |
+| \|- threshold | number | 是 | 使用门槛（分），0 表示无门槛 |
+| \|- discount | number | 是 | 抵扣金额（分） |
+| \|- validDays | number | 是 | 领取后有效天数 |
+| \|- totalCount | number | 是 | 发放总量 |
+| \|- remainCount | number | 是 | 剩余可领数量（防超发） |
+| \|- description | string | 是 | 券说明，如「满 25 元减 4 元」 |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": [
+    {
+      "id": 1,
+      "name": "山月新人礼",
+      "type": 2,
+      "threshold": 0,
+      "discount": 500,
+      "validDays": 7,
+      "totalCount": 999,
+      "remainCount": 99,
+      "description": "无门槛立减 5 元，新客见面礼"
+    },
+    {
+      "id": 2,
+      "name": "午后轻松享",
+      "type": 1,
+      "threshold": 2500,
+      "discount": 400,
+      "validDays": 7,
+      "totalCount": 200,
+      "remainCount": 50,
+      "description": "满 25 元减 4 元"
+    }
+  ]
+}
+```
+
+## 13.2 领取优惠券【阶段四扩展】
+
+### 13.2.1 基本信息
+
+- 请求路径：`/user/coupon/receive/{templateId}`
+- 请求方式：POST
+- 接口描述：领取指定模板的优惠券，生成一条用户券（状态 1 可用，过期时间 = 领取时间 + validDays 天）。业务规则：
+  - **每张模板限领 1 张**，重复领取返回 code=0（msg「该优惠券已领取过」）；
+  - 剩余数量不足时返回 code=0（msg「该券已被领完啦」）；
+  - 剩余数量扣减需防超发（乐观锁 / Redis DECR，见模块开头面试讲点）。权限：无需登录（匿名）。
+
+### 13.2.2 请求参数
+
+参数格式：path（路径参数）
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| templateId | number | 是 | 路径参数，券模板 id |
+
+请求参数样例：
+
+```
+POST /user/coupon/receive/1
+```
+
+### 13.2.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败（已领取/领完时为 0） |
+| msg | string | 是 | 响应信息 |
+| data | object | 是 | 领取得到的用户券 |
+| \|- id | number | 是 | 用户券记录 id（下单时作为 userCouponId 传入） |
+| \|- couponId | number | 是 | 模板 id |
+| \|- name | string | 是 | 券名称 |
+| \|- type | number | 是 | 券类型：1 满减 / 2 无门槛 |
+| \|- threshold | number | 是 | 使用门槛（分） |
+| \|- discount | number | 是 | 抵扣金额（分） |
+| \|- receiveTime | string | 是 | 领取时间 yyyy-MM-dd HH:mm:ss |
+| \|- expireTime | string | 是 | 过期时间 yyyy-MM-dd HH:mm:ss |
+| \|- status | number | 是 | 用户券状态：1 可用 |
+| \|- usedOrderNumber | string | 否 | 核销订单号（领取时为空串） |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": {
+    "id": 1758873600000,
+    "couponId": 1,
+    "name": "山月新人礼",
+    "type": 2,
+    "threshold": 0,
+    "discount": 500,
+    "receiveTime": "2025-09-22 12:00:00",
+    "expireTime": "2025-09-29 12:00:00",
+    "status": 1,
+    "usedOrderNumber": ""
+  }
+}
+```
+
+## 13.3 我的优惠券列表【阶段四扩展】
+
+### 13.3.1 基本信息
+
+- 请求路径：`/user/coupon/list`
+- 请求方式：GET
+- 接口描述：查询当前用户持有的优惠券列表，可按状态过滤。读取时**惰性修正过期状态**（expireTime 已过但仍为 1 可用的券修正为 3 已过期，等价于定时任务扫描的懒实现）。权限：无需登录（匿名）。
+
+### 13.3.2 请求参数
+
+参数格式：query
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| status | number | 否 | 1 可用 / 2 已核销 / 3 已过期；不传返回全部 |
+
+请求参数样例：
+
+```
+GET /user/coupon/list?status=1
+```
+
+### 13.3.3 响应数据
+
+参数格式：application/json。data 为 UserCouponVO 数组，字段同 13.2.3（status 可为 1/2/3，已核销的券 usedOrderNumber 有值）。
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": [
+    {
+      "id": 1758873600000,
+      "couponId": 1,
+      "name": "山月新人礼",
+      "type": 2,
+      "threshold": 0,
+      "discount": 500,
+      "receiveTime": "2025-09-22 12:00:00",
+      "expireTime": "2025-09-29 12:00:00",
+      "status": 2,
+      "usedOrderNumber": "20250922005"
+    }
+  ]
+}
+```
+
+## 13.4 下单可用优惠券【阶段四扩展】
+
+### 13.4.1 基本信息
+
+- 请求路径：`/user/coupon/usable`
+- 请求方式：GET
+- 接口描述：确认下单页「选择优惠券」弹层使用。服务端按**当前商品总额**过滤：状态为 1 可用 + 未过期 + 满足门槛（amount ≥ threshold），按抵扣金额**降序**返回（前端默认选最优一张）。下单提交时服务端还会再校验一次（防金额变动/并发核销）。权限：无需登录（匿名）。
+
+### 13.4.2 请求参数
+
+参数格式：query
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| amount | number | 是 | 当前购物车商品总额（分） |
+
+请求参数样例：
+
+```
+GET /user/coupon/usable?amount=1590
+```
+
+### 13.4.3 响应数据
+
+参数格式：application/json。data 为 UserCouponVO 数组（仅 status=1 的可用券），字段同 13.2.3。
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": [
+    {
+      "id": 1758873600000,
+      "couponId": 1,
+      "name": "山月新人礼",
+      "type": 2,
+      "threshold": 0,
+      "discount": 500,
+      "receiveTime": "2025-09-22 12:00:00",
+      "expireTime": "2025-09-29 12:00:00",
+      "status": 1,
+      "usedOrderNumber": ""
+    }
+  ]
+}
+```
+
+## 13.5 会员概要【阶段四扩展】
+
+### 13.5.1 基本信息
+
+- 请求路径：`/user/member/summary`
+- 请求方式：GET
+- 接口描述：会员中心页顶部统计。演示口径：**积分 = 已完成订单实付金额 / 100 取整（1 元 = 1 分）**；累计消费仅统计 status=4 已完成订单；可用券数取状态 1 的用户券张数。memberNo 为演示固定值（真实项目可接入用户体系后按用户生成）。权限：无需登录（匿名）。
+
+### 13.5.2 请求参数
+
+无请求参数。
+
+### 13.5.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | object | 是 | 会员概要 |
+| \|- memberNo | string | 是 | 会员号（演示固定 SHY-2026-0001） |
+| \|- points | number | 是 | 积分（已完成订单实付分/100 取整） |
+| \|- totalSpent | number | 是 | 累计消费（分，仅已完成订单） |
+| \|- finishedOrders | number | 是 | 累计完成订单数 |
+| \|- couponsAvailable | number | 是 | 当前可用优惠券张数 |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": {
+    "memberNo": "SHY-2026-0001",
+    "points": 47,
+    "totalSpent": 4760,
+    "finishedOrders": 3,
+    "couponsAvailable": 1
+  }
+}
+```
+
+---
+
+# 14. 管理端-优惠券模板【阶段四扩展】
+
+> 与模块 13（C 端领券/核销）配套：管理端配置券模板，C 端券广场展示**仅发放中（status=1）**的模板。
+> 业务规则：① 满减券门槛必须 ≥ 面额（否则每单必亏）；② 修改时发放总量不可小于「已领取张数」；③ **已有用户领取的券不可删除**（保护已发出券的可用性），只能下架停止发放；④ 上/下架只影响 C 端可见性，不影响已领取未使用的券。权限：需携带管理端 JWT（请求头 `token`）。
+
+## 14.1 优惠券分页查询【阶段四扩展】
+
+### 14.1.1 基本信息
+
+- 请求路径：`/admin/coupon/page`
+- 请求方式：GET
+- 接口描述：优惠券模板分页查询，支持按名称模糊、状态筛选。排序规则：发放中的在前，同状态按创建时间倒序。
+
+### 14.1.2 请求参数
+
+参数格式：query string
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| name | string | 否 | 券名称，模糊匹配 |
+| status | number | 否 | 状态筛选：`1` 发放中 / `0` 已下架，不传查全部 |
+| page | number | 是 | 页码，从 1 开始 |
+| pageSize | number | 是 | 每页条数 |
+
+### 14.1.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | object | 是 | 分页数据 |
+| \|- total | number | 是 | 总记录数 |
+| \|- records | object[] | 是 | 当前页优惠券列表 |
+| \|- \|- id | number | 是 | 券模板 id |
+| \|- \|- name | string | 是 | 券名称 |
+| \|- \|- type | number | 是 | 类型：`1` 满减券 / `2` 无门槛券 |
+| \|- \|- threshold | number | 是 | 使用门槛（分），0 = 无门槛 |
+| \|- \|- discount | number | 是 | 抵扣金额（分） |
+| \|- \|- validDays | number | 是 | 领取后有效天数 |
+| \|- \|- totalCount | number | 是 | 发放总量 |
+| \|- \|- remainCount | number | 是 | 剩余可领数量（totalCount - 已领取） |
+| \|- \|- status | number | 是 | `1` 发放中 / `0` 已下架 |
+| \|- \|- description | string | 是 | 券说明 |
+| \|- \|- createTime | string | 是 | 创建时间 yyyy-MM-dd HH:mm:ss |
+| \|- \|- updateTime | string | 是 | 最后修改时间 |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": {
+    "total": 4,
+    "records": [
+      {
+        "id": 1,
+        "name": "山月新人礼",
+        "type": 2,
+        "threshold": 0,
+        "discount": 500,
+        "validDays": 7,
+        "totalCount": 999,
+        "remainCount": 999,
+        "status": 1,
+        "description": "无门槛立减 5 元，新客见面礼",
+        "createTime": "2025-09-01 09:00:00",
+        "updateTime": "2025-09-01 09:00:00"
+      },
+      {
+        "id": 4,
+        "name": "开业大酬宾",
+        "type": 1,
+        "threshold": 2000,
+        "discount": 600,
+        "validDays": 3,
+        "totalCount": 300,
+        "remainCount": 274,
+        "status": 0,
+        "description": "满 20 元减 6 元",
+        "createTime": "2025-09-01 09:00:00",
+        "updateTime": "2025-09-22 18:30:00"
+      }
+    ]
+  }
+}
+```
+
+## 14.2 新增优惠券【阶段四扩展】
+
+### 14.2.1 基本信息
+
+- 请求路径：`/admin/coupon`
+- 请求方式：POST
+- 接口描述：新增优惠券模板。新增后默认 `status=1`（发放中）、`remainCount=totalCount`。业务校验：名称非空且唯一；优惠金额 > 0；满减券门槛 ≥ 面额；有效天数 ≥ 1；发放总量 ≥ 1。`description` 不传时由后端按类型自动生成（如「满 25 元减 4 元」「无门槛立减 5 元」）。
+
+### 14.2.2 请求参数
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| name | string | 是 | 券名称，≤ 20 字，全局唯一 |
+| type | number | 是 | `1` 满减券 / `2` 无门槛券 |
+| threshold | number | 是 | 使用门槛（分）；type=2 时传 0，后端忽略 |
+| discount | number | 是 | 抵扣金额（分），必须 > 0 |
+| validDays | number | 是 | 领取后有效天数，1~90 |
+| totalCount | number | 是 | 发放总量，≥ 1 |
+| description | string | 否 | 券说明，≤ 40 字，不传自动生成 |
+
+请求参数样例：
+
+```json
+{
+  "name": "秋日限定券",
+  "type": 1,
+  "threshold": 3000,
+  "discount": 500,
+  "validDays": 7,
+  "totalCount": 200
+}
+```
+
+### 14.2.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败（如「满减券的使用门槛不能低于优惠金额」） |
+| msg | string | 是 | 响应信息 |
+| data | null | 是 | 无数据 |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": null
+}
+```
+
+## 14.3 修改优惠券【阶段四扩展】
+
+### 14.3.1 基本信息
+
+- 请求路径：`/admin/coupon`
+- 请求方式：PUT
+- 接口描述：修改优惠券模板。在 14.2 校验规则基础上额外约束：**发放总量不可小于已领取张数**（违反时 code=0，提示「发放总量不能小于已领取张数（N 张），如需止损请下架」）；修改后 remainCount = 新总量 - 已领取。type=2 无门槛券保存后 threshold 置 0。
+
+### 14.3.2 请求参数
+
+参数格式：application/json（比 14.2 多 id）
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| id | number | 是 | 券模板 id |
+| 其余字段 | - | 是 | 同 14.2 请求参数 |
+
+请求参数样例：
+
+```json
+{
+  "id": 2,
+  "name": "午后轻松享",
+  "type": 1,
+  "threshold": 2500,
+  "discount": 400,
+  "validDays": 7,
+  "totalCount": 300
+}
+```
+
+### 14.3.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | null | 是 | 无数据 |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": null
+}
+```
+
+## 14.4 上架/下架优惠券【阶段四扩展】
+
+### 14.4.1 基本信息
+
+- 请求路径：`/admin/coupon/status/{status}`
+- 请求方式：POST
+- 接口描述：切换券模板上下架状态。下架（status=0）后 C 端券广场（13.1）不再展示该券，**已领取未使用的券仍可正常核销**；上架（status=1）后重新可见。
+
+### 14.4.2 请求参数
+
+参数格式：路径参数 + query string
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| status | number | 是 | 路径参数，目标状态：`1` 上架 / `0` 下架 |
+| id | number | 是 | query 参数，券模板 id |
+
+### 14.4.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败（券不存在时 0） |
+| msg | string | 是 | 响应信息 |
+| data | null | 是 | 无数据 |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": null
+}
+```
+
+## 14.5 删除优惠券【阶段四扩展】
+
+### 14.5.1 基本信息
+
+- 请求路径：`/admin/coupon`
+- 请求方式：DELETE
+- 接口描述：删除优惠券模板。**已有用户领取（已领取张数 > 0）的券不可删除**，返回 code=0 并提示「该券已有用户领取，不可删除；如需停止发放请下架」——保证用户手里已领取的券不因模板删除而失效（面试点：删除属于弱一致性操作，生产可改为逻辑删除 deleted 标记）。
+
+### 14.5.2 请求参数
+
+参数格式：query string
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| id | number | 是 | 券模板 id |
+
+### 14.5.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败（已有人领取时 0） |
+| msg | string | 是 | 响应信息 |
+| data | null | 是 | 无数据 |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": null
+}
+```
+
+# 15. C端-积分【阶段四扩展】
+
+> 积分账本三来源/去向：**消费积分**（已完成订单实付金额 / 100 取整，1 元 = 1 分）、**签到积分**（每日签到 +7）、**兑换消耗**（积分兑换优惠券）。
+> 余额 = 消费积分 + 签到积分 - 兑换消耗；「13.5 会员概要」中的 points 字段与 15.1 的 balance 同源。
+> 兑换定价：**1 积分 ≈ 0.1 元券面额，最低 20 积分起兑**（cost = max(20, 面额/10)）。
+> 面试讲点：①防重复签到用 `(user_id, checkin_date)` 唯一键兜底 + 业务层预判断；②积分兑换与发券必须同一事务，且扣减积分用**乐观锁**（`UPDATE ... SET points = points - #{cost} WHERE id = #{userId} AND points >= #{cost}`，影响行数为 0 即余额不足）防并发透支；③消费积分建议在下单完成事件中异步入账（事务消息/本地消息表），下单即给分会在取消/退款时需要对冲流水。
+
+## 15.1 积分概要【阶段四扩展】
+
+### 15.1.1 基本信息
+
+- 请求路径：`/user/point/summary`
+- 请求方式：GET
+- 接口描述：查询当前用户的积分账本概要（余额/累计获得/累计消耗/签到天数/连续签到/今日是否已签）。连续签到定义：已签今日则从今日往回逐日连续计数，否则从昨日往回计数（今天尚未签到不影响已有连签展示）。
+
+### 15.1.2 请求参数
+
+无请求参数（C 端匿名演示，真实后端从登录态取 userId）。
+
+### 15.1.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | object | 是 | 积分概要 |
+| |-balance | number | 是 | 积分余额 = 消费积分 + 签到积分（含连签奖励）- 兑换消耗 |
+| |-totalEarned | number | 是 | 累计获得（消费 + 签到 + 连签奖励） |
+| |-totalRedeemed | number | 是 | 累计兑换消耗 |
+| |-checkinDays | number | 是 | 累计签到天数 |
+| |-streak | number | 是 | 连续签到天数 |
+| |-checkedToday | boolean | 是 | 今天是否已签到 |
+| |-streakBonusTotal | number | 是 | 累计获得的连签达成奖励积分 |
+| |-nextBonusIn | number | 是 | 距下一次连签奖励还差几天（1~7） |
+
+> 连签规则（v1.5 补充）：每连续签到 7 天额外 +20 积分（7 的倍数天可重复触发），签到积分入账与奖励发放应在同一事务；达成记录可在 15.3 明细中以专项行展示。
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": {
+    "balance": 128,
+    "totalEarned": 156,
+    "totalRedeemed": 28,
+    "checkinDays": 3,
+    "streak": 2,
+    "checkedToday": false,
+    "streakBonusTotal": 0,
+    "nextBonusIn": 5
+  }
+}
+```
+
+## 15.2 每日签到【阶段四扩展】
+
+### 15.2.1 基本信息
+
+- 请求路径：`/user/point/checkin`
+- 请求方式：POST
+- 接口描述：每日签到，+7 积分。**每个自然日只能签到一次**：重复签到返回 code=0 并提示「今天已经签到过啦，明天再来」（服务端以 `(user_id, checkin_date)` 唯一键兜底）。返回签到后的最新积分概要。签到后若连续天数恰好为 7 的整数倍，额外发放连签达成奖励 +20 积分，并通过 `justBonus` 告知客户端（用于庆祝动效）。
+
+### 15.2.2 请求参数
+
+无请求参数。
+
+### 15.2.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败（当日已签时 0） |
+| msg | string | 是 | 响应信息 |
+| data | object | 是 | 签到后的最新积分概要，字段同 15.1.3，另含 justBonus |
+| |-justBonus | number | 是 | 本次签到触发的连签达成奖励积分，0 表示未触发 |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": {
+    "balance": 169,
+    "totalEarned": 197,
+    "totalRedeemed": 28,
+    "checkinDays": 7,
+    "streak": 7,
+    "checkedToday": true,
+    "streakBonusTotal": 20,
+    "nextBonusIn": 7,
+    "justBonus": 20
+  }
+}
+```
+
+## 15.3 积分明细【阶段四扩展】
+
+### 15.3.1 基本信息
+
+- 请求路径：`/user/point/records`
+- 请求方式：GET
+- 接口描述：查询积分流水明细，**按时间倒序**。三类记录：type=1 每日签到（+7）/ type=2 订单消费（+已完成订单实付/100）/ type=3 积分兑换（-兑换消耗）。其中消费类流水由已完成订单动态聚合生成（每笔已完成订单一条）。
+
+### 15.3.2 请求参数
+
+无请求参数。
+
+### 15.3.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | object\[\] | 是 | 积分明细列表，按时间倒序 |
+| |-id | string | 是 | 流水 id |
+| |-type | number | 是 | 类型：1 每日签到 / 2 订单消费 / 3 积分兑换 |
+| |-title | string | 是 | 标题，如「每日签到」「订单消费」「积分兑换」 |
+| |-sub | string | 是 | 补充说明，如订单号 / 券名称 |
+| |-points | number | 是 | 变动积分：正为获得、负为消耗 |
+| |-createTime | string | 是 | 时间，格式 yyyy-MM-dd HH:mm:ss |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": [
+    {
+      "id": "checkin-2026-09-26",
+      "type": 1,
+      "title": "每日签到",
+      "sub": "连续签到奖励 +7 积分",
+      "points": 7,
+      "createTime": "2026-09-26 08:30:12"
+    },
+    {
+      "id": "order-20260926005001",
+      "type": 2,
+      "title": "订单消费",
+      "sub": "20260926005001 · 实付 ¥15.90",
+      "points": 15,
+      "createTime": "2026-09-25 12:30:00"
+    },
+    {
+      "id": "exchange-1789012345678",
+      "type": 3,
+      "title": "积分兑换",
+      "sub": "「山月新人礼」已放入我的优惠券",
+      "points": -50,
+      "createTime": "2026-09-25 09:12:40"
+    }
+  ]
+}
+```
+
+## 15.4 积分兑换货架【阶段四扩展】
+
+### 15.4.1 基本信息
+
+- 请求路径：`/user/point/exchanges`
+- 请求方式：GET
+- 接口描述：查询可用积分兑换的优惠券货架。数据来源为**发放中且剩余库存 > 0** 的券模板，按「1 积分 ≈ 0.1 元面额，最低 20 积分起兑」生成所需积分。
+
+### 15.4.2 请求参数
+
+无请求参数。
+
+### 15.4.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | object\[\] | 是 | 兑换货架列表 |
+| |-templateId | number | 是 | 券模板 id |
+| |-name | string | 是 | 券名称 |
+| |-description | string | 是 | 券说明 |
+| |-discount | number | 是 | 券面额（分） |
+| |-threshold | number | 是 | 使用门槛（分），0 = 无门槛 |
+| |-cost | number | 是 | 兑换所需积分（max(20, 面额/10)） |
+| |-remainCount | number | 是 | 剩余可兑张数（与券库存一致） |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": [
+    {
+      "templateId": 1,
+      "name": "山月新人礼",
+      "description": "无门槛立减 5 元，新客见面礼",
+      "discount": 500,
+      "threshold": 0,
+      "cost": 50,
+      "remainCount": 98
+    },
+    {
+      "templateId": 2,
+      "name": "午后轻松享",
+      "description": "满 25 元减 4 元",
+      "discount": 400,
+      "threshold": 2500,
+      "cost": 40,
+      "remainCount": 49
+    }
+  ]
+}
+```
+
+## 15.5 积分兑换优惠券【阶段四扩展】
+
+### 15.5.1 基本信息
+
+- 请求路径：`/user/point/exchange/{templateId}`
+- 请求方式：POST
+- 接口描述：使用积分兑换一张优惠券。服务端按顺序校验：①兑换商品存在且库存 > 0；②积分余额 ≥ 所需积分。通过后在**同一事务**内完成「扣减积分 + 生成用户券 + 扣减券库存」，返回兑换后的最新积分概要。注意：积分兑换获得的券**不占用**「每模板限领 1 张」的免费领取名额。返回兑换后的最新积分概要。
+
+### 15.5.2 请求参数
+
+参数格式：路径参数
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| templateId | number | 是 | 路径参数，兑换的券模板 id |
+
+### 15.5.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败（库存不足 / 积分不足时 0，msg 形如「积分不足，还差 12 分」） |
+| msg | string | 是 | 响应信息 |
+| data | object | 是 | 兑换后的最新积分概要，字段同 15.1.3 |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": {
+    "balance": 85,
+    "totalEarned": 163,
+    "totalRedeemed": 78,
+    "checkinDays": 4,
+    "streak": 3,
+    "checkedToday": true
+  }
+}
+```
+
+# 16. C端-评价【阶段五扩展】
+
+> 评价模型：`order_review` 一行对应一条评价，**order_id 唯一**（一单仅可评价一次）；仅**已完成（status=4）订单**可评价，服务端校验。
+> 星级 1~5（整数）；标签为固定枚举：口味赞 / 出餐快 / 服务贴心 / 性价比高 / 包装精美 / 环境好（多选，服务端校验合法性）；文字评价 ≤ 50 字（选填）。
+> 商家回复（17.3）展示在 C 端评价下方；被管理端隐藏（17.4）的评价不出现在评价墙且**不参与评分统计**。
+> 面试讲点：①一单一评用 `order_id` 唯一键兜底，业务层先查后插；②评价写入需校验订单归属 + 状态机（status=4），防止评价未完成订单；③门店评分统计接口建议加缓存（Redis，评价写入/隐藏/恢复时失效）+ 定时重算兜底；④文字评价生产建议接入敏感词过滤（DFA）后再落库。
+
+## 16.1 提交评价【阶段五扩展】
+
+### 16.1.1 基本信息
+
+- 请求路径：`/user/review`
+- 请求方式：POST
+- 接口描述：对一笔已完成订单提交评价。服务端按顺序校验：①订单存在；②订单状态为已完成（status=4），否则 msg「订单完成后才能评价哦」；③该订单未评价过（order_id 唯一），否则 msg「该订单已评价过啦」；④score ∈ [1,5]、tags 合法、content ≤ 50 字。通过后写入评价并返回。
+
+### 16.1.2 请求参数
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| orderId | number | 是 | 评价的订单 id |
+| score | number | 是 | 星级 1~5（整数） |
+| tags | string[] | 是 | 快捷标签数组（固定枚举，可为空数组） |
+| content | string | 否 | 文字评价，≤ 50 字 |
+
+请求参数样例：
+
+```json
+{
+  "orderId": 104,
+  "score": 5,
+  "tags": ["口味赞", "出餐快"],
+  "content": "生椰拿铁好喝，出餐也快！"
+}
+```
+
+### 16.1.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | object | 是 | 提交后的评价 |
+| |-id | number | 是 | 评价 id |
+| |-orderId | number | 是 | 订单 id |
+| |-orderNumber | string | 是 | 订单号 |
+| |-pickUpCode | string | 是 | 取餐号 |
+| |-score | number | 是 | 星级 1~5 |
+| |-tags | string[] | 是 | 标签数组 |
+| |-content | string | 是 | 文字评价（未填为空串） |
+| |-reply | string | 是 | 商家回复（新评价为空串） |
+| |-createTime | string | 是 | 评价时间 yyyy-MM-dd HH:mm:ss |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": {
+    "id": 5,
+    "orderId": 104,
+    "orderNumber": "20260926104",
+    "pickUpCode": "A04",
+    "score": 5,
+    "tags": ["口味赞", "出餐快"],
+    "content": "生椰拿铁好喝，出餐也快！",
+    "reply": "",
+    "createTime": "2026-09-26 12:30:41"
+  }
+}
+```
+
+## 16.2 查询订单评价【阶段五扩展】
+
+### 16.2.1 基本信息
+
+- 请求路径：`/user/review/order/{orderId}`
+- 请求方式：GET
+- 接口描述：查询某订单是否已评价。已评价返回评价详情；未评价返回 data = null（C 端据此渲染「评价」按钮或「已评价」徽标）。
+
+### 16.2.2 请求参数
+
+参数格式：路径参数
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| orderId | number | 是 | 路径参数，订单 id |
+
+### 16.2.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | object | 否 | 已评价时返回评价详情（字段同 16.1.3），未评价为 null |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": {
+    "id": 5,
+    "orderId": 104,
+    "orderNumber": "20260926104",
+    "pickUpCode": "A04",
+    "score": 5,
+    "tags": ["口味赞", "出餐快"],
+    "content": "生椰拿铁好喝，出餐也快！",
+    "reply": "谢谢喜爱～欢迎常来 🌼",
+    "createTime": "2026-09-26 12:30:41"
+  }
+}
+```
+
+## 16.3 门店评价统计【阶段五扩展】
+
+### 16.3.1 基本信息
+
+- 请求路径：`/user/review/stats`
+- 请求方式：GET
+- 接口描述：查询门店评价统计（C 端首页门店评分徽标与门店信息页「评价总览」共用）。口径：**已隐藏评价不参与统计**；好评率 = 4/5 星占比（百分数取整）；无评价时 avgScore = 0、goodRate = 0。
+
+### 16.3.2 请求参数
+
+无请求参数。
+
+### 16.3.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | object | 是 | 统计结果 |
+| |-avgScore | number | 是 | 平均分（保留 1 位小数，如 4.8） |
+| |-total | number | 是 | 评价总数（不含已隐藏） |
+| |-goodRate | number | 是 | 好评率（4/5 星占比百分数，如 96） |
+| |-distribution | number[] | 是 | 各星级数量，下标 0 = 5 星 … 下标 4 = 1 星 |
+| |-tagStats | object[] | 是 | 标签热度（按次数降序，取前 6） |
+| |-|-tag | string | 是 | 标签名 |
+| |-|-count | number | 是 | 出现次数 |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": {
+    "avgScore": 4.8,
+    "total": 5,
+    "goodRate": 100,
+    "distribution": [4, 1, 0, 0, 0],
+    "tagStats": [
+      { "tag": "口味赞", "count": 3 },
+      { "tag": "出餐快", "count": 2 }
+    ]
+  }
+}
+```
+
+## 16.4 我的评价【阶段五扩展】
+
+### 16.4.1 基本信息
+
+- 请求路径：`/user/review/mine`
+- 请求方式：GET
+- 接口描述：查询当前用户自己的评价列表（按评价时间倒序），含商家回复；用于会员中心「我的评价」区块。
+
+### 16.4.2 请求参数
+
+无请求参数（C 端匿名演示，真实后端从登录态取 userId）。
+
+### 16.4.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | object[] | 是 | 评价数组（元素字段同 16.1.3），倒序 |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": [
+    {
+      "id": 5,
+      "orderId": 104,
+      "orderNumber": "20260926104",
+      "pickUpCode": "A04",
+      "score": 5,
+      "tags": ["口味赞"],
+      "content": "大杯加浓刚好，三分钟就出餐了",
+      "reply": "",
+      "createTime": "2026-09-26 12:30:41"
+    },
+    {
+      "id": 1,
+      "orderId": 9001,
+      "orderNumber": "20260925008",
+      "pickUpCode": "A08",
+      "score": 5,
+      "tags": ["口味赞", "出餐快"],
+      "content": "桂花冰酿拿铁太惊喜了，桂花香特别正！",
+      "reply": "谢谢喜爱～",
+      "createTime": "2026-09-25 12:41:05"
+    }
+  ]
+}
+```
+
+# 17. 管理端-评价【阶段五扩展】
+
+> 管理端职责：**查看 / 回复 / 隐藏恢复 / 统计**，不代顾客写评价。
+> 待回复口径：≤ 3 星且未回复的评价（仪表盘「门店口碑」卡与评价管理页同口径）。
+> 面试讲点：①回复与隐藏均为低频管理操作，直接 UPDATE 即可，但要注意**隐藏参与评分统计**的一致性（统计接口读同一 visible 条件）；②生产场景「隐藏」建议软删除留痕（visible + operator + reason）而非物理删除；③评价墙数据量增长后，统计建议改为定时聚合 + 缓存。
+
+## 17.1 评价分页查询【阶段五扩展】
+
+### 17.1.1 基本信息
+
+- 请求路径：`/admin/review/page`
+- 请求方式：GET
+- 接口描述：分页查询评价（按评价时间倒序），支持星级、展示状态、关键词（评价内容/订单号/取餐号）筛选。
+
+### 17.1.2 请求参数
+
+参数格式：query
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| page | number | 是 | 页码，从 1 开始 |
+| pageSize | number | 是 | 每页条数 |
+| score | number | 否 | 星级筛选（0 或不传 = 全部） |
+| hidden | number | 否 | 展示状态筛选（0 = 正常展示 / 1 = 已隐藏；不传 = 全部） |
+| keyword | string | 否 | 关键词，匹配评价内容/订单号/取餐号 |
+
+### 17.1.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | object | 是 | 分页结果 |
+| |-total | number | 是 | 总条数 |
+| |-records | object[] | 是 | 当前页数据 |
+| |-|-id | number | 是 | 评价 id |
+| |-|-orderId | number | 是 | 订单 id |
+| |-|-orderNumber | string | 是 | 订单号 |
+| |-|-pickUpCode | string | 是 | 取餐号 |
+| |-|-score | number | 是 | 星级 1~5 |
+| |-|-tags | string[] | 是 | 标签数组 |
+| |-|-content | string | 是 | 评价内容 |
+| |-|-reply | string | 是 | 商家回复（可为空串） |
+| |-|-visible | number | 是 | 1 正常展示 / 0 已隐藏 |
+| |-|-createTime | string | 是 | 评价时间 |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": {
+    "total": 8,
+    "records": [
+      {
+        "id": 3,
+        "orderId": 3,
+        "orderNumber": "20260926003",
+        "pickUpCode": "A03",
+        "score": 3,
+        "tags": ["服务贴心"],
+        "content": "澳白奶泡打得有点粗，希望稳定一点。",
+        "reply": "",
+        "visible": 1,
+        "createTime": "2026-09-26 08:30:14"
+      }
+    ]
+  }
+}
+```
+
+## 17.2 评价统计【阶段五扩展】
+
+### 17.2.1 基本信息
+
+- 请求路径：`/admin/review/stats`
+- 请求方式：GET
+- 接口描述：查询门店评价统计（与 16.3 同数据源；管理端额外返回待回复数）。口径同 16.3：已隐藏不参与统计；待回复 = ≤ 3 星且未回复。
+
+### 17.2.2 请求参数
+
+无请求参数。
+
+### 17.2.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | object | 是 | 统计结果（字段同 16.3.3，额外增加 pendingReply） |
+| |-avgScore | number | 是 | 平均分（1 位小数） |
+| |-total | number | 是 | 评价总数（不含已隐藏） |
+| |-goodRate | number | 是 | 好评率（百分数） |
+| |-pendingReply | number | 是 | 待回复数（≤ 3 星且未回复） |
+| |-distribution | number[] | 是 | 各星级数量，下标 0 = 5 星 … 下标 4 = 1 星 |
+| |-tagStats | object[] | 是 | 标签热度（按次数降序） |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": {
+    "avgScore": 4.4,
+    "total": 7,
+    "goodRate": 86,
+    "pendingReply": 1,
+    "distribution": [4, 2, 1, 0, 0],
+    "tagStats": [
+      { "tag": "口味赞", "count": 3 },
+      { "tag": "出餐快", "count": 2 },
+      { "tag": "包装精美", "count": 2 }
+    ]
+  }
+}
+```
+
+## 17.3 回复评价【阶段五扩展】
+
+### 17.3.1 基本信息
+
+- 请求路径：`/admin/review/reply`
+- 请求方式：PUT
+- 接口描述：商家回复一条评价（一评一回复，可修改已有回复）。服务端校验：评价存在；回复内容非空且 ≤ 50 字。回复同步展示在 C 端评价下方。
+
+### 17.3.2 请求参数
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| id | number | 是 | 评价 id |
+| reply | string | 是 | 回复内容，非空且 ≤ 50 字 |
+
+请求参数样例：
+
+```json
+{
+  "id": 3,
+  "reply": "收到反馈啦，已让吧台重新校准奶泡打发时间 ☕"
+}
+```
+
+### 17.3.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | null | 是 | 无返回数据 |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": null
+}
+```
+
+## 17.4 隐藏/恢复评价【阶段五扩展】
+
+### 17.4.1 基本信息
+
+- 请求路径：`/admin/review/visible/{visible}`
+- 请求方式：PUT
+- 接口描述：隐藏或恢复一条评价。隐藏后该评价不在 C 端评价墙展示、**不参与评分统计**（16.3/17.2 同口径），可随时恢复。面试点：生产建议软删除留痕（操作人/原因）而非物理删除。
+
+### 17.4.2 请求参数
+
+参数格式：路径参数 + query
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| visible | number | 是 | 路径参数，0 = 隐藏 / 1 = 恢复展示 |
+| id | number | 是 | query 参数，评价 id |
+
+### 17.4.3 响应数据
+
+参数格式：application/json
+
+| 参数名 | 类型 | 是否必须 | 备注 |
+| --- | --- | --- | --- |
+| code | number | 是 | 响应码，1 成功 0 失败 |
+| msg | string | 是 | 响应信息 |
+| data | null | 是 | 无返回数据 |
+
+响应数据样例：
+
+```json
+{
+  "code": 1,
+  "msg": "success",
+  "data": null
+}
+```
+
+> 文档版本：v1.6 ｜ 编写依据：《山月茶咖 API-SPEC（内部统一规范 v1.0）》+ 阶段四扩展（优惠券与会员、积分体系、连签奖励）+ 阶段五扩展（评价体系、门店信息页） ｜ Base URL：`http://localhost:8080`
+> 管理端接口共 42 个（模块 1~7 共 33 个 + 模块 14 优惠券模板扩展 5 个 + 模块 17 评价管理扩展 4 个），C 端接口共 25 个（模块 8~11 共 11 个 + 模块 13 优惠券与会员扩展 5 个 + 模块 15 积分扩展 5 个 + 模块 16 评价扩展 4 个），WebSocket 推送说明见模块 12。

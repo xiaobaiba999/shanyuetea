@@ -1,0 +1,107 @@
+# =====================================================================
+# 山月茶咖 · 开发环境配置（application-dev.yml）
+# 每一项都写了"为什么"，照着改密码/appid 就能跑；字段含义见 com.shanyue.properties 下
+# 的 @ConfigurationProperties 类（IDEA 里按 Ctrl 点过去看字段注释）。
+# =====================================================================
+
+spring:
+  datasource:
+    # JDBC 驱动类名：cj 是 MySQL 8.x 新驱动的包名（8.0 起必须带 .cj，老驱动是 com.mysql.jdbc.Driver）
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    # 连接地址：
+    #   localhost:3306/shanyue → 本机 MySQL 的 shanyue 库（没有就先执行 README 里的建库语句）
+    #   serverTimezone=Asia/Shanghai → 指定时区！不写的话驱动用机器默认时区，
+    #     常见坑：Windows GMT+8 与 MySQL 时区不一致导致时间差 8 小时 / 直接报
+    #     "The server time zone value ..." 异常
+    #   characterEncoding=utf8 → 中文不乱码
+    #   useSSL=false → 本地开发不建 SSL 连接（关掉省事，也避免驱动打警告）
+    #   allowPublicKeyRetrieval=true → MySQL 8 caching_sha2_password 认证需要，
+    #     不加会报 "Public Key Retrieval is not allowed"
+    url: jdbc:mysql://localhost:3306/shanyue?serverTimezone=Asia/Shanghai&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true
+    # 数据库账号
+    username: root
+    # ⭐改成你自己的 MySQL 密码（这里默认 root，连不上 90% 是密码不对）
+    password: root
+
+  # Redis（店铺营业状态 / C 端菜单缓存 / 自取订单取餐号按天自增都用它）
+  redis:
+    # 本机 Redis；远程/容器部署改成对应 IP
+    host: localhost
+    # Redis 默认端口
+    port: 6379
+    # 本地没设密码就留空（'' 表示空字符串）；服务器上设了 requirepass 就填密码
+    password: ''
+    # 使用 0 号库（Redis 默认有 0~15 共 16 个库，课程/骨架统一用 0）
+    database: 0
+
+  # 文件上传限制：饮品图片一般几 MB，10MB 够用；
+  # 不配置时 Spring Boot 默认 1MB，上传大图会直接报 MaxUploadSizeExceededException
+  servlet:
+    multipart:
+      max-file-size: 10MB
+
+# ---------------------------------------------------------------------
+# MyBatis 配置
+# ---------------------------------------------------------------------
+mybatis:
+  # XML 映射文件位置：resources/mapper/ 下所有 .xml
+  # 本工程 12 个 Mapper 的全部 SQL 都在这些 XML 里（接口零 SQL，课程 XML 章节同款形态）
+  mapper-locations: classpath:mapper/*.xml
+  # 实体类别名扫描包：XML 里 resultType 可以直接写 Category，不用写全限定名
+  # 注意：实体在 shanyue-pojo 模块的 com.shanyue.entity 包（VO 不在扫描范围，XML 里要写全限定名）
+  type-aliases-package: com.shanyue.entity
+  configuration:
+    # 驼峰映射：数据库列 create_time ↔ 实体字段 createTime 自动对应，
+    # 这就是"实体字段与建表列一一对应"的关键开关（关掉就得在 XML 里写 resultMap）
+    map-underscore-to-camel-case: true
+    # 把 SQL 语句和参数打印到控制台（开发期排错神器；上生产注释掉，影响性能且泄露 SQL）
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+# ---------------------------------------------------------------------
+# 日志级别：com.shanyue 包下 debug 起打印，能看到拦截器/切面里 log.info 的业务日志
+# （log.debug 需要 debug 级别才会输出；root 默认 info）
+# ---------------------------------------------------------------------
+logging:
+  level:
+    com:
+      shanyue: debug
+
+# ---------------------------------------------------------------------
+# 山月业务配置（对应 com.shanyue.properties 里的三个 @ConfigurationProperties 类）
+# ---------------------------------------------------------------------
+shanyue:
+  jwt:
+    # 管理端 JWT 签名密钥：随便一串够长的字符即可，但【不要提交到公开仓库】。
+    # 密钥泄露 = 任何人可伪造 token 冒充任意员工（JwtUtil.createJWT 用它签名）
+    admin-secret-key: change-me-admin-jwt-secret
+    # 管理端令牌有效期：7200000ms = 2 小时（登录一次管 2 小时，过期需重新登录）
+    admin-ttl: 7200000
+    # 管理端令牌的请求头名：前端每个 /admin/** 请求都要带 header「token: <登录返回的令牌>」
+    admin-token-name: token
+    # C 端用户 JWT 签名密钥：与管理端用不同的串（两端令牌不能混用的第一道保险）
+    user-secret-key: change-me-user-jwt-secret
+    # C 端令牌有效期：259200000ms = 3 天（点单场景希望用户少登录几次）
+    user-ttl: 259200000
+    # C 端令牌的请求头名（同为 token；两套拦截器各拦各的路径 /admin/** 与 /user/**）
+    user-token-name: token
+  wechat:
+    # 小程序 appid / secret：微信公众平台（mp.weixin.qq.com）→ 管理 → 开发管理 →
+    # 开发设置 里查看；AppSecret 只在「生成」时显示一次，忘了就重置一个。
+    # ⭐ 真实登录要跑通，下面两个值必须填对，并且：
+    #   ① 与微信开发者工具里项目登录的 AppID 一致（三方一致：公众平台/工具/yml，
+    #      不一致微信返回 40013 invalid appid）；
+    #   ② 公众号后台「开发设置 → IP 白名单」加进你本机的公网出口 IP
+    #      （报 40164 就是 IP 不在白名单）；
+    #   ③ code 是一次性凭证（5 分钟过期），报 40029 就重新 wx.login 拿新 code。
+    # （secret 是机密，只能存服务端，泄露等于把小程序送人）
+    appid: 你的小程序appid
+    secret: 你的secret
+  # ⚠ 写法规范：key 用中划线小写（local-storage），不能用驼峰 localStorage——
+  # @ConfigurationProperties 的 prefix 是 shanyue.local-storage，驼峰会直接启动报错
+  # （Invalid characters: 'S'）；yml 端虽然松散绑定两种都能认，统一中划线最稳
+  local-storage:
+    # 本地图片存储目录（替代阿里云 OSS）：CommonController.upload 把文件写到这里，
+    # WebMvcConfiguration 把 /upload/** 映射到该目录，浏览器可直接访问图片。
+    # Windows 用 D:/shanyue/upload；Mac/Linux 换成如 /Users/你的用户名/shanyue/upload，
+    # 目录不存在时上传代码里要能自动创建（File.mkdirs）
+    path: D:/shanyue/upload

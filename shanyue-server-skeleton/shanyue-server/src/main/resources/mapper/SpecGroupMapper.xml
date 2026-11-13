@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<!--
+  【本文件知识点：规格组 Mapper（山月 v2.0 新表 spec_group，课程没有的表）】
+  规格模型：drink(饮品) 1 → N spec_group(规格组：杯型/温度/糖度) 1 → N spec_option(选项，含加价)。
+  1. useGeneratedKeys="true" keyProperty="id"：自增 id 回填 specGroup.id——
+     等价于注解版的 @Options(useGeneratedKeys = true, keyProperty = "id")，
+     saveWithSpec 插完规格组立刻拿 id 去插选项。
+  2. 新表的 SQL 也统一放 XML（接口零 SQL），与本工程其它 Mapper 保持同一形态。
+-->
+<mapper namespace="com.shanyue.mapper.SpecGroupMapper">
+
+    <!-- 新增规格组（回填自增 id，供下一步插选项用） -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        insert into spec_group (drink_id, name, sort) values (#{drinkId}, #{name}, #{sort})
+    </insert>
+
+    <!-- 查询某饮品的全部规格组（规格弹窗树第一层，按 sort 升序） -->
+    <select id="getByDrinkId" resultType="com.shanyue.entity.SpecGroup">
+        select * from spec_group where drink_id = #{drinkId} order by sort
+    </select>
+
+    <!-- 删除某饮品的全部规格组（更新饮品"先删后插"的一半；选项由 SpecOptionMapper.deleteByDrinkId 联表删） -->
+    <delete id="deleteByDrinkId">
+        delete from spec_group where drink_id = #{drinkId}
+    </delete>
+</mapper>

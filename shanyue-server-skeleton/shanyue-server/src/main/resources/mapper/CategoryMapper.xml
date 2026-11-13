@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<!--
+  【本文件知识点：MyBatis XML 映射器（对照课程 CategoryMapper.xml 改包名而来）】
+  1. namespace 必须与 Mapper 接口全限定名一致（com.shanyue.mapper.CategoryMapper），
+     MyBatis 靠 "namespace + 语句 id" 找到接口方法对应的 SQL。
+  2. 本工程所有 Mapper 的 SQL 都集中在 resources/mapper/ 下：
+     动态 SQL（<if>/<where>/<set>）与简单 SQL（insert/deleteById 等）都写在这里，
+     接口里只留方法声明——这就是课程 XML 章节的最终形态。
+  3. <if test="...">：条件为真才拼进 SQL，实现"参数可传可不传"的组合查询；
+     <where>：自动处理"第一个 and"的拼接与全空时去掉 where 关键字。
+  4. resultType 用了别名机制：type-aliases-package= com.shanyue.entity 后，
+     写 Category 等价于写 com.shanyue.entity.Category（本文件统一写全限定名，两种写法都行）。
+  5. insert/deleteById 是简单 SQL，也统一放 XML（接口零 SQL）；
+     insert 对应接口方法上的 @AutoFill(INSERT) 是切面标记（不是 SQL）：
+     公共字段在执行前已被 AutoFillAspect 填进参数实体，这里直接 #{createTime} 取用即可。
+-->
+<mapper namespace="com.shanyue.mapper.CategoryMapper">
+
+    <!-- 更新分类（管理端 PUT /admin/category）：
+         set 标签自动处理末尾多余的逗号；只更新传了的字段（动态更新） -->
+    <update id="update" parameterType="com.shanyue.entity.Category">
+        update category
+        <set>
+            <if test="name != null">
+                name = #{name},
+            </if>
+            <if test="type != null">
+                type = #{type},
+            </if>
+            <if test="sort != null">
+                sort = #{sort},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="updateUser != null">
+                update_user = #{updateUser},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!-- 分页查询分类（管理端 GET /admin/category/page，配合 PageHelper.startPage 使用）：
+         name 模糊匹配（concat('%',#{name},'%') 防注入，比 '%${name}%' 安全）
+         + type 精确筛选 + 按 sort 倒序排（sort 值大的排前面，管理端可拖动排序） -->
+    <select id="page" resultType="com.shanyue.entity.Category">
+        select * from category
+        <where>
+            <if test="name != null and name != ''">
+                and name like concat('%',#{name},'%')
+            </if>
+            <if test="type != null">
+                and type = #{type}
+            </if>
+        </where>
+        order by sort desc
+    </select>
+
+    <!-- 按类型查分类（C 端菜单页/管理端下拉框）：type=1 饮品分类，type=2 套餐分类 -->
+    <select id="getByCategoryType" resultType="com.shanyue.entity.Category">
+        select * from category
+        <where>
+            <if test="type != null">
+                and type = #{type}
+            </if>
+        </where>
+        order by sort desc
+    </select>
+
+    <!-- 根据类型查分类（管理端下拉框）：type=1 饮品分类，type=2 套餐分类，按 sort 倒序 -->
+    <select id="getByType" resultType="com.shanyue.entity.Category">
+        select * from category where type = #{type} order by sort desc
+    </select>
+
+    <!-- 新增分类（公共字段 create_time/update_time/create_user/update_user 由切面填好） -->
+    <insert id="insert">
+        insert into category (type, name, sort, status, create_time, update_time, create_user, update_user)
+        values
+        (#{type}, #{name}, #{sort}, #{status}, #{createTime}, #{updateTime}, #{createUser}, #{updateUser})
+    </insert>
+
+    <!-- 删除分类 -->
+    <delete id="deleteById">
+        delete from category where id = #{id}
+    </delete>
+</mapper>

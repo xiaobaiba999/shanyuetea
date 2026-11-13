@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<!--
+  【本文件知识点：购物车全部 SQL（接口零注解版）】
+  1. namespace = 接口全限定名；语句 id = 接口方法名，MyBatis 按这两个对上号。
+  2. list() 的关键点：spec_selected 要做"等于 / is null"双分支——
+     因为 SQL 里 spec_selected = NULL 永远不成立（NULL 用 is 判断），
+     而"无规格商品"这行的 spec_selected 存的就是 NULL。
+  3. <foreach>：collection 对应 @Param 起的名字，item 是循环变量，
+     separator=',' 在每行之间插逗号（最后一行后面不插）。
+-->
+<mapper namespace="com.shanyue.mapper.ShoppingCartMapper">
+
+    <!-- 查询购物车（动态条件，任意组合）：
+         userId 必传（Service 端从 BaseContext 取出放进实体）；
+         drinkId/setmealId 二选一；specSelected 传了就精确匹配，没传就只匹配"无规格"行 -->
+    <select id="list" resultType="com.shanyue.entity.ShoppingCart">
+        select * from shopping_cart
+        <where>
+            <if test="userId != null">
+                and user_id = #{userId}
+            </if>
+            <if test="drinkId != null">
+                and drink_id = #{drinkId}
+            </if>
+            <if test="setmealId != null">
+                and setmeal_id = #{setmealId}
+            </if>
+            <if test="specSelected != null">
+                and spec_selected = #{specSelected}
+            </if>
+            <if test="specSelected == null">
+                and spec_selected is null
+            </if>
+        </where>
+        order by create_time desc
+    </select>
+
+    <!-- 新增购物车（单条）：名称/图片/单价由服务端算好存快照，不信前端金额 -->
+    <insert id="insert">
+        insert into shopping_cart (name, image, user_id, drink_id, setmeal_id, drink_flavor, spec_selected, number, amount, create_time)
+        values
+        (#{name}, #{image}, #{userId}, #{drinkId}, #{setmealId}, #{drinkFlavor}, #{specSelected}, #{number}, #{amount}, #{createTime})
+    </insert>
+
+    <!-- 批量新增购物车（"再来一单"：把订单明细逐条转回购物车行） -->
+    <insert id="insertBatch">
+        insert into shopping_cart (name, image, user_id, drink_id, setmeal_id, drink_flavor, spec_selected, number, amount, create_time)
+        values
+        <foreach collection="shoppingCartList" item="sc" separator=",">
+            (#{sc.name}, #{sc.image}, #{sc.userId}, #{sc.drinkId}, #{sc.setmealId}, #{sc.drinkFlavor}, #{sc.specSelected}, #{sc.number}, #{sc.amount}, #{sc.createTime})
+        </foreach>
+    </insert>
+
+    <!-- 修改数量：add/sub 先 list 拿到行，number ±1 后整值更新 -->
+    <update id="updateNumberById" parameterType="com.shanyue.entity.ShoppingCart">
+        update shopping_cart set number = #{number} where id = #{id}
+    </update>
+
+    <!-- 清空当前用户购物车（下单成功后调用） -->
+    <delete id="deleteByUserId">
+        delete from shopping_cart where user_id = #{userId}
+    </delete>
+
+    <!-- 删除购物车中某一行（数量减到 0 时按行主键删，避免误伤其它规格） -->
+    <delete id="deleteById">
+        delete from shopping_cart where id = #{id}
+    </delete>
+
+    <!-- 查询某用户全部购物车行（不按规格过滤；下单重算金额 / 购物车页展示用） -->
+    <select id="listByUserId" resultType="com.shanyue.entity.ShoppingCart">
+        select * from shopping_cart where user_id = #{userId} order by create_time asc
+    </select>
+</mapper>

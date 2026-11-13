@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!--
+        【本文件知识点：Maven 聚合工程】
+        1. packaging 为 pom 的工程叫"父工程/聚合工程"，它自己不写代码，只负责两件事：
+           - 聚合：下面 <modules> 声明的子模块会被一起构建（在父工程目录执行 mvn package 即可全量打包）
+           - 继承：子模块天然继承这里的 <properties> 与 <dependencyManagement>
+        2. <parent> 指向 spring-boot-starter-parent：
+           - 统一管理 Spring Boot 全家桶依赖的版本号（我们不用再写 version）
+           - 继承了大量常用插件配置（如资源过滤、编译插件）
+        3. <dependencyManagement> 只"声明版本"不"真正引入依赖"：
+           子模块里写 <dependency> 时不写 <version>，版本统一由这里决定 —— 多模块工程版本一致性的关键。
+        4. 与你自己的工程对照：结构完全同构（common / pojo / server 三模块），
+           区别只在 groupId / artifactId 改成了 shanyue，依赖版本对齐课程教学版（Spring Boot 2.7.6）。
+    -->
+    <parent>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <groupId>org.springframework.boot</groupId>
+        <version>2.7.6</version>
+    </parent>
+
+    <groupId>com.shanyue</groupId>
+    <artifactId>shanyue</artifactId>
+    <packaging>pom</packaging>
+    <version>1.0-SNAPSHOT</version>
+    <modules>
+        <module>shanyue-common</module>
+        <module>shanyue-pojo</module>
+        <module>shanyue-server</module>
+    </modules>
+
+    <properties>
+        <!-- Java 17：与你的工程一致 -->
+        <java.version>17</java.version>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- 版本集中管理：改版本只改这里 -->
+        <mybatis.spring>2.3.1</mybatis.spring>
+        <pagehelper>1.4.6</pagehelper>
+        <fastjson>1.2.83</fastjson>
+        <jjwt>0.9.1</jjwt>
+        <jaxb>2.3.1</jaxb>
+        <mysql.version>8.0.30</mysql.version>
+        <!--
+            接口文档：你的工程是 Spring Boot 4 + springdoc 3.1.1；
+            本骨架跟课程用 Spring Boot 2.7.6，配套的 springdoc 版本是 1.x（1.7.0 是 1.x 最后一版）。
+            好消息：@Tag / @Operation / @Schema 等注解的包名（io.swagger.v3.oas.annotations.*）完全一致，
+            将来升级 Spring Boot 3/4 时，Controller 里的注解一行都不用改，只换依赖坐标与 GroupedOpenApi 的 import。
+        -->
+        <springdoc>1.7.0</springdoc>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- MyBatis 官方提供的 Spring Boot 整合包（含自动配置、@Mapper 扫描） -->
+            <dependency>
+                <groupId>org.mybatis.spring.boot</groupId>
+                <artifactId>mybatis-spring-boot-starter</artifactId>
+                <version>${mybatis.spring}</version>
+            </dependency>
+
+            <!-- PageHelper：物理分页插件，PageHelper.startPage(页码, 每页条数) 后紧跟的第一条查询自动拼 limit -->
+            <dependency>
+                <groupId>com.github.pagehelper</groupId>
+                <artifactId>pagehelper-spring-boot-starter</artifactId>
+                <version>${pagehelper}</version>
+            </dependency>
+
+            <!-- fastjson（课程同款 1.x）：主要用于规格快照 specSelected 的 JSON 序列化/解析 -->
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>fastjson</artifactId>
+                <version>${fastjson}</version>
+            </dependency>
+
+            <!--
+                JJWT：生成与解析 JWT 令牌（登录凭证）。
+                0.9.1 是课程使用的版本，API 形如 Jwts.builder().setClaims(...) / Jwts.parser().setSigningKey(...)
+            -->
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt</artifactId>
+                <version>${jjwt}</version>
+            </dependency>
+
+            <!--
+                【JDK17 为什么需要 jaxb-api？】
+                jjwt 0.9.1 内部用到了 javax.xml.bind.DatatypeConverter 做 Base64 编解码。
+                JAXB（javax.xml.bind）从 JDK 8 被标记废弃，JDK 11 起从 JDK 中移除，
+                所以 JDK 17 运行 jjwt 0.9.1 必须手动补上这个依赖，否则启动/登录时抛 ClassNotFoundException。
+                （你的工程用 jjwt 0.12.6 新版就没有这个问题——新版不再依赖 JAXB）
+            -->
+            <dependency>
+                <groupId>javax.xml.bind</groupId>
+                <artifactId>jaxb-api</artifactId>
+                <version>${jaxb}</version>
+            </dependency>
+
+            <!-- MySQL 驱动：server 模块以 runtime 引入 -->
+            <dependency>
+                <groupId>mysql</groupId>
+                <artifactId>mysql-connector-java</artifactId>
+                <version>${mysql.version}</version>
+            </dependency>
+
+            <!--
+                接口文档（springdoc，Boot 2.7 对应 1.7.0）：
+                启动后访问 http://localhost:8080/swagger-ui/index.html 查看在线接口文档。
+                本骨架与你的工程一样"不加 knife4j"，保持和课程一致的最小依赖。
+            -->
+            <dependency>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-ui</artifactId>
+                <version>${springdoc}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+</project>

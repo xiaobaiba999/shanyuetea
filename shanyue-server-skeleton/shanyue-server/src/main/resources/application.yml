@@ -1,0 +1,24 @@
+# =====================================================================
+# 山月茶咖 · 主配置文件（application.yml）
+# ---------------------------------------------------------------------
+# 【为什么拆成两个文件？】
+#   application.yml      → 放"所有环境都不变"的配置（端口、应用名、激活哪个 profile）
+#   application-dev.yml  → 放"因环境而异"的配置（数据库地址、密码、密钥……）
+#   spring.profiles.active: dev 表示再加载 application-dev.yml，
+#   两份配置合并后生效；同名 key 时 dev（后加载的 profile 文件）优先。
+#   将来上线可以再加 application-prod.yml，只需把 active 改成 prod。
+# =====================================================================
+
+server:
+  # 服务端口 8080：前端（shanyue-vue3 的 vite proxy / 小程序 baseUrl）与接口文档
+  # 默认都按 http://localhost:8080 来找后端，改端口的话前端 proxy 也要同步改
+  port: 8080
+
+spring:
+  # 应用名称：注册中心/日志/监控里用来标识应用（单体项目主要用于显示）
+  application:
+    name: shanyue-server
+
+  # 激活 dev 环境配置 → 会额外加载 application-dev.yml
+  profiles:
+    active: dev

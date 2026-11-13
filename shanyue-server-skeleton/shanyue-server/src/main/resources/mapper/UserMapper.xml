@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<!--
+  【本文件知识点：C 端用户 Mapper（对照课程 UserMapper）】
+  user 表是微信小程序用户，核心字段 openid（唯一索引 idx_openid）。
+  登录流程：jscode2session 换 openid → getByOpenId 查库 → 不存在则 insert 注册 → 生成 JWT。
+  重点：insert 的 useGeneratedKeys="true" keyProperty="id"——
+  自增 id 回填 user.id，Service 拿它写进 JWT claims；少了它 user.getId() 永远是 null，
+  令牌里没有 userId，后续所有 /user/** 接口的"获取当前用户"全挂。
+-->
+<mapper namespace="com.shanyue.mapper.UserMapper">
+
+    <!-- 根据 openid 查用户（判断"新用户还是老用户"，查不到返回 null） -->
+    <select id="getByOpenId" resultType="com.shanyue.entity.User">
+        select * from user where openid = #{openid}
+    </select>
+
+    <!-- 新增用户（注册）：useGeneratedKeys 回填自增 id 供 JWT 使用 -->
+    <!-- 注意列名是 nick_name（下划线，与 schema.sql 建表列一致），#{nickName} 才是实体属性名；
+         两者名字长得很像但角色不同：列名进 SQL，属性名取参数——写成 nickname 会报
+         Unknown column 'nickname' in 'field list' -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        insert into user (openid, nick_name, name, phone, sex, id_number, avatar, create_time)
+        values (#{openid}, #{nickName}, #{name}, #{phone}, #{sex}, #{idNumber}, #{avatar}, #{createTime})
+    </insert>
+
+    <!-- 根据 id 查用户（C 端"我的"资料页回显） -->
+    <select id="getById" resultType="com.shanyue.entity.User">
+        select * from user where id = #{userId}
+    </select>
+</mapper>

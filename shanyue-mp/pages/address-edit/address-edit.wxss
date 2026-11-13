@@ -1,0 +1,132 @@
+/* pages/address-edit/address-edit.wxss —— 表单样式（沿用品牌变量与卡片风格） */
+.page {
+  padding: 24rpx;
+  box-sizing: border-box;
+}
+
+.form-card {
+  padding: 8rpx 24rpx;
+}
+
+/* 字段行 */
+.field {
+  display: flex;
+  align-items: center;
+  padding: 26rpx 0;
+  border-bottom: 2rpx solid #F5F6F4;
+}
+.field:last-child {
+  border-bottom: none;
+}
+.field.col {
+  flex-direction: column;
+  align-items: stretch;
+}
+.field.row {
+  justify-content: space-between;
+}
+.field-left {
+  flex: 1;
+}
+
+.f-label {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #2B2B2B;
+  width: 150rpx;
+  flex: none;
+}
+.field.col .f-label {
+  width: auto;
+  margin-bottom: 16rpx;
+}
+.f-sub {
+  margin-top: 6rpx;
+  font-size: 22rpx;
+  color: #8A8A8A;
+}
+
+.f-input {
+  flex: 1;
+  font-size: 28rpx;
+}
+.f-textarea {
+  width: 100%;
+  height: 120rpx;
+  font-size: 26rpx;
+  background: #F7F8F6;
+  border-radius: 14rpx;
+  padding: 16rpx;
+  box-sizing: border-box;
+}
+.ph {
+  color: #B9BFB8;
+}
+
+/* 所在地区 picker 行（整行可点，右对齐显示省市区名 + 箭头） */
+.region-row {
+  justify-content: space-between;
+}
+.region-text {
+  flex: 1;
+  text-align: right;
+  margin-right: 10rpx;
+  font-size: 28rpx;
+  color: #2B2B2B;
+}
+.region-text.ph {
+  color: #B9BFB8;
+}
+.region-arrow {
+  flex: none;
+  color: #B9BFB8;
+  font-size: 34rpx;
+  line-height: 1;
+}
+
+/* chip 选择（与菜单规格弹层同风格） */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+}
+.chip {
+  border: 2rpx solid #E3E6E0;
+  border-radius: 12rpx;
+  padding: 12rpx 34rpx;
+  font-size: 26rpx;
+  margin: 0 16rpx 12rpx 0;
+  color: #4A4A4A;
+}
+.chip.on {
+  border-color: #2F5233;
+  background: #EAF1EB;
+  color: #2F5233;
+  font-weight: 600;
+}
+
+/* 保存按钮 */
+.save-btn {
+  margin-top: 40rpx;
+  background: #2F5233;
+  color: #fff;
+  border-radius: 48rpx;
+  text-align: center;
+  font-size: 30rpx;
+  padding: 24rpx 0;
+  box-shadow: 0 10rpx 24rpx rgba(47, 82, 51, 0.24);
+}
+.save-btn.disabled {
+  background: #C7CFC8;
+  box-shadow: none;
+}
+
+/* 删除按钮（编辑态） */
+.delete-btn {
+  margin-top: 24rpx;
+  border: 2rpx solid #D9534F;
+  color: #D9534F;
+  border-radius: 48rpx;
+  text-align: center;
+  font-size: 28rpx;
+  padding: 20rpx 0;
+}

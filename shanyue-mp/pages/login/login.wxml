@@ -1,0 +1,26 @@
+<!-- pages/login/login.wxml —— 登录页（品牌视觉 + 微信一键登录） -->
+<view class="login-page">
+  <!-- 品牌区 -->
+  <view class="brand">
+    <view class="logo">
+      <view class="logo-inner">
+        <text class="logo-mountain">山</text>
+        <text class="logo-moon">月</text>
+      </view>
+    </view>
+    <view class="brand-name">山月茶咖</view>
+    <view class="brand-en">SHANYUE TEA &amp; COFFEE</view>
+    <view class="slogan">山月入杯，茶咖相宜</view>
+  </view>
+
+  <!-- 登录按钮区 -->
+  <view class="login-area safe-bottom">
+    <button class="login-btn" bindtap="onLogin" loading="{{loading}}" disabled="{{loading}}">
+      微信一键登录
+    </button>
+    <view class="tips">登录后即可点单 · 首次登录自动注册</view>
+  </view>
+
+  <!-- 门店信息 -->
+  <view class="shop-line">{{shopName}}</view>
+</view>

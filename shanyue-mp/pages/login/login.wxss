@@ -1,0 +1,97 @@
+/* pages/login/login.wxss —— 登录页品牌视觉 */
+.login-page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #2F5233 0%, #3C6442 46%, #F5F6F4 46.1%, #F5F6F4 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* 品牌区 */
+.brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 180rpx;
+}
+.logo {
+  width: 200rpx;
+  height: 200rpx;
+  border-radius: 50%;
+  background: #F7F4EC;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 12rpx 40rpx rgba(0, 0, 0, 0.18);
+}
+.logo-inner {
+  position: relative;
+  width: 140rpx;
+  height: 140rpx;
+}
+.logo-mountain {
+  position: absolute;
+  left: 6rpx;
+  bottom: 2rpx;
+  font-size: 88rpx;
+  font-weight: 700;
+  color: #2F5233;
+}
+.logo-moon {
+  position: absolute;
+  right: 2rpx;
+  top: -6rpx;
+  font-size: 52rpx;
+  color: #C89B5A;
+  font-weight: 600;
+}
+.brand-name {
+  margin-top: 36rpx;
+  font-size: 48rpx;
+  font-weight: 700;
+  color: #FFFFFF;
+  letter-spacing: 8rpx;
+}
+.brand-en {
+  margin-top: 10rpx;
+  font-size: 22rpx;
+  color: rgba(255, 255, 255, 0.75);
+  letter-spacing: 3rpx;
+}
+.slogan {
+  margin-top: 22rpx;
+  font-size: 28rpx;
+  color: #F0E4CE;
+  letter-spacing: 6rpx;
+}
+
+/* 登录按钮区 */
+.login-area {
+  margin-top: auto;
+  width: 100%;
+  padding: 0 60rpx 40rpx;
+  box-sizing: border-box;
+}
+.login-btn {
+  background: #2F5233;
+  color: #fff;
+  font-size: 32rpx;
+  border-radius: 48rpx;
+  line-height: 96rpx;
+  height: 96rpx;
+  box-shadow: 0 10rpx 24rpx rgba(47, 82, 51, 0.28);
+}
+.login-btn::after {
+  border: none;
+}
+.tips {
+  margin-top: 20rpx;
+  text-align: center;
+  font-size: 24rpx;
+  color: #9AA79C;
+}
+.shop-line {
+  padding: 0 0 30rpx;
+  font-size: 22rpx;
+  color: #9AA79C;
+}

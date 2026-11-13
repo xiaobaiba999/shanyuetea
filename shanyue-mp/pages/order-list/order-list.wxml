@@ -1,0 +1,71 @@
+<!-- pages/order-list/order-list.wxml —— 我的订单：状态 tab + 订单卡分页列表 -->
+<view class="page">
+  <!-- 顶部状态 tab（横向可滚动） -->
+  <scroll-view class="tabs" scroll-x enhanced show-scrollbar="{{false}}">
+    <view
+      wx:for="{{tabs}}"
+      wx:key="label"
+      class="tab {{tabIndex === index ? 'on' : ''}}"
+      bindtap="onTabTap"
+      data-index="{{index}}"
+    >{{item.label}}</view>
+  </scroll-view>
+
+  <!-- 订单卡列表 -->
+  <view class="list">
+    <view
+      wx:for="{{records}}"
+      wx:key="id"
+      class="card order-card"
+      bindtap="onCardTap"
+      data-id="{{item.id}}"
+    >
+      <!-- 行1：时间 + 状态（彩色文案） -->
+      <view class="oc-head">
+        <text class="oc-time">{{item.timeText}}</text>
+        <text class="oc-status" style="color:{{item.statusColor}}">{{item.statusText}}</text>
+      </view>
+
+      <!-- 行2：品项摘要 -->
+      <view class="oc-summary">{{item.summary}}</view>
+
+      <!-- 行3：自取取餐号 / 外送收货摘要 -->
+      <view class="oc-meta">
+        <block wx:if="{{item.isPickup}}">
+          <text class="mode-tag">自取</text>
+          <text class="pickup-no">取餐号 {{item.pickupNumber}}</text>
+        </block>
+        <block wx:else>
+          <text class="mode-tag delivery">外送</text>
+          <text class="addr">{{item.addrText}}</text>
+        </block>
+      </view>
+
+      <!-- 行4：金额 + 未支付徽标 + 操作按钮 -->
+      <view class="oc-bottom">
+        <view class="oc-amount">
+          <text class="yen">¥</text><text class="num">{{item.amountText}}</text>
+          <text wx:if="{{item.unpaid}}" class="unpaid-badge">待支付</text>
+        </view>
+        <view class="oc-actions">
+          <view wx:if="{{item.canPay}}" class="mini-btn primary" catchtap="onPay" data-id="{{item.id}}" data-number="{{item.number}}">去支付</view>
+          <block wx:if="{{item.canAct}}">
+            <view class="mini-btn ghost" catchtap="onRemind" data-id="{{item.id}}">催单</view>
+            <view class="mini-btn ghost" catchtap="onCancel" data-id="{{item.id}}">取消</view>
+          </block>
+        </view>
+      </view>
+    </view>
+
+    <!-- 空态（文字插画） -->
+    <view wx:if="{{!records.length && !loading}}" class="empty">
+      <view class="empty-icon">🍵</view>
+      <view class="empty-text">这里还没有订单</view>
+      <view class="empty-sub">去点一杯山月茶咖，好喝的正在等你</view>
+    </view>
+
+    <!-- 底部加载状态 -->
+    <view wx:if="{{records.length && loading}}" class="load-more">加载中…</view>
+    <view wx:if="{{records.length && !hasMore && !loading}}" class="load-more">— 没有更多了 —</view>
+  </view>
+</view>

@@ -1,0 +1,9 @@
+node_modules
+dist
+*.local
+.DS_Store
+npm-debug.log*
+
+# 自动生成（unplugin）
+src/auto-imports.d.ts
+src/components.d.ts

@@ -1,0 +1,72 @@
+<!-- pages/me/me.wxml —— 我的：用户卡 + 积分 + 菜单列表 + 关于门店弹层 + 退出登录 -->
+<view class="page safe-bottom">
+  <!-- 用户卡 -->
+  <view class="user-card">
+    <image
+      wx:if="{{avatarUrl}}"
+      class="avatar"
+      src="{{avatarUrl}}"
+      mode="aspectFill"
+    />
+    <view wx:else class="avatar default">
+      <text class="avatar-char">山</text>
+    </view>
+    <view class="user-info">
+      <view class="nick">{{nickName}}</view>
+      <view class="uid">ID：{{userId}}</view>
+    </view>
+  </view>
+
+  <!-- 积分卡 -->
+  <view class="card points-card">
+    <view class="points-left">
+      <view class="points-num">{{pointsText}}</view>
+      <view class="points-label">山月积分</view>
+    </view>
+    <view class="points-tip">下单每 1 元得 1 积分 · 演示口径，仅作展示</view>
+  </view>
+
+  <!-- 菜单列表 -->
+  <view class="card menu-card">
+    <view class="menu-item" bindtap="onGoAddress">
+      <text class="mi-icon">📍</text>
+      <text class="mi-text">我的地址</text>
+      <text class="mi-arrow">›</text>
+    </view>
+    <view class="menu-item" bindtap="onGoOrders">
+      <text class="mi-icon">🧾</text>
+      <text class="mi-text">我的订单</text>
+      <text class="mi-arrow">›</text>
+    </view>
+    <view class="menu-item" bindtap="onOpenAbout">
+      <text class="mi-icon">🍵</text>
+      <text class="mi-text">关于门店</text>
+      <text class="mi-arrow">›</text>
+    </view>
+    <view wx:if="{{isMock}}" class="menu-item" bindtap="onResetDemo">
+      <text class="mi-icon">♻️</text>
+      <text class="mi-text">重置演示数据</text>
+      <text class="mi-arrow">›</text>
+    </view>
+  </view>
+
+  <!-- 退出登录 -->
+  <view class="logout-btn" bindtap="onLogout">退出登录</view>
+
+  <!-- 关于门店弹层（数据来自 app.globalData.shop，与确认订单页同源） -->
+  <view wx:if="{{aboutVisible}}" class="popup-mask" bindtap="onCloseAbout">
+    <view class="about-sheet safe-bottom" catchtap="noop">
+      <view class="about-head">
+        <view class="about-name">{{shop.name}}</view>
+        <view class="about-close" bindtap="onCloseAbout">✕</view>
+      </view>
+      <view class="about-slogan">{{shop.slogan}}</view>
+      <view class="about-row"><text class="k">营业时间</text><text>{{shop.businessHours}}</text></view>
+      <view class="about-row"><text class="k">门店地址</text><text class="v">{{shop.address}}</text></view>
+      <view class="about-row" bindtap="onCallShop">
+        <text class="k">联系电话</text><text class="phone">{{shop.phone}} 📞</text>
+      </view>
+      <view class="about-tip">点击电话可一键拨打</view>
+    </view>
+  </view>
+</view>

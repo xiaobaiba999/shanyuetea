@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<!-- 规格选项 Mapper（v2.0 新表）：全部 SQL 集中于此（批量 <foreach> + 简单查询/删除） -->
+<mapper namespace="com.shanyue.mapper.SpecOptionMapper">
+
+    <!-- 批量新增规格选项：保存饮品时规格树"先删后插"的插 -->
+    <insert id="insertBatch">
+        insert into spec_option (group_id, name, price_delta, sort)
+        values
+        <foreach collection="options" item="o" separator=",">
+            (#{o.groupId}, #{o.name}, #{o.priceDelta}, #{o.sort})
+        </foreach>
+    </insert>
+
+    <!-- 查询某规格组下的全部选项（树第二层，按 sort 升序） -->
+    <select id="getByGroupId" resultType="com.shanyue.entity.SpecOption">
+        select * from spec_option where group_id = #{groupId} order by sort
+    </select>
+
+    <!-- 查询某饮品的全部选项（联规格组表按组排序；购物车算价前用它校验 optionId 合法性，
+         防止越权传别人家饮品的选项 id） -->
+    <select id="getByDrinkId" resultType="com.shanyue.entity.SpecOption">
+        select o.* from spec_option o join spec_group g on o.group_id = g.id
+        where g.drink_id = #{drinkId} order by g.sort, o.sort
+    </select>
+
+    <!-- 按 id 集合批量查选项（购物车按 optionId 集合取加价） -->
+    <select id="getByIds" resultType="com.shanyue.entity.SpecOption">
+        select * from spec_option where id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
+    <!-- 删除某饮品的全部选项（MySQL 多表删除：delete 别名 from join where）
+         更新饮品时与规格组的 deleteByDrinkId 配套，实现规格树整体"先删后插" -->
+    <delete id="deleteByDrinkId">
+        delete o from spec_option o join spec_group g on o.group_id = g.id where g.drink_id = #{drinkId}
+    </delete>
+</mapper>

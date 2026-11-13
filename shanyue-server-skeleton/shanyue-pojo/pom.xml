@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.shanyue</groupId>
+        <artifactId>shanyue</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>shanyue-pojo</artifactId>
+    <description>数据模型模块：entity（表实体）/ dto（接收前端参数）/ vo（返回前端视图）</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
+
+        <!-- @JsonFormat 等注解来自 jackson-annotations（版本由 Spring Boot 父工程管理） -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+        </dependency>
+
+        <!--
+            接口文档注解（@Schema / @Tag / @Operation 属于 io.swagger.v3.oas.annotations），
+            随 springdoc 提供；与你工程里 springdoc 3.x 的注解包名完全一致，升级零成本。
+        -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-ui</artifactId>
+        </dependency>
+    </dependencies>
+</project>

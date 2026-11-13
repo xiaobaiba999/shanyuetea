@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<!-- 员工 Mapper：全部 SQL 集中于此（page/update 动态 + getByUsername/insert/getById 简单，对照课程 EmployeeMapper.xml） -->
+<mapper namespace="com.shanyue.mapper.EmployeeMapper">
+
+    <!-- 根据用户名查员工（登录用；username 有唯一索引，查不到返回 null） -->
+    <select id="getByUsername" resultType="com.shanyue.entity.Employee">
+        select * from employee where username = #{username}
+    </select>
+
+    <!-- 新增员工（公共字段 create_time/update_time/create_user/update_user 由切面填好；
+         无需回填自增 id 的场景可不写 useGeneratedKeys） -->
+    <insert id="insert">
+        insert into employee (name, username, password, phone, sex, id_number, status,
+                              create_time, update_time, create_user, update_user)
+        values
+        (#{name}, #{username}, #{password}, #{phone}, #{sex}, #{idNumber}, #{status},
+         #{createTime}, #{updateTime}, #{createUser}, #{updateUser})
+    </insert>
+
+    <!-- 分页查询员工（name 可选模糊；配合 PageHelper.startPage 使用，PageHelper 自动拼 limit） -->
+    <select id="page" resultType="com.shanyue.entity.Employee">
+        select * from employee
+        <where>
+            <if test="name != null and name != ''">
+                and name like concat('%',#{name},'%')
+            </if>
+        </where>
+        order by update_time desc
+    </select>
+
+    <!-- 更新员工（动态 set：只更新传了的字段；
+         startOrStop 只装 status+id，update 装全部资料——共用本语句） -->
+    <update id="update" parameterType="com.shanyue.entity.Employee">
+        update employee
+        <set>
+            <if test="name != null">
+                name = #{name},
+            </if>
+            <if test="username != null">
+                username = #{username},
+            </if>
+            <if test="password != null">
+                password = #{password},
+            </if>
+            <if test="phone != null">
+                phone = #{phone},
+            </if>
+            <if test="sex != null">
+                sex = #{sex},
+            </if>
+            <if test="idNumber != null">
+                id_number = #{idNumber},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="updateUser != null">
+                update_user = #{updateUser},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!-- 根据 id 查员工（编辑页回显） -->
+    <select id="getById" resultType="com.shanyue.entity.Employee">
+        select * from employee where id = #{id}
+    </select>
+</mapper>

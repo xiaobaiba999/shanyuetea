@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.shanyue</groupId>
+        <artifactId>shanyue</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>shanyue-common</artifactId>
+    <description>公共模块：常量 / 上下文 / 枚举 / 异常 / 全局异常处理器 / 配置属性 / 统一返回结果 / JWT 工具</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
+
+        <!--
+            引入 web starter 的原因：common 里放了统一返回 Result/PageResult 与全局异常处理器
+            （@RestControllerAdvice / @ExceptionHandler / HttpStatus 都属于 spring-web）。
+            server 模块依赖 common 后会传递获得，无需重复引入。
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- JWT 工具 JwtUtil 使用（0.9.1，配合 jaxb-api 才能在 JDK17 上运行，见父 pom 注释） -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+        </dependency>
+
+        <!--
+            配置属性提示：@ConfigurationProperties 类（JwtProperties 等）编译时生成元数据，
+            IDEA 编辑 application.yml 时会有配置项自动补全。optional=true 表示不向下传递。
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+    </dependencies>
+</project>

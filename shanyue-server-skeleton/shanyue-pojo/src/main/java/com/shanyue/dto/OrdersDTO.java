@@ -1,0 +1,60 @@
+package com.shanyue.dto;
+
+import com.shanyue.entity.OrderDetail;
+import lombok.Data;
+
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+
+/**
+ * 订单通用参数模型（课程同款保留，管理端订单模块实现时会用到）。
+ */
+@Data
+public class OrdersDTO implements Serializable {
+
+    private Long id;
+
+    /** 订单号 */
+    private String number;
+
+    /** 订单状态 1待付款 2待接单 3已接单 4派送中·待取餐 5已完成 6已取消 */
+    private Integer status;
+
+    /** 下单用户 id */
+    private Long userId;
+
+    /** 地址簿 id */
+    private Long addressBookId;
+
+    /** 下单时间 */
+    private LocalDateTime orderTime;
+
+    /** 结账时间 */
+    private LocalDateTime checkoutTime;
+
+    /** 支付方式 1 微信，2 支付宝 */
+    private Integer payMethod;
+
+    /** 实收金额 */
+    private BigDecimal amount;
+
+    /** 备注 */
+    private String remark;
+
+    /** 用户名 */
+    private String userName;
+
+    /** 手机号 */
+    private String phone;
+
+    /** 地址 */
+    private String address;
+
+    /** 收货人 */
+    private String consignee;
+
+    /** 订单明细 */
+    private List<OrderDetail> orderDetails;
+}

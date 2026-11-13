@@ -1,0 +1,93 @@
+<!-- pages/order-detail/order-detail.wxml —— 状态步骤条 + 取餐号/收货卡 + 明细/金额/信息 + 状态操作 -->
+<view class="page safe-bottom">
+  <view wx:if="{{loading}}" class="empty-tip">加载中…</view>
+  <view wx:elif="{{!order}}" class="empty-tip">订单不存在或已被删除</view>
+
+  <block wx:if="{{order}}">
+    <!-- 状态头卡（已取消转灰） -->
+    <view class="hero {{cancelled ? 'cancelled' : ''}}">
+      <view class="hero-status">{{statusText}}</view>
+      <view class="hero-mode">{{modeText}}{{cancelled ? ' · ' + cancelReason : ''}}</view>
+      <!-- 自取：取餐号大卡（等宽大字，到店出示） -->
+      <block wx:if="{{isPickup && !cancelled}}">
+        <view class="hero-pickup-label">取餐号</view>
+        <view class="hero-pickup">{{pickupNumber}}</view>
+        <view class="hero-pickup-tip">到店出示 · 叫号取餐</view>
+      </block>
+    </view>
+
+    <!-- 状态步骤条（已取消不展示） -->
+    <view wx:if="{{!cancelled}}" class="card steps-card">
+      <view class="steps">
+        <block wx:for="{{steps}}" wx:key="label">
+          <view class="step {{index < stepActive ? 'done' : ''}} {{index === stepActive ? 'active' : ''}}">
+            <view class="dot">{{index < stepActive ? '✓' : ''}}</view>
+            <view class="step-label">{{item.label}}</view>
+          </view>
+          <view wx:if="{{index < steps.length - 1}}" class="bar {{index < stepActive ? 'done' : ''}}"></view>
+        </block>
+      </view>
+    </view>
+
+    <!-- 外送：收货信息卡 -->
+    <view wx:if="{{!isPickup}}" class="card">
+      <view class="sec-title">收货信息</view>
+      <view class="info-row"><text class="k">收货人</text><text>{{consignee}}</text></view>
+      <view class="info-row"><text class="k">联系电话</text><text>{{phone}}</text></view>
+      <view class="info-row"><text class="k">收货地址</text><text class="v">{{addressText}}</text></view>
+    </view>
+
+    <!-- 品项明细（含规格快照解析） -->
+    <view class="card">
+      <view class="sec-title">品项明细</view>
+      <view wx:for="{{details}}" wx:key="id" class="goods-row">
+        <view class="g-info">
+          <view class="g-name">{{item.name}}</view>
+          <view wx:if="{{item.specText}}" class="g-spec">{{item.specText}}</view>
+        </view>
+        <view class="g-qty">×{{item.number}}</view>
+        <view class="g-subtotal">¥{{item.subtotalText}}</view>
+      </view>
+      <view wx:if="{{!details.length}}" class="empty-tip">暂无品项</view>
+    </view>
+
+    <!-- 金额明细 -->
+    <view class="card">
+      <view class="sec-title">金额明细</view>
+      <view class="amount-row"><text>商品小计</text><text>¥{{goodsTotalText}}</text></view>
+      <view wx:if="{{!isPickup}}" class="amount-row"><text>配送费</text><text>¥{{deliveryFeeText}}</text></view>
+      <view class="amount-row total">
+        <text>合计</text>
+        <view class="price"><text class="yen">¥</text><text class="num">{{amountText}}</text></view>
+      </view>
+    </view>
+
+    <!-- 订单信息 -->
+    <view class="card">
+      <view class="sec-title">订单信息</view>
+      <view class="info-row">
+        <text class="k">订单号</text>
+        <text class="v number">{{order.number}}</text>
+        <text class="copy-btn" catchtap="onCopyNumber">复制</text>
+      </view>
+      <view class="info-row"><text class="k">下单时间</text><text>{{timeText}}</text></view>
+      <view class="info-row">
+        <text class="k">支付状态</text>
+        <text class="{{order.payStatus === 1 ? 'paid' : 'unpaid-text'}}">{{payText}}</text>
+      </view>
+      <view class="info-row"><text class="k">取餐方式</text><text>{{modeText}}</text></view>
+      <view wx:if="{{remark}}" class="info-row"><text class="k">备注</text><text class="v">{{remark}}</text></view>
+      <view wx:if="{{cancelled && order.cancelReason}}" class="info-row">
+        <text class="k">取消原因</text><text class="v">{{order.cancelReason}}</text>
+      </view>
+    </view>
+  </block>
+
+  <!-- 底部操作条（按状态出没） -->
+  <view wx:if="{{order && (canPay || canRemind || canCancel || canRepeat)}}" class="action-bar safe-bottom">
+    <view wx:if="{{canCancel}}" class="act-btn ghost" bindtap="onCancel">取消订单</view>
+    <view wx:if="{{canRemind}}" class="act-btn primary" bindtap="onRemind">催单</view>
+    <view wx:if="{{canPay}}" class="act-btn pay" bindtap="onPay">去支付</view>
+    <view wx:if="{{canRepeat}}" class="act-btn primary" bindtap="onRepeat">再来一单</view>
+  </view>
+</view>

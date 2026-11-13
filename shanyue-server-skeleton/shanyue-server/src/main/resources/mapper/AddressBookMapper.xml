@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<!-- 地址簿 Mapper：全部 SQL 集中于此（list/update 动态 + insert/getById/deleteById 简单，对照课程 AddressBookMapper.xml） -->
+<mapper namespace="com.shanyue.mapper.AddressBookMapper">
+
+    <!-- 新增地址（userId 由 Service 端从 BaseContext 塞进实体，防止替别人存地址） -->
+    <insert id="insert">
+        insert into address_book (user_id, consignee, sex, phone, province_code, province_name,
+                                  city_code, city_name, district_code, district_name, detail, label, is_default)
+        values
+        (#{userId}, #{consignee}, #{sex}, #{phone}, #{provinceCode}, #{provinceName},
+         #{cityCode}, #{cityName}, #{districtCode}, #{districtName}, #{detail}, #{label}, #{isDefault})
+    </insert>
+
+    <!-- 条件查询地址（userId 必传；isDefault=1 时即"查默认地址"） -->
+    <select id="list" resultType="com.shanyue.entity.AddressBook">
+        select * from address_book
+        <where>
+            <if test="userId != null">
+                and user_id = #{userId}
+            </if>
+            <if test="isDefault != null">
+                and is_default = #{isDefault}
+            </if>
+            <if test="phone != null">
+                and phone = #{phone}
+            </if>
+        </where>
+    </select>
+
+    <!-- 根据 id 查地址（下单时校验外送地址用） -->
+    <select id="getById" resultType="com.shanyue.entity.AddressBook">
+        select * from address_book where id = #{id}
+    </select>
+
+    <!-- 删除地址：带 user_id 条件防横向越权（删别人的地址直接 0 行生效）。
+         方法参数用 @Param("id")/@Param("userId") 起名，这里按名取参 -->
+    <delete id="deleteById">
+        delete from address_book where id = #{id} and user_id = #{userId}
+    </delete>
+
+    <!-- 更新地址（动态 set + 动态 where 双动态）：
+         普通编辑：Service 装上要改的字段 + id（+ userId 兜底越权）；
+         设默认地址：只装 isDefault + id + userId —— 同一条 SQL 通吃 -->
+    <update id="update" parameterType="com.shanyue.entity.AddressBook">
+        update address_book
+        <set>
+            <if test="consignee != null">
+                consignee = #{consignee},
+            </if>
+            <if test="sex != null">
+                sex = #{sex},
+            </if>
+            <if test="phone != null">
+                phone = #{phone},
+            </if>
+            <if test="provinceCode != null">
+                province_code = #{provinceCode},
+            </if>
+            <if test="provinceName != null">
+                province_name = #{provinceName},
+            </if>
+            <if test="cityCode != null">
+                city_code = #{cityCode},
+            </if>
+            <if test="cityName != null">
+                city_name = #{cityName},
+            </if>
+            <if test="districtCode != null">
+                district_code = #{districtCode},
+            </if>
+            <if test="districtName != null">
+                district_name = #{districtName},
+            </if>
+            <if test="detail != null">
+                detail = #{detail},
+            </if>
+            <if test="label != null">
+                label = #{label},
+            </if>
+            <if test="isDefault != null">
+                is_default = #{isDefault},
+            </if>
+        </set>
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="userId != null">
+                and user_id = #{userId}
+            </if>
+        </where>
+    </update>
+</mapper>

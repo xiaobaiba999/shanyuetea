@@ -1,0 +1,224 @@
+/* ============================================================
+   山月茶咖 C端 H5 全局样式
+   规范：奶油底 #FAF6F1 / 深咖文字 #3F2A1A / 焦糖主按钮 #C08552
+        卡片圆角 16px / 按钮圆角 10px / 阴影 0 2px 12px rgba(63,42,26,.06)
+   ============================================================ */
+
+:root {
+  --cream: #faf6f1;
+  --cream-deep: #f3ebdd;
+  --ink: #3f2a1a;
+  --ink-2: #6f573f;
+  --ink-3: #a08b78;
+  --caramel: #c08552;
+  --caramel-deep: #a96c3c;
+  --mocha: #8b5e3c;
+  --card: #ffffff;
+  --danger: #c0564a;
+  --success: #5f8d6b;
+  --amber-from: #e0a35c;
+  --amber-to: #c07a3e;
+  --radius-card: 16px;
+  --radius-btn: 10px;
+  --shadow-card: 0 2px 12px rgba(63, 42, 26, 0.06);
+  --shadow-bar: 0 -2px 16px rgba(63, 42, 26, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: #efe7dc;
+  color: var(--ink);
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans SC',
+    'Microsoft YaHei', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+#app {
+  min-height: 100dvh;
+}
+
+/* 移动端 480px 居中；桌面打开时模拟手机（左右留白 + 外框淡阴影） */
+.app-shell {
+  position: relative;
+  margin: 0 auto;
+  width: 100%;
+  max-width: 480px;
+  min-height: 100dvh;
+  background: var(--cream);
+  overflow-x: hidden;
+}
+
+@media (min-width: 520px) {
+  .app-shell {
+    box-shadow: 0 0 48px rgba(63, 42, 26, 0.16);
+  }
+}
+
+button {
+  font-family: inherit;
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  color: inherit;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* ---------- 通用工具类 ---------- */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.card {
+  background: var(--card);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+
+/* 底部安全区 */
+.safe-bottom {
+  padding-bottom: calc(env(safe-area-inset-bottom) + 12px);
+}
+
+/* 价格（琥珀色大数字） */
+.price-num {
+  color: var(--caramel-deep);
+  font-weight: 800;
+}
+
+/* 「+」按钮弹性动画（CSS scale） */
+@keyframes plus-pop {
+  0% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(0.78);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.plus-pop {
+  transition: transform 0.18s ease;
+}
+.plus-pop:active {
+  animation: plus-pop 0.32s ease;
+  transform: scale(0.9);
+}
+
+/* 公告跑马灯：轨道平移 + 两端渐隐遮罩 */
+@keyframes marquee-move {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.marquee {
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+}
+
+.marquee-track {
+  display: inline-flex;
+  gap: 4rem;
+  width: max-content;
+  white-space: nowrap;
+  animation: marquee-move 16s linear infinite;
+}
+
+/* 营业状态灯点呼吸 */
+@keyframes soft-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(94, 214, 155, 0.55);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(94, 214, 155, 0);
+  }
+}
+
+.dot-pulse {
+  animation: soft-pulse 2s ease-in-out infinite;
+}
+
+/* 购物车浮层过渡 */
+.cart-pop-enter-active,
+.cart-pop-leave-active {
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
+}
+.cart-pop-enter-from,
+.cart-pop-leave-to {
+  opacity: 0;
+  transform: translateY(14px) scale(0.98);
+}
+
+/* 渐隐遮罩过渡（打烊全页遮罩等） */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.25s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* 通用琥珀渐变主按钮 */
+.btn-gradient {
+  background: linear-gradient(135deg, var(--amber-from), var(--amber-to));
+  color: #fff;
+  font-weight: 700;
+  border-radius: var(--radius-btn);
+  transition:
+    transform 0.15s ease,
+    opacity 0.15s ease;
+}
+.btn-gradient:active {
+  transform: scale(0.96);
+}
+.btn-gradient:disabled {
+  opacity: 0.45;
+}

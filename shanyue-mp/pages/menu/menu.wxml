@@ -1,0 +1,212 @@
+<!-- pages/menu/menu.wxml —— 点单主页：左分类右商品 + 规格弹层 + 购物车 -->
+<view class="page">
+  <!-- 顶部：饮品 / 套餐 切换 -->
+  <view class="type-bar">
+    <view class="type-item {{currentType === 1 ? 'on' : ''}}" bindtap="onSwitchType" data-type="1">饮品</view>
+    <view class="type-item {{currentType === 2 ? 'on' : ''}}" bindtap="onSwitchType" data-type="2">套餐</view>
+    <view class="shop-state {{shopStatus === 1 ? 'open' : 'closed'}}">{{shopStatus === 1 ? '营业中' : '已打烊'}}</view>
+  </view>
+
+  <!-- 主体：左分类右商品 -->
+  <view class="menu-body">
+    <scroll-view class="cat-rail" scroll-y>
+      <view
+        wx:for="{{categories}}"
+        wx:key="id"
+        class="cat-item {{item.id === currentCatId ? 'on' : ''}}"
+        bindtap="onSwitchCat"
+        data-id="{{item.id}}"
+      >
+        <view class="cat-bar"></view>
+        <text>{{item.name}}</text>
+      </view>
+    </scroll-view>
+
+    <scroll-view class="goods-panel" scroll-y>
+      <block wx:if="{{currentType === 1}}">
+        <view
+          wx:for="{{goods}}"
+          wx:key="id"
+          class="goods-card {{item.status === 0 ? 'soldout' : ''}}"
+          bindtap="onGoodsTap"
+          data-index="{{index}}"
+        >
+          <view class="thumb">
+            <text class="thumb-char">{{item.name[0]}}</text>
+            <!-- 图片叠在首字上层：加载成功盖住首字；失败 binderror 隐藏自身露出首字兜底 -->
+            <image
+              wx:if="{{item.imgUrl && !item.imgFail}}"
+              class="thumb-img"
+              src="{{item.imgUrl}}"
+              mode="aspectFill"
+              binderror="onThumbError"
+              data-index="{{index}}"
+            />
+            <view wx:if="{{item.status === 0}}" class="soldout-mask">售罄</view>
+          </view>
+          <view class="goods-info">
+            <view class="goods-name">{{item.name}}</view>
+            <view class="goods-desc">{{item.description}}</view>
+            <view class="goods-meta">
+              <text class="sales">月售 {{item.monthSales}}</text>
+              <text wx:if="{{item.hasSpecs}}" class="spec-tag">可选规格</text>
+            </view>
+            <view class="goods-bottom">
+              <view class="price"><text class="yen">¥</text><text class="num">{{item.priceText}}</text></view>
+              <view
+                wx:if="{{item.status === 1}}"
+                class="add-btn"
+                catchtap="onGoodsTap"
+                data-index="{{index}}"
+              >＋</view>
+            </view>
+          </view>
+        </view>
+      </block>
+
+      <block wx:if="{{currentType === 2}}">
+        <view
+          wx:for="{{goods}}"
+          wx:key="id"
+          class="goods-card"
+          bindtap="onGoodsTap"
+          data-index="{{index}}"
+        >
+          <view class="thumb">
+            <text class="thumb-char">{{item.name[0]}}</text>
+            <!-- 图片叠在首字上层：加载成功盖住首字；失败 binderror 隐藏自身露出首字兜底 -->
+            <image
+              wx:if="{{item.imgUrl && !item.imgFail}}"
+              class="thumb-img"
+              src="{{item.imgUrl}}"
+              mode="aspectFill"
+              binderror="onThumbError"
+              data-index="{{index}}"
+            />
+          </view>
+          <view class="goods-info">
+            <view class="goods-name">{{item.name}}</view>
+            <view class="goods-desc">{{item.description}}</view>
+            <view class="goods-meta">
+              <text class="spec-tag">含 {{item.itemCount}} 件食品</text>
+            </view>
+            <view class="goods-bottom">
+              <view class="price"><text class="yen">¥</text><text class="num">{{item.priceText}}</text></view>
+              <view class="add-btn" catchtap="onGoodsTap" data-index="{{index}}">＋</view>
+            </view>
+          </view>
+        </view>
+      </block>
+
+      <view wx:if="{{!goods.length && !loading}}" class="empty-tip">该分类暂无商品</view>
+      <view class="list-spacer"></view>
+    </scroll-view>
+  </view>
+
+  <!-- 打烊遮罩（盖住菜单区，不挡 tab） -->
+  <view wx:if="{{shopStatus === 0}}" class="closed-mask">
+    <view class="closed-card">
+      <view class="closed-icon">☾</view>
+      <view class="closed-title">门店打烊中</view>
+      <view class="closed-sub">营业时间 09:00 - 22:00，欢迎明日再来</view>
+    </view>
+  </view>
+
+  <!-- 底部购物车条 -->
+  <view class="cart-bar safe-bottom">
+    <view class="cart-left" bindtap="onToggleCart">
+      <view class="cart-icon {{cartCount > 0 ? 'has' : ''}}">
+        <view class="bag"></view>
+        <view wx:if="{{cartCount > 0}}" class="badge">{{cartCount}}</view>
+      </view>
+      <view class="cart-total">
+        <block wx:if="{{cartCount > 0}}">
+          <text class="yen">¥</text><text class="num">{{cartTotalText}}</text>
+        </block>
+        <text wx:else class="empty-text">购物车是空的</text>
+      </view>
+    </view>
+    <view class="checkout-btn {{cartCount > 0 && shopStatus === 1 ? '' : 'disabled'}}" bindtap="onCheckout">去结算</view>
+  </view>
+
+  <!-- 购物车明细弹层 -->
+  <view wx:if="{{cartPopupVisible}}" class="popup-mask" bindtap="onToggleCart">
+    <view class="cart-sheet" catchtap="noop">
+      <view class="sheet-head">
+        <text>购物车</text>
+        <text class="clean-btn" catchtap="onCleanCart">🗑 清空</text>
+      </view>
+      <scroll-view scroll-y class="cart-list">
+        <view wx:for="{{cart}}" wx:key="id" class="cart-item">
+          <view class="ci-info">
+            <view class="ci-name">{{item.name}}</view>
+            <view class="ci-spec">{{item.specText}}</view>
+          </view>
+          <view class="ci-price">¥{{item.subtotalText}}</view>
+          <view class="stepper">
+            <view class="step-btn" catchtap="onCartMinus" data-index="{{index}}">−</view>
+            <text class="step-num">{{item.number}}</text>
+            <view class="step-btn plus" catchtap="onCartPlus" data-index="{{index}}">＋</view>
+          </view>
+        </view>
+        <view wx:if="{{!cart.length}}" class="empty-tip">还没有商品，去挑一杯吧</view>
+      </scroll-view>
+    </view>
+  </view>
+
+  <!-- 饮品规格弹层（动态渲染 specGroups，实时算价） -->
+  <view wx:if="{{specPopupVisible}}" class="popup-mask" bindtap="onCloseSpec">
+    <view class="spec-sheet safe-bottom" catchtap="noop">
+      <view class="spec-head">
+        <view class="spec-name">{{specGoods.name}}</view>
+        <view class="spec-close" bindtap="onCloseSpec">✕</view>
+      </view>
+      <scroll-view scroll-y class="spec-scroll">
+        <view wx:for="{{specGroups}}" wx:key="name" wx:for-index="gIdx" class="spec-group">
+          <view class="group-name">{{item.name}}</view>
+          <view class="opt-row">
+            <view
+              wx:for="{{item.options}}"
+              wx:key="name"
+              wx:for-item="opt"
+              wx:for-index="optIdx"
+              class="opt {{item.selected === optIdx ? 'on' : ''}}"
+              bindtap="onPickOption"
+              data-g="{{gIdx}}"
+              data-o="{{optIdx}}"
+            >
+              {{opt.name}}<text wx:if="{{opt.priceDelta > 0}}" class="delta">+{{opt.priceDelta}}</text>
+            </view>
+          </view>
+        </view>
+      </scroll-view>
+      <view class="spec-footer">
+        <view class="price"><text class="yen">¥</text><text class="num">{{specPriceText}}</text></view>
+        <view class="spec-add" bindtap="onConfirmSpec">加入购物车</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 套餐明细弹层 -->
+  <view wx:if="{{setmealPopupVisible}}" class="popup-mask" bindtap="onCloseSetmeal">
+    <view class="spec-sheet safe-bottom" catchtap="noop">
+      <view class="spec-head">
+        <view class="spec-name">{{setmealItem.name}}</view>
+        <view class="spec-close" bindtap="onCloseSetmeal">✕</view>
+      </view>
+      <scroll-view scroll-y class="spec-scroll">
+        <view class="setmeal-desc">{{setmealItem.description}}</view>
+        <view class="group-name">套餐包含</view>
+        <view wx:for="{{setmealDetails}}" wx:key="name" class="detail-row">
+          <text class="detail-name">{{item.name}}</text>
+          <text class="detail-copies">×{{item.copies}}</text>
+          <text class="detail-desc">{{item.description}}</text>
+        </view>
+      </scroll-view>
+      <view class="spec-footer">
+        <view class="price"><text class="yen">¥</text><text class="num">{{setmealItem.priceText}}</text></view>
+        <view class="spec-add" bindtap="onAddSetmeal">加入购物车</view>
+      </view>
+    </view>
+  </view>
+</view>

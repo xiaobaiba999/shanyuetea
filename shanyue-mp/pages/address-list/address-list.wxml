@@ -1,0 +1,34 @@
+<!-- pages/address-list/address-list.wxml —— 地址列表 / 默认徽标 / 编辑 / 删除 / 选择回传 -->
+<view class="page safe-bottom">
+  <view wx:if="{{!list.length}}" class="empty-tip">
+    还没有收货地址
+    <view class="empty-sub">点击下方按钮新增一个吧</view>
+  </view>
+
+  <view
+    wx:for="{{list}}"
+    wx:key="id"
+    class="card addr-card"
+    bindtap="onItemTap"
+    data-index="{{index}}"
+  >
+    <view class="addr-main">
+      <view class="addr-line1">
+        <text class="addr-name">{{item.consignee}}</text>
+        <text class="addr-phone">{{item.phone}}</text>
+        <view wx:if="{{item.isDefault === 1}}" class="default-badge">默认</view>
+        <view wx:if="{{item.label}}" class="label-badge">{{item.label}}</view>
+      </view>
+      <view class="addr-line2">{{item.provinceName}}{{item.cityName}}{{item.districtName}}{{item.detail}}</view>
+    </view>
+    <view class="addr-actions">
+      <view wx:if="{{item.isDefault !== 1}}" class="action" catchtap="onSetDefault" data-id="{{item.id}}">设为默认</view>
+      <view class="action" catchtap="onEdit" data-id="{{item.id}}">编辑</view>
+      <view class="action danger" catchtap="onDelete" data-id="{{item.id}}" data-name="{{item.consignee}}">删除</view>
+    </view>
+  </view>
+
+  <view class="add-btn" bindtap="onAdd">＋ 新增收货地址</view>
+
+  <view wx:if="{{mode === 'select'}}" class="select-tip">正在为外送订单选择地址，点击地址卡即可选用</view>
+</view>

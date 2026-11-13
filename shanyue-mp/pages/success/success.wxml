@@ -1,0 +1,43 @@
+<!-- pages/success/success.wxml —— 下单成功：自取取餐号 / 外送配送信息 + 模拟支付 -->
+<view class="page safe-bottom">
+  <!-- 成功横幅 -->
+  <view class="hero">
+    <view class="hero-icon">✓</view>
+    <view class="hero-title">下单成功</view>
+    <view class="hero-sub">{{mode === 1 ? '请到店出示取餐号取餐' : '商家接单后开始配送'}}</view>
+  </view>
+
+  <!-- 自取：取餐号大卡 -->
+  <view wx:if="{{mode === 1}}" class="card pickup-card">
+    <view class="pickup-label">取餐号</view>
+    <view class="pickup-number">{{pickupNumber}}</view>
+    <view class="pickup-tip">到店出示 · 叫号取餐</view>
+  </view>
+
+  <!-- 外送：配送信息卡 -->
+  <view wx:if="{{mode === 2}}" class="card">
+    <view class="sec-title">配送信息</view>
+    <view class="info-row"><text class="k">收货人</text><text>{{consignee}}</text></view>
+    <view class="info-row"><text class="k">收货地址</text><text class="v">{{addressText}}</text></view>
+    <view class="info-row"><text class="k">配送费</text><text>¥{{deliveryFeeText}}</text></view>
+  </view>
+
+  <!-- 订单信息 -->
+  <view class="card">
+    <view class="info-row"><text class="k">订单号</text><text class="v">{{orderNumber}}</text></view>
+    <view class="info-row"><text class="k">下单时间</text><text>{{orderTime}}</text></view>
+    <view class="info-row"><text class="k">支付金额</text><text class="price-text">¥{{amountText}}</text></view>
+    <view class="info-row"><text class="k">支付状态</text><text class="{{paid ? 'paid' : 'unpaid'}}">{{paid ? '已支付' : '待支付'}}</text></view>
+  </view>
+
+  <!-- 操作 -->
+  <view wx:if="{{!paid}}" class="pay-btn" bindtap="onPay">模拟支付</view>
+  <view wx:if="{{paid}}" class="paid-banner">支付成功，商家马上开始制作 ☕</view>
+
+  <view class="btn-row">
+    <view class="btn-ghost half" bindtap="onBackHome">返回首页</view>
+    <view class="btn-primary half" bindtap="onViewOrder">查看订单</view>
+  </view>
+
+  <view class="demo-tip">演示环境说明：个人小程序无法拉起微信支付，此处模拟「生成支付参数 → 支付成功回调」两步</view>
+</view>

@@ -1,0 +1,124 @@
+/* pages/success/success.wxss */
+.page {
+  padding: 30rpx;
+  box-sizing: border-box;
+}
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30rpx 0 40rpx;
+}
+.hero-icon {
+  width: 110rpx;
+  height: 110rpx;
+  border-radius: 50%;
+  background: #2F5233;
+  color: #fff;
+  font-size: 60rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.hero-title {
+  margin-top: 20rpx;
+  font-size: 40rpx;
+  font-weight: 700;
+}
+.hero-sub {
+  margin-top: 10rpx;
+  font-size: 26rpx;
+  color: #8A8A8A;
+}
+
+/* 取餐号大卡 */
+.pickup-card {
+  text-align: center;
+  padding: 44rpx 24rpx;
+  background: linear-gradient(160deg, #2F5233, #3E6A45);
+  color: #fff;
+}
+.pickup-label {
+  font-size: 26rpx;
+  opacity: 0.85;
+  letter-spacing: 6rpx;
+}
+.pickup-number {
+  font-size: 130rpx;
+  font-weight: 800;
+  letter-spacing: 10rpx;
+  line-height: 1.4;
+  color: #F5E7C8;
+}
+.pickup-tip {
+  font-size: 24rpx;
+  opacity: 0.8;
+  letter-spacing: 4rpx;
+}
+
+.sec-title {
+  font-size: 28rpx;
+  font-weight: 700;
+  margin-bottom: 14rpx;
+}
+.card {
+  margin-bottom: 24rpx;
+}
+.info-row {
+  display: flex;
+  padding: 10rpx 0;
+  font-size: 26rpx;
+}
+.info-row .k {
+  width: 150rpx;
+  color: #8A8A8A;
+  flex: none;
+}
+.info-row .v {
+  flex: 1;
+  word-break: break-all;
+}
+.paid {
+  color: #2F5233;
+}
+.unpaid {
+  color: #E6A23C;
+}
+
+/* 支付按钮 */
+.pay-btn {
+  background: #C7542F;
+  color: #fff;
+  border-radius: 48rpx;
+  text-align: center;
+  font-size: 32rpx;
+  padding: 24rpx 0;
+  box-shadow: 0 10rpx 24rpx rgba(199, 84, 47, 0.3);
+}
+.paid-banner {
+  text-align: center;
+  color: #2F5233;
+  background: #EAF1EB;
+  border-radius: 16rpx;
+  padding: 22rpx 0;
+  font-size: 28rpx;
+  font-weight: 600;
+}
+
+.btn-row {
+  display: flex;
+  margin-top: 30rpx;
+}
+.half {
+  flex: 1;
+}
+.half + .half {
+  margin-left: 24rpx;
+}
+.demo-tip {
+  margin-top: 26rpx;
+  font-size: 22rpx;
+  color: #A9AFA8;
+  text-align: center;
+  line-height: 34rpx;
+}

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<!--
+  套餐 Mapper：C 端 list + countSetmeal/getById/getDrinkItemById 已写好；
+  管理端 4 条 SQL 留白（TODO 教学练习）。
+  动手提示（逐条对照课程 SetmealMapper.xml 即可）：
+    - pageQuery：select s.*, c.name as categoryName from setmeal s left join category c ... 动态 where
+    - insert：useGeneratedKeys="true" keyProperty="id"
+    - update：<set> 动态更新
+    - deleteBatch：<foreach collection="ids"> 拼 in（接口已贴好 @Param("ids")）
+-->
+<mapper namespace="com.shanyue.mapper.SetmealMapper">
+
+    <!-- 查询分类下是否有套餐（删除分类前校验） -->
+    <select id="countSetmeal" resultType="java.lang.Integer">
+        select count(*) from setmeal where category_id = #{categoryId}
+    </select>
+
+    <!-- 根据 id 查套餐 -->
+    <select id="getById" resultType="com.shanyue.entity.Setmeal">
+        select * from setmeal where id = #{id}
+    </select>
+
+    <!-- C 端：按分类 id + 起售状态查套餐列表（status 由 Service 端装进参数=1） -->
+    <select id="list" resultType="com.shanyue.entity.Setmeal">
+        select * from setmeal
+        <where>
+            <if test="categoryId != null">
+                and category_id = #{categoryId}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+        </where>
+    </select>
+
+    <!-- 查询套餐包含的饮品明细（联 drink 带出图片与描述；resultType 是 VO，写全限定名） -->
+    <select id="getDrinkItemById" resultType="com.shanyue.vo.DrinkItemVO">
+        select sd.name, sd.copies, d.image, d.description from setmeal_drink sd
+        left join drink d on sd.drink_id = d.id
+        where sd.setmeal_id = #{setmealId}
+    </select>
+
+    <!-- TODO 管理端：分页查询套餐（resultType 用全限定名 com.shanyue.vo.SetmealVO） -->
+    <!--
+    <select id="pageQuery" resultType="com.shanyue.vo.SetmealVO">
+        参照课程 SetmealMapper.xml 自己补全
+    </select>
+    -->
+
+    <!-- TODO 管理端：新增套餐（useGeneratedKeys="true" keyProperty="id"） -->
+    <!--
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+    </insert>
+    -->
+
+    <!-- TODO 管理端：更新套餐（<set> 动态更新） -->
+    <!--
+    <update id="update" parameterType="com.shanyue.entity.Setmeal">
+    </update>
+    -->
+
+    <!-- TODO 管理端：批量删除套餐（<foreach> 拼 in 条件） -->
+    <!--
+    <delete id="deleteBatch">
+        delete from setmeal where id in
+    </delete>
+    -->
+</mapper>

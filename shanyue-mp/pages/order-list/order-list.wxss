@@ -1,0 +1,171 @@
+/* pages/order-list/order-list.wxss —— 状态 tab + 订单卡样式 */
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 顶部状态 tab */
+.tabs {
+  flex: none;
+  white-space: nowrap;
+  background: #fff;
+  padding: 16rpx 16rpx 20rpx;
+  box-sizing: border-box;
+}
+.tab {
+  display: inline-block;
+  font-size: 28rpx;
+  color: #5B655C;
+  padding: 12rpx 28rpx;
+  border-radius: 32rpx;
+  margin-right: 12rpx;
+  background: #F2F4F0;
+}
+.tab.on {
+  background: #2F5233;
+  color: #fff;
+  font-weight: 600;
+}
+
+/* 列表 */
+.list {
+  flex: 1;
+  padding: 24rpx;
+  box-sizing: border-box;
+}
+.order-card {
+  margin-bottom: 24rpx;
+}
+.oc-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.oc-time {
+  font-size: 24rpx;
+  color: #8A8A8A;
+}
+.oc-status {
+  font-size: 28rpx;
+  font-weight: 600;
+}
+.oc-summary {
+  margin-top: 16rpx;
+  font-size: 30rpx;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.oc-meta {
+  margin-top: 10rpx;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+.mode-tag {
+  flex: none;
+  font-size: 20rpx;
+  color: #2F5233;
+  background: #EAF1EB;
+  border-radius: 8rpx;
+  padding: 4rpx 12rpx;
+}
+.mode-tag.delivery {
+  color: #C77E32;
+  background: #FBF3E6;
+}
+.pickup-no {
+  margin-left: 12rpx;
+  font-size: 24rpx;
+  color: #2F5233;
+  font-weight: 600;
+}
+.addr {
+  margin-left: 12rpx;
+  font-size: 22rpx;
+  color: #8A8A8A;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.oc-bottom {
+  margin-top: 18rpx;
+  padding-top: 18rpx;
+  border-top: 2rpx solid #F2F2EE;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.oc-amount {
+  display: flex;
+  align-items: baseline;
+}
+.oc-amount .yen {
+  font-size: 22rpx;
+  color: #C7542F;
+}
+.oc-amount .num {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #C7542F;
+}
+.unpaid-badge {
+  margin-left: 14rpx;
+  font-size: 20rpx;
+  color: #E6A23C;
+  border: 2rpx solid #E6A23C;
+  border-radius: 8rpx;
+  padding: 2rpx 10rpx;
+}
+.oc-actions {
+  display: flex;
+  align-items: center;
+}
+.mini-btn {
+  margin-left: 16rpx;
+  font-size: 24rpx;
+  border-radius: 32rpx;
+  padding: 10rpx 30rpx;
+  line-height: 1.4;
+}
+.mini-btn.primary {
+  background: #2F5233;
+  color: #fff;
+}
+.mini-btn.ghost {
+  border: 2rpx solid #C9D2CA;
+  color: #5B655C;
+}
+
+/* 空态（文字插画） */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 140rpx 0 80rpx;
+}
+.empty-icon {
+  font-size: 96rpx;
+  line-height: 1.2;
+}
+.empty-text {
+  margin-top: 20rpx;
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #4A4A4A;
+}
+.empty-sub {
+  margin-top: 12rpx;
+  font-size: 24rpx;
+  color: #8A8A8A;
+}
+
+/* 底部加载提示 */
+.load-more {
+  text-align: center;
+  font-size: 24rpx;
+  color: #A9AFA8;
+  padding: 20rpx 0 40rpx;
+}

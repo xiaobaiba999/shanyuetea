@@ -1,0 +1,79 @@
+<!-- pages/submit/submit.wxml —— 确认订单：自取/外送切换 + 商品明细 + 金额合计 -->
+<view class="page safe-bottom">
+  <!-- 配送模式切换 -->
+  <view class="mode-seg">
+    <view class="seg-item {{mode === 1 ? 'on' : ''}}" bindtap="onSwitchMode" data-mode="1">
+      <view class="seg-title">门店自取</view>
+      <view class="seg-sub">免配送费</view>
+    </view>
+    <view class="seg-item {{mode === 2 ? 'on' : ''}}" bindtap="onSwitchMode" data-mode="2">
+      <view class="seg-title">外送</view>
+      <view class="seg-sub">配送费 ¥{{deliveryFeeText}}</view>
+    </view>
+  </view>
+
+  <!-- 自取：门店地址卡 -->
+  <view wx:if="{{mode === 1}}" class="card store-card">
+    <view class="store-name">{{shop.name}}</view>
+    <view class="store-row">📍 {{shop.address}}</view>
+    <view class="store-row">🕐 营业时间 {{shop.businessHours}}</view>
+    <view class="pickup-tag">到店自取 · 出餐后凭取餐号取餐</view>
+  </view>
+
+  <!-- 外送：地址卡 -->
+  <view wx:if="{{mode === 2}}" class="card address-card" bindtap="onChooseAddress">
+    <block wx:if="{{address}}">
+      <view class="addr-top">
+        <view class="addr-person">{{address.consignee}}</view>
+        <view class="addr-phone">{{address.phone}}</view>
+        <view wx:if="{{address.label}}" class="addr-label">{{address.label}}</view>
+      </view>
+      <view class="addr-detail">{{address.provinceName}}{{address.cityName}}{{address.districtName}}{{address.detail}}</view>
+    </block>
+    <block wx:else>
+      <view class="addr-empty">请选择收货地址 ›</view>
+    </block>
+  </view>
+
+  <!-- 商品明细 -->
+  <view class="card">
+    <view class="sec-title">商品明细</view>
+    <view wx:for="{{cart}}" wx:key="id" class="goods-row">
+      <view class="g-info">
+        <view class="g-name">{{item.name}}</view>
+        <view wx:if="{{item.specText}}" class="g-spec">{{item.specText}}</view>
+      </view>
+      <view class="g-qty">×{{item.number}}</view>
+      <view class="g-subtotal">¥{{item.subtotalText}}</view>
+    </view>
+    <view wx:if="{{!cart.length}}" class="empty-tip">购物车空空如也，回菜单页加点什么吧</view>
+  </view>
+
+  <!-- 备注 -->
+  <view class="card">
+    <view class="sec-title">备注</view>
+    <textarea
+      class="remark"
+      value="{{remark}}"
+      placeholder="口味偏好、放置位置等（选填）"
+      maxlength="50"
+      bindinput="onRemarkInput"
+    />
+  </view>
+
+  <!-- 金额明细 -->
+  <view class="card amount-card">
+    <view class="amount-row"><text>商品合计</text><text>¥{{goodsTotalText}}</text></view>
+    <view wx:if="{{mode === 2}}" class="amount-row"><text>配送费</text><text>¥{{deliveryFeeText}}</text></view>
+    <view class="amount-row total"><text>合计</text><view class="price"><text class="yen">¥</text><text class="num">{{totalText}}</text></view></view>
+  </view>
+
+  <!-- 底部提交条 -->
+  <view class="submit-bar safe-bottom">
+    <view class="sum">
+      <text class="sum-label">合计 </text>
+      <text class="yen">¥</text><text class="num">{{totalText}}</text>
+    </view>
+    <view class="submit-btn {{cart.length ? '' : 'disabled'}}" bindtap="onSubmit">提交订单</view>
+  </view>
+</view>
