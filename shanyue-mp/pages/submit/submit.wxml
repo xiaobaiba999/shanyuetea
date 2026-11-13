@@ -15,8 +15,8 @@
   <!-- 自取：门店地址卡 -->
   <view wx:if="{{mode === 1}}" class="card store-card">
     <view class="store-name">{{shop.name}}</view>
-    <view class="store-row">📍 {{shop.address}}</view>
-    <view class="store-row">🕐 营业时间 {{shop.businessHours}}</view>
+    <view class="store-row">{{shop.address}}</view>
+    <view class="store-row">营业时间 {{shop.businessHours}}</view>
     <view class="pickup-tag">到店自取 · 出餐后凭取餐号取餐</view>
   </view>
 

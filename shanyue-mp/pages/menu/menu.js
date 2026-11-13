@@ -173,7 +173,7 @@ Page({
   /* ---------- 规格弹层 ---------- */
   openSpecPopup(item) {
     // 每组默认选中第一个选项
-    // ⚠ id 必须保留：后端加购时用 optionId 匹配「该饮品的合法选项」重算金额，
+    // 注意：id 必须保留：后端加购时用 optionId 匹配「该饮品的合法选项」重算金额，
     //   快照里缺 optionId 会被判定为非法规格选项（服务端防篡改校验）
     const groups = (item.specGroups || []).map((g) => ({
       id: g.id,

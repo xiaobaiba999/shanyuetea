@@ -85,7 +85,7 @@
         </el-table-column>
         <el-table-column label="评分" width="128" align="center">
           <template #default="{ row }">
-            <span class="stars" :class="`s${row.score}`">{{ '★'.repeat(row.score) }}{{ '☆'.repeat(5 - row.score) }}</span>
+            <span class="stars" :class="`s${row.score}`">{{ '\u2605'.repeat(row.score) }}{{ '\u2606'.repeat(5 - row.score) }}</span>
           </template>
         </el-table-column>
         <el-table-column label="评价内容" min-width="280">
@@ -142,7 +142,7 @@
     <!-- 回复弹窗 -->
     <el-dialog v-model="replyVisible" title="回复评价" width="480px" destroy-on-close>
       <div v-if="replyRow" class="reply-target">
-        <span class="stars" :class="`s${replyRow.score}`">{{ '★'.repeat(replyRow.score) }}{{ '☆'.repeat(5 - replyRow.score) }}</span>
+        <span class="stars" :class="`s${replyRow.score}`">{{ '\u2605'.repeat(replyRow.score) }}{{ '\u2606'.repeat(5 - replyRow.score) }}</span>
         <p class="reply-quote">{{ replyRow.content || '（未填写文字）' }}</p>
       </div>
       <el-input
@@ -312,33 +312,34 @@ onMounted(loadAll)
   padding: 12px 20px;
   min-width: 132px;
   border-radius: 14px;
-  background: #fffdf9;
-  border: 1px solid #f3ede3;
-  box-shadow: 0 1px 4px rgba(139, 94, 60, 0.06);
+  background: var(--card);
+  border: 1px solid var(--card-line);
+  box-shadow: 0 1px 4px rgba(43, 38, 32, 0.06);
 }
 
 .stat-chip.attention {
-  border-color: #f2cdb6;
-  background: #fdf6ee;
+  border-color: var(--el-color-warning-light-5);
+  background: var(--el-color-warning-light-9);
 }
 
 .stat-num {
+  font-family: var(--font-serif);
   font-size: 22px;
   font-weight: 700;
-  color: #3f2a1a;
+  color: var(--ink);
   font-variant-numeric: tabular-nums;
 }
 
 .stat-num.amber {
-  color: #b0702e;
+  color: var(--gold);
 }
 
 .stat-num.green {
-  color: #4c7156;
+  color: var(--success);
 }
 
 .stat-num.danger {
-  color: #c0564a;
+  color: var(--danger);
 }
 
 .stat-label {
@@ -389,14 +390,14 @@ onMounted(loadAll)
   flex: 1;
   height: 8px;
   border-radius: 999px;
-  background: #f5efe6;
+  background: var(--paper-deep);
   overflow: hidden;
 }
 
 .dr-fill {
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, #e0a35c, #c07a3e);
+  background: linear-gradient(90deg, var(--gold-soft), var(--gold));
   transition: width 0.4s ease;
 }
 
@@ -404,7 +405,7 @@ onMounted(loadAll)
   flex-shrink: 0;
   width: 22px;
   font-weight: 600;
-  color: #6f573f;
+  color: var(--ink-2);
 }
 
 .tag-cloud {
@@ -418,17 +419,17 @@ onMounted(loadAll)
   padding: 5px 12px;
   font-size: 12px;
   font-weight: 600;
-  color: #a05e2b;
+  color: var(--el-color-warning-dark-2);
   border-radius: 999px;
-  background: #fdf6ec;
-  border: 1px solid #f2e0c4;
+  background: var(--el-color-warning-light-9);
+  border: 1px solid var(--el-color-warning-light-7);
 }
 
 .tc-chip i {
   font-style: normal;
   font-weight: 800;
   margin-left: 2px;
-  color: #d9892b;
+  color: var(--terracotta);
 }
 
 .insight-empty {
@@ -463,9 +464,9 @@ onMounted(loadAll)
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 1px;
-  color: #a96c3c;
+  color: var(--el-color-warning-dark-2);
   border-radius: 8px;
-  background: #f9ecdd;
+  background: var(--el-color-warning-light-8);
 }
 
 .order-no {
@@ -474,7 +475,7 @@ onMounted(loadAll)
   font-family: 'SFMono-Regular', Consolas, monospace;
 }
 
-/* 星级：颜色随分值 */
+/* 星级：颜色随分值（茶金 → 暖陶） */
 .stars {
   font-size: 15px;
   letter-spacing: 2px;
@@ -482,19 +483,19 @@ onMounted(loadAll)
 
 .stars.s5,
 .stars.s4 {
-  color: #e9a23b;
+  color: var(--gold);
 }
 
 .stars.s3 {
-  color: #d3b276;
+  color: var(--gold-soft);
 }
 
 .stars.s2 {
-  color: #c98a6b;
+  color: var(--terracotta);
 }
 
 .stars.s1 {
-  color: #c0564a;
+  color: var(--danger);
 }
 
 .review-cell {
@@ -511,7 +512,7 @@ onMounted(loadAll)
 .review-content {
   font-size: 13px;
   line-height: 1.6;
-  color: #3f2a1a;
+  color: var(--ink);
 }
 
 .review-tags {
@@ -523,23 +524,24 @@ onMounted(loadAll)
 .rtag {
   padding: 2px 8px;
   font-size: 11px;
-  color: #a05e2b;
+  color: var(--el-color-warning-dark-2);
   border-radius: 999px;
-  background: #fdf6ec;
-  border: 1px solid #f2e0c4;
+  background: var(--el-color-warning-light-9);
+  border: 1px solid var(--el-color-warning-light-7);
 }
 
+/* 商家回复气泡：松雾底 + 墨绿标签 */
 .review-reply {
   padding: 6px 10px;
   font-size: 12px;
   line-height: 1.6;
-  color: #8c7a6b;
+  color: var(--ink-2);
   border-radius: 8px;
-  background: #faf6ef;
+  background: var(--pine-mist);
 }
 
 .review-reply b {
-  color: #b0702e;
+  color: var(--pine);
 }
 
 .time-cell {
@@ -551,13 +553,13 @@ onMounted(loadAll)
   margin-bottom: 12px;
   padding: 10px 14px;
   border-radius: 10px;
-  background: #faf6ef;
+  background: var(--paper);
 }
 
 .reply-quote {
   margin-top: 6px;
   font-size: 12px;
   line-height: 1.6;
-  color: #6f573f;
+  color: var(--ink-2);
 }
 </style>

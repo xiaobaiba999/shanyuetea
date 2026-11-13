@@ -112,7 +112,7 @@ Page({
     wx.showModal({
       title: '重置演示数据',
       content: '将清空演示用的购物车、订单、地址等数据，并重新登录，确定吗？',
-      confirmColor: '#D9534F',
+      confirmColor: '#B5432F',
       success: (res) => {
         if (!res.confirm) return;
         resetDb();
@@ -129,7 +129,7 @@ Page({
     wx.showModal({
       title: '退出登录',
       content: '退出后需要重新登录才能下单，确定退出吗？',
-      confirmColor: '#D9534F',
+      confirmColor: '#B5432F',
       success: (res) => {
         if (!res.confirm) return;
         auth.logout(); // 清本地登录态（苍穹 JWT 无状态，无需调后端）

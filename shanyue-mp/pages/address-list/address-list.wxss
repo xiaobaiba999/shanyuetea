@@ -17,29 +17,29 @@
 }
 .addr-phone {
   margin-left: 16rpx;
-  color: #8A8A8A;
+  color: var(--ink-3);
   font-size: 26rpx;
 }
 .default-badge {
   margin-left: 16rpx;
   font-size: 20rpx;
   color: #fff;
-  background: #2F5233;
+  background: var(--pine);
   border-radius: 8rpx;
   padding: 4rpx 12rpx;
 }
 .label-badge {
   margin-left: 12rpx;
   font-size: 20rpx;
-  color: #C89B5A;
-  border: 2rpx solid #C89B5A;
+  color: var(--gold);
+  border: 2rpx solid var(--gold);
   border-radius: 8rpx;
   padding: 2rpx 12rpx;
 }
 .addr-line2 {
   margin-top: 12rpx;
   font-size: 26rpx;
-  color: #4A4A4A;
+  color: var(--ink-2);
   line-height: 38rpx;
 }
 .addr-actions {
@@ -51,15 +51,15 @@
 }
 .action {
   font-size: 24rpx;
-  color: #5B655C;
+  color: var(--ink-2);
   padding: 12rpx 0 12rpx 36rpx;
 }
 .action.danger {
-  color: #D9534F;
+  color: var(--danger);
 }
 .add-btn {
   margin-top: 40rpx;
-  background: #2F5233;
+  background: var(--pine);
   color: #fff;
   border-radius: 48rpx;
   text-align: center;
@@ -70,7 +70,7 @@
   margin-top: 24rpx;
   text-align: center;
   font-size: 24rpx;
-  color: #C89B5A;
+  color: var(--gold);
 }
 .empty-sub {
   margin-top: 12rpx;

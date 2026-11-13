@@ -165,7 +165,7 @@ async function handleSubmit() {
         </button>
       </div>
 
-      <p class="tip">🎟 自取免运费 · 取餐号下单后自动生成</p>
+      <p class="tip">自取免运费 · 取餐号下单后自动生成</p>
     </div>
 
     <!-- 底部合计 + 提交 -->
@@ -194,12 +194,18 @@ async function handleSubmit() {
       <div class="coupon-sheet">
         <div class="cs-head">
           <span>选择优惠券</span>
-          <button class="cs-close" @click="couponPopup = false">✕</button>
+          <button class="cs-close" aria-label="关闭" @click="couponPopup = false">
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+              <path d="M6 6l12 12M18 6L6 18" />
+            </svg>
+          </button>
         </div>
         <div class="cs-list">
           <button class="cs-item none" :class="{ active: !selectedCouponId }" @click="chooseCoupon(null)">
             <span class="csi-none">不使用优惠券</span>
-            <span v-if="!selectedCouponId" class="csi-check">✓</span>
+            <svg v-if="!selectedCouponId" class="csi-check" viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4 12.5l5 5L20 6.5" />
+            </svg>
           </button>
           <button
             v-for="c in usableCoupons"
@@ -216,10 +222,14 @@ async function handleSubmit() {
               <p class="csi-name">{{ c.name }}</p>
               <p class="csi-expire">有效期至 {{ c.expireTime.slice(0, 10) }}</p>
             </div>
-            <span v-if="c.id === selectedCouponId" class="csi-check">✓</span>
+            <span v-if="c.id === selectedCouponId" class="csi-check">
+              <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M4 12.5l5 5L20 6.5" />
+              </svg>
+            </span>
           </button>
           <div v-if="!usableCoupons.length" class="cs-empty">
-            暂无可用优惠券，去「会员中心」领券吧 🎫
+            暂无可用优惠券，去「会员中心」领券吧
           </div>
         </div>
       </div>
@@ -232,7 +242,7 @@ async function handleSubmit() {
   display: flex;
   flex-direction: column;
   min-height: 100dvh;
-  background: var(--cream);
+  background: var(--paper);
 }
 
 .page-body {
@@ -242,6 +252,7 @@ async function handleSubmit() {
 
 .card {
   background: var(--card);
+  border: 1px solid var(--card-line);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-card);
 }
@@ -272,7 +283,7 @@ async function handleSubmit() {
   height: 48px;
   border-radius: 10px;
   overflow: hidden;
-  background: var(--cream-deep);
+  background: var(--paper-deep);
 }
 
 .info {
@@ -301,7 +312,9 @@ async function handleSubmit() {
   flex-shrink: 0;
   font-size: 14px;
   font-weight: 700;
-  color: var(--caramel-deep);
+  font-family: var(--font-serif);
+  font-variant-numeric: tabular-nums;
+  color: var(--terracotta);
 }
 
 .form-card {
@@ -348,7 +361,7 @@ async function handleSubmit() {
 }
 
 .cr-value.negative {
-  color: #d4552e;
+  color: var(--terracotta);
   font-weight: 800;
 }
 
@@ -374,9 +387,10 @@ async function handleSubmit() {
 }
 
 .cs-close {
+  display: grid;
+  place-items: center;
   border: none;
   background: transparent;
-  font-size: 15px;
   color: var(--ink-3);
   cursor: pointer;
   padding: 4px 8px;
@@ -396,18 +410,18 @@ async function handleSubmit() {
   gap: 12px;
   width: 100%;
   padding: 14px;
-  border: 1.5px dashed #eadfcc;
+  border: 1.5px dashed rgba(200, 155, 90, 0.45);
   border-radius: 12px;
-  background: var(--cream);
+  background: var(--card);
   cursor: pointer;
   text-align: left;
   transition: border-color 0.15s, background 0.15s;
 }
 
 .cs-item.active {
-  border-color: var(--caramel-deep, #b0702e);
+  border-color: var(--pine);
   border-style: solid;
-  background: #fdf6ec;
+  background: var(--pine-mist);
 }
 
 .csi-none {
@@ -421,13 +435,15 @@ async function handleSubmit() {
   min-width: 84px;
   text-align: center;
   padding-right: 12px;
-  border-right: 1px dashed #e0d2bd;
+  border-right: 1px dashed var(--card-line);
 }
 
 .csi-amount {
   font-size: 22px;
   font-weight: 800;
-  color: #d4552e;
+  font-family: var(--font-serif);
+  font-variant-numeric: tabular-nums;
+  color: var(--terracotta);
 }
 
 .csi-amount i {
@@ -460,15 +476,14 @@ async function handleSubmit() {
 
 .csi-check {
   flex-shrink: 0;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: var(--caramel-deep, #b0702e);
-  color: #fff;
-  font-size: 12px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--pine);
+  color: #fff;
 }
 
 .cs-empty {
@@ -490,7 +505,7 @@ async function handleSubmit() {
   gap: 14px;
   padding: 12px 16px;
   background: var(--card);
-  border-top: 1px solid #f0e8dc;
+  border-top: 1px solid var(--card-line);
 }
 
 .total {
@@ -509,7 +524,7 @@ async function handleSubmit() {
 .yen {
   font-size: 12px;
   font-weight: 700;
-  color: var(--caramel-deep);
+  color: var(--terracotta);
 }
 
 .num {
@@ -520,8 +535,8 @@ async function handleSubmit() {
   margin-left: 8px;
   font-size: 11px;
   font-weight: 700;
-  color: #d4552e;
-  background: #fbeee8;
+  color: var(--terracotta);
+  background: rgba(199, 84, 47, 0.08);
   border-radius: 999px;
   padding: 2px 8px;
 }

@@ -1,50 +1,120 @@
-/* app.wxss —— 全局样式与品牌变量 */
-/* 山月茶咖品牌色：墨绿主色 + 茶金点缀 + 暖陶价格色 */
+/* app.wxss —— 山月茶咖 · 全局品牌设计系统（宣纸 / 墨绿 / 茶金） */
+
 page {
-  --brand: #2F5233;          /* 墨绿（主色） */
-  --brand-light: #EAF1EB;    /* 墨绿浅底 */
-  --accent: #C89B5A;         /* 茶金 */
-  --price: #C7542F;          /* 价格暖陶 */
-  --text: #2B2B2B;
-  --text-sub: #8A8A8A;
-  --line: #EFEFEA;
-  --bg: #F5F6F4;
-  --danger: #D9534F;
-  background: var(--bg);
-  color: var(--text);
+  /* —— 色板 —— */
+  --paper: #F6F3EC;         /* 页面底：宣纸米白 */
+  --paper-deep: #EDE8DC;   /* 深一档底 */
+  --card: #FFFFFF;
+  --card-line: #E8E2D4;    /* 卡片描边 */
+  --ink: #2B2620;          /* 主文字 */
+  --ink-2: #6B6155;
+  --ink-3: #9C927F;
+  --pine: #2F5233;         /* 品牌墨绿 */
+  --pine-deep: #243E28;
+  --pine-mist: #E8F0E9;
+  --gold: #C89B5A;         /* 茶金 */
+  --terracotta: #C7542F;   /* 价格暖陶 */
+  --danger: #B5432F;
+  --success: #3E7A4E;
+
+  /* —— 旧变量别名（兼容历史引用，勿再新用） —— */
+  --brand: var(--pine);
+  --brand-light: var(--pine-mist);
+  --accent: var(--gold);
+  --price: var(--terracotta);
+  --text: var(--ink);
+  --text-sub: var(--ink-2);
+  --line: var(--card-line);
+  --bg: var(--paper);
+
+  /* 宣纸底 + 极淡斜纹肌理 */
+  background-color: var(--paper);
+  background-image: repeating-linear-gradient(45deg, rgba(43, 38, 32, .012) 0 2rpx, transparent 2rpx 12rpx);
+  color: var(--ink);
   font-size: 28rpx;
   font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
 }
 
-/* 通用卡片 */
-.card {
-  background: #fff;
-  border-radius: 20rpx;
-  padding: 24rpx;
-  box-sizing: border-box;
+/* 品牌衬线字（标题 / 大数字用） */
+.font-serif {
+  font-family: 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', 'STSong', 'SimSun', serif;
 }
 
-/* 主按钮 */
+/* 通用卡片：白底 + 细描边 + 柔和双层投影 */
+.card {
+  background: var(--card);
+  border: 1rpx solid var(--card-line);
+  border-radius: 24rpx;
+  padding: 24rpx;
+  box-sizing: border-box;
+  box-shadow: 0 2rpx 6rpx rgba(43, 38, 32, .04), 0 8rpx 24rpx rgba(43, 38, 32, .06);
+}
+
+/* 主按钮：墨绿渐变 + 内高光 + 按压回弹（uiverse 风） */
 .btn-primary {
-  background: var(--brand);
-  color: #fff;
+  background: linear-gradient(160deg, #3A6140, var(--pine) 55%, var(--pine-deep));
+  color: #FFFFFF;
   border-radius: 44rpx;
   font-size: 30rpx;
   text-align: center;
   padding: 22rpx 0;
+  box-shadow: inset 0 2rpx 0 rgba(255, 255, 255, .12), 0 6rpx 20rpx rgba(47, 82, 51, .28);
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.btn-primary.button-hover,
+.btn-primary:active {
+  transform: scale(.965);
+  box-shadow: inset 0 2rpx 0 rgba(255, 255, 255, .12), 0 2rpx 8rpx rgba(47, 82, 51, .22);
 }
 .btn-primary.disabled {
-  background: #C7CFC8;
-  color: #F2F4F2;
+  background: var(--card-line);
+  color: var(--ink-3);
+  box-shadow: none;
 }
-/* 描边按钮 */
+
+/* 描边按钮：2rpx 墨绿描边，按压落 pine-mist */
 .btn-ghost {
-  border: 2rpx solid var(--brand);
-  color: var(--brand);
+  background: transparent;
+  border: 2rpx solid var(--pine);
+  color: var(--pine);
   border-radius: 44rpx;
   font-size: 28rpx;
   text-align: center;
   padding: 16rpx 0;
+  transition: background .15s ease;
+}
+.btn-ghost.btn-hover,
+.btn-ghost.button-hover,
+.btn-ghost:active {
+  background: var(--pine-mist);
+}
+
+/* 通用按压反馈（wxml 上配 hover-class="btn-hover"） */
+.btn-hover {
+  opacity: .9;
+  transform: scale(.97);
+}
+
+/* 圆形印章（登录 / 我的 / 成功页品牌位） */
+.seal {
+  width: 88rpx;
+  height: 88rpx;
+  border: 3rpx solid var(--gold);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Songti SC', 'STSong', 'SimSun', serif;
+  color: var(--pine);
+  font-size: 30rpx;
+  transform: rotate(-4deg);
+  box-sizing: border-box;
+}
+.seal-text {
+  display: block;
+  width: 1.1em;          /* 收窄宽度逼出竖排「山 / 月」两行 */
+  line-height: 1.1;
+  text-align: center;
 }
 
 /* 底部安全区适配（iPhone 底部小黑条） */
@@ -55,13 +125,15 @@ page {
 /* 空状态 */
 .empty-tip {
   text-align: center;
-  color: var(--text-sub);
+  color: var(--ink-3);
   font-size: 26rpx;
   padding: 80rpx 0;
 }
 
-/* 通用价格样式 */
+/* 通用价格样式：衬线 + 等宽数字 + 暖陶色 */
 .price-text {
-  color: var(--price);
+  color: var(--terracotta);
   font-weight: 600;
+  font-family: 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', 'STSong', 'SimSun', serif;
+  font-variant-numeric: tabular-nums;
 }

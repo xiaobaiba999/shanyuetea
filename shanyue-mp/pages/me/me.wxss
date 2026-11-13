@@ -10,7 +10,7 @@
 
 /* 用户卡（墨绿渐变，与登录页品牌视觉呼应） */
 .user-card {
-  background: linear-gradient(160deg, #2F5233, #3E6A45);
+  background: linear-gradient(160deg, var(--pine), #3E6A45);
   border-radius: 20rpx;
   padding: 40rpx 30rpx;
   display: flex;
@@ -33,7 +33,7 @@
 .avatar-char {
   font-size: 60rpx;
   font-weight: 700;
-  color: #2F5233;
+  color: var(--pine);
 }
 .user-info {
   margin-left: 26rpx;
@@ -63,18 +63,18 @@
 .points-num {
   font-size: 56rpx;
   font-weight: 800;
-  color: #C89B5A;
+  color: var(--gold);
   line-height: 1.2;
 }
 .points-label {
   margin-top: 4rpx;
   font-size: 22rpx;
-  color: #8A8A8A;
+  color: var(--ink-3);
 }
 .points-tip {
   flex: 1;
   font-size: 24rpx;
-  color: #8A8A8A;
+  color: var(--ink-3);
   line-height: 36rpx;
   border-left: 2rpx solid #F2F2EE;
   padding-left: 30rpx;
@@ -88,14 +88,26 @@
   display: flex;
   align-items: center;
   padding: 30rpx 0;
-  border-bottom: 2rpx solid #F5F6F4;
+  border-bottom: 2rpx solid var(--paper);
 }
 .menu-item:last-child {
   border-bottom: none;
 }
+/* 菜单行印章字：茶金描边圆 + 衡线单字 */
 .mi-icon {
-  font-size: 32rpx;
+  width: 56rpx;
+  height: 56rpx;
   margin-right: 20rpx;
+  border: 2rpx solid var(--gold);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Songti SC', 'STSong', 'SimSun', serif;
+  font-size: 26rpx;
+  color: var(--pine);
+  transform: rotate(-4deg);
+  flex: none;
 }
 .mi-text {
   flex: 1;
@@ -109,8 +121,8 @@
 /* 退出登录 */
 .logout-btn {
   margin-top: 40rpx;
-  border: 2rpx solid #D9534F;
-  color: #D9534F;
+  border: 2rpx solid var(--danger);
+  color: var(--danger);
   border-radius: 48rpx;
   text-align: center;
   font-size: 28rpx;
@@ -149,20 +161,20 @@
 }
 .about-close {
   font-size: 32rpx;
-  color: #8A8A8A;
+  color: var(--ink-3);
   padding: 8rpx;
 }
 .about-slogan {
   margin-top: 8rpx;
   font-size: 24rpx;
-  color: #C89B5A;
+  color: var(--gold);
   letter-spacing: 2rpx;
 }
 .about-row {
   display: flex;
   padding: 22rpx 0;
   font-size: 26rpx;
-  border-bottom: 2rpx solid #F5F6F4;
+  border-bottom: 2rpx solid var(--paper);
   align-items: baseline;
 }
 .about-row:last-of-type {
@@ -170,7 +182,7 @@
 }
 .about-row .k {
   width: 160rpx;
-  color: #8A8A8A;
+  color: var(--ink-3);
   flex: none;
 }
 .about-row .v {
@@ -178,7 +190,7 @@
   line-height: 38rpx;
 }
 .about-row .phone {
-  color: #2F5233;
+  color: var(--pine);
   font-weight: 600;
 }
 .about-tip {

@@ -56,6 +56,7 @@
               <view
                 wx:if="{{item.status === 1}}"
                 class="add-btn"
+                hover-class="btn-hover"
                 catchtap="onGoodsTap"
                 data-index="{{index}}"
               >＋</view>
@@ -92,7 +93,7 @@
             </view>
             <view class="goods-bottom">
               <view class="price"><text class="yen">¥</text><text class="num">{{item.priceText}}</text></view>
-              <view class="add-btn" catchtap="onGoodsTap" data-index="{{index}}">＋</view>
+              <view class="add-btn" hover-class="btn-hover" catchtap="onGoodsTap" data-index="{{index}}">＋</view>
             </view>
           </view>
         </view>
@@ -106,7 +107,7 @@
   <!-- 打烊遮罩（盖住菜单区，不挡 tab） -->
   <view wx:if="{{shopStatus === 0}}" class="closed-mask">
     <view class="closed-card">
-      <view class="closed-icon">☾</view>
+      <view class="closed-moon" />
       <view class="closed-title">门店打烊中</view>
       <view class="closed-sub">营业时间 09:00 - 22:00，欢迎明日再来</view>
     </view>
@@ -134,7 +135,7 @@
     <view class="cart-sheet" catchtap="noop">
       <view class="sheet-head">
         <text>购物车</text>
-        <text class="clean-btn" catchtap="onCleanCart">🗑 清空</text>
+        <text class="clean-btn" catchtap="onCleanCart">清空</text>
       </view>
       <scroll-view scroll-y class="cart-list">
         <view wx:for="{{cart}}" wx:key="id" class="cart-item">
@@ -159,7 +160,7 @@
     <view class="spec-sheet safe-bottom" catchtap="noop">
       <view class="spec-head">
         <view class="spec-name">{{specGoods.name}}</view>
-        <view class="spec-close" bindtap="onCloseSpec">✕</view>
+        <view class="spec-close" bindtap="onCloseSpec">×</view>
       </view>
       <scroll-view scroll-y class="spec-scroll">
         <view wx:for="{{specGroups}}" wx:key="name" wx:for-index="gIdx" class="spec-group">
@@ -192,7 +193,7 @@
     <view class="spec-sheet safe-bottom" catchtap="noop">
       <view class="spec-head">
         <view class="spec-name">{{setmealItem.name}}</view>
-        <view class="spec-close" bindtap="onCloseSetmeal">✕</view>
+        <view class="spec-close" bindtap="onCloseSetmeal">×</view>
       </view>
       <scroll-view scroll-y class="spec-scroll">
         <view class="setmeal-desc">{{setmealItem.description}}</view>

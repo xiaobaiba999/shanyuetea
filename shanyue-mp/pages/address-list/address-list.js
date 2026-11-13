@@ -78,7 +78,7 @@ Page({
     wx.showModal({
       title: '删除地址',
       content: '确定删除「' + name + '」的这个地址吗？',
-      confirmColor: '#D9534F',
+      confirmColor: '#B5432F',
       success: (res) => {
         if (!res.confirm) return;
         request({ url: '/user/addressBook', method: 'DELETE', query: { id } })

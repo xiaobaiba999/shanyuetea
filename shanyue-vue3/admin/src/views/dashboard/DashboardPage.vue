@@ -49,7 +49,7 @@
       </div>
       <div class="todo-list">
         <button v-if="todoPending > 0" class="todo-item warn" @click="router.push({ path: '/order', query: { status: '2' } })">
-          <span class="todo-icon">⏰</span>
+          <span class="todo-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16Z"/><path d="M11.25 6.5h1.5v6.4l4.4 2.54-.75 1.3-5.15-2.97Z"/></svg></span>
           <div class="todo-text">
             <div class="tt">{{ todoPending }} 笔订单待接单</div>
             <div class="ts">{{ oldestPending ? `最早一单 ${oldestPending.pickupNumber || '—'} 已等待 ${oldestWaitMin} 分钟，尽快处理` : '点击前往订单管理处理' }}</div>
@@ -57,7 +57,7 @@
           <span class="todo-badge">{{ todoPending }}</span>
         </button>
         <button v-if="todoCoupons.length > 0" class="todo-item hot" @click="router.push('/coupon')">
-          <span class="todo-icon">🎫</span>
+          <span class="todo-icon"><svg viewBox="0 0 24 24" fill="currentColor" fill-rule="evenodd" aria-hidden="true"><path d="M4 4h16a2 2 0 0 1 2 2v3.3a2.7 2.7 0 0 0 0 5.4V18a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-3.3a2.7 2.7 0 0 0 0-5.4V6a2 2 0 0 1 2-2Zm7.2 3.6h1.6v1.6h-1.6Zm0 3.4h1.6v1.6h-1.6Zm0 3.4h1.6v1.6h-1.6Z"/></svg></span>
           <div class="todo-text">
             <div class="tt">{{ todoCoupons[0].name }} 库存告急</div>
             <div class="ts">
@@ -67,7 +67,7 @@
           <span class="todo-badge">{{ todoCoupons.length }}</span>
         </button>
         <button v-if="todoOffSale > 0" class="todo-item" @click="router.push('/drink')">
-          <span class="todo-icon">🚫</span>
+          <span class="todo-icon"><svg viewBox="0 0 24 24" fill="currentColor" fill-rule="evenodd" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16Z"/><path d="M7.1 4.9 4.9 7.1l12 12 2.2-2.2Z"/></svg></span>
           <div class="todo-text">
             <div class="tt">{{ todoOffSale }} 款饮品停售中</div>
             <div class="ts">检查原料库存，及时恢复上架</div>
@@ -75,13 +75,13 @@
           <span class="todo-badge">{{ todoOffSale }}</span>
         </button>
         <button v-if="shopStore.status === 0" class="todo-item dim" @click="router.push('/shop')">
-          <span class="todo-icon">🌙</span>
+          <span class="todo-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.3 2.6a9.4 9.4 0 1 0 8.1 8.1 7.4 7.4 0 0 1-8.1-8.1Z"/></svg></span>
           <div class="todo-text">
             <div class="tt">店铺当前为打烊状态</div>
             <div class="ts">C 端暂停下单，点击前往店铺设置恢复营业</div>
           </div>
         </button>
-        <div v-if="!hasTodos" class="todo-empty">✅ 暂无待办事项，一切井然有序</div>
+        <div v-if="!hasTodos" class="todo-empty">暂无待办事项，一切井然有序</div>
       </div>
     </div>
 
@@ -309,8 +309,8 @@ function renderChart(trend: TurnoverReportVO) {
     tooltip: {
       trigger: 'axis',
       backgroundColor: '#fff',
-      borderColor: '#f0e6da',
-      textStyle: { color: '#3f2a1a' },
+      borderColor: '#E8E2D4',
+      textStyle: { color: '#2B2620' },
       formatter: (params: unknown) => {
         const p = (params as Array<{ name: string; value: number }>)[0]
         return `${p.name}<br/>营业额：¥ ${fmtMoney(p.value)}`
@@ -320,13 +320,13 @@ function renderChart(trend: TurnoverReportVO) {
       type: 'category',
       data: labels,
       axisTick: { show: false },
-      axisLine: { lineStyle: { color: '#e4d9cb' } },
-      axisLabel: { color: '#8c7a6b' },
+      axisLine: { lineStyle: { color: '#E8E2D4' } },
+      axisLabel: { color: '#6B6155' },
     },
     yAxis: {
       type: 'value',
-      splitLine: { lineStyle: { color: '#f3ede3' } },
-      axisLabel: { color: '#8c7a6b', formatter: (v: number) => `¥${Math.round(v / 100)}` },
+      splitLine: { lineStyle: { color: '#E8E2D4' } },
+      axisLabel: { color: '#6B6155', formatter: (v: number) => `¥${Math.round(v / 100)}` },
     },
     series: [
       {
@@ -336,15 +336,15 @@ function renderChart(trend: TurnoverReportVO) {
         data: values.map((v, i) => ({
           value: v,
           itemStyle: {
-            // 主题色摩卡棕，今日柱用琥珀高亮
-            color: i === values.length - 1 ? '#c08552' : '#8b5e3c',
+            // 主题色墨绿，今日柱用茶金高亮
+            color: i === values.length - 1 ? '#C89B5A' : '#2F5233',
             borderRadius: [6, 6, 0, 0],
           },
         })),
         label: {
           show: true,
           position: 'top',
-          color: '#8c7a6b',
+          color: '#6B6155',
           formatter: (p: { value: number }) => `${(p.value / 100).toFixed(0)}`,
         },
       },
@@ -371,7 +371,7 @@ function renderChart(trend: TurnoverReportVO) {
 
 .stat-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 22px rgba(63, 42, 26, 0.1);
+  box-shadow: 0 8px 22px rgba(43, 38, 32, 0.1);
 }
 
 .stat-icon {
@@ -385,25 +385,27 @@ function renderChart(trend: TurnoverReportVO) {
   flex-shrink: 0;
 }
 
-.si-1 { background: linear-gradient(135deg, #c08552, #8b5e3c); }
-.si-2 { background: linear-gradient(135deg, #a9846b, #7c5a43); }
-.si-3 { background: linear-gradient(135deg, #7fa88b, #5f8d6b); }
-.si-4 { background: linear-gradient(135deg, #d9a06b, #b97b4b); }
+/* 图标位双色渐变：暖陶 / 墨绿 / 成绿 / 茶金 */
+.si-1 { background: linear-gradient(135deg, var(--terracotta), var(--danger)); }
+.si-2 { background: linear-gradient(135deg, var(--pine), var(--pine-deep)); }
+.si-3 { background: linear-gradient(135deg, var(--el-color-success-light-3), var(--success)); }
+.si-4 { background: linear-gradient(135deg, var(--gold), var(--el-color-warning-dark-2)); }
 
 .stat-card.alert .stat-value {
-  color: #c0564a;
+  color: var(--danger);
 }
 
 .stat-label {
   font-size: 13px;
-  color: #8c7a6b;
+  color: var(--ink-2);
 }
 
 .stat-value {
   margin-top: 6px;
+  font-family: var(--font-serif);
   font-size: 26px;
-  font-weight: 800;
-  color: #3f2a1a;
+  font-weight: 700;
+  color: var(--ink);
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.5px;
 }
@@ -428,24 +430,24 @@ function renderChart(trend: TurnoverReportVO) {
   align-items: center;
   gap: 12px;
   padding: 12px 14px;
-  border: 1px solid #f3ede3;
+  border: 1px solid var(--card-line);
   border-radius: 12px;
-  background: #fdfaf6;
+  background: var(--paper);
   cursor: pointer;
   text-align: left;
-  color: #3f2a1a;
+  color: var(--ink);
   transition: all 0.2s;
   position: relative;
 }
 
 .quick-item:hover {
-  border-color: #dccfc5;
-  background: #fbf5ee;
+  border-color: var(--card-line-hover);
+  background: var(--pine-mist);
   transform: translateX(2px);
 }
 
 .quick-item .el-icon {
-  color: #8b5e3c;
+  color: var(--pine);
 }
 
 .qi-title {
@@ -468,7 +470,7 @@ function renderChart(trend: TurnoverReportVO) {
   height: 20px;
   padding: 0 6px;
   border-radius: 10px;
-  background: #c0564a;
+  background: var(--danger);
   color: #fff;
   font-size: 12px;
   font-weight: 700;
@@ -520,29 +522,29 @@ function renderChart(trend: TurnoverReportVO) {
   align-items: center;
   gap: 12px;
   padding: 10px 14px;
-  border: 1px solid #f0e6da;
+  border: 1px solid var(--card-line);
   border-radius: 12px;
-  background: #fdfaf5;
+  background: var(--paper);
   cursor: pointer;
   text-align: left;
   transition: all 0.18s;
 }
 
 .todo-item:hover {
-  border-color: #d9b083;
-  background: #fdf6ec;
+  border-color: var(--card-line-hover);
+  background: var(--pine-mist);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(139, 94, 60, 0.1);
+  box-shadow: 0 4px 12px rgba(47, 82, 51, 0.1);
 }
 
 .todo-item.warn {
-  border-color: #f2d4c8;
-  background: linear-gradient(135deg, #fdf4ef, #fdfaf5);
+  border-color: var(--el-color-warning-light-7);
+  background: linear-gradient(135deg, var(--el-color-warning-light-9), var(--paper));
 }
 
 .todo-item.hot {
-  border-color: #f0dcb8;
-  background: linear-gradient(135deg, #fdf8ec, #fdfaf5);
+  border-color: var(--el-color-warning-light-5);
+  background: linear-gradient(135deg, var(--el-color-warning-light-8), var(--paper));
 }
 
 .todo-item.dim {
@@ -555,11 +557,26 @@ function renderChart(trend: TurnoverReportVO) {
   height: 36px;
   border-radius: 10px;
   background: #fff;
-  border: 1px solid #f0e6da;
+  border: 1px solid var(--card-line);
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  color: var(--ink-3);
   font-size: 17px;
+}
+
+.todo-icon svg {
+  width: 17px;
+  height: 17px;
+  display: block;
+}
+
+.todo-item.warn .todo-icon {
+  color: var(--danger);
+}
+
+.todo-item.hot .todo-icon {
+  color: var(--gold);
 }
 
 .todo-text {
@@ -570,7 +587,7 @@ function renderChart(trend: TurnoverReportVO) {
 .tt {
   font-size: 13px;
   font-weight: 700;
-  color: #46301e;
+  color: var(--ink);
 }
 
 .ts {
@@ -585,7 +602,7 @@ function renderChart(trend: TurnoverReportVO) {
   height: 22px;
   padding: 0 7px;
   border-radius: 11px;
-  background: #c0564a;
+  background: var(--danger);
   color: #fff;
   font-size: 12px;
   font-weight: 700;
@@ -595,14 +612,14 @@ function renderChart(trend: TurnoverReportVO) {
 }
 
 .todo-item:not(.warn) .todo-badge {
-  background: #b0702e;
+  background: var(--el-color-warning-dark-2);
 }
 
 .todo-empty {
   padding: 14px 0 6px;
   text-align: center;
   font-size: 13px;
-  color: #8c7a6b;
+  color: var(--ink-3);
 }
 
 /* ---------- 门店口碑 ---------- */
@@ -616,7 +633,7 @@ function renderChart(trend: TurnoverReportVO) {
 }
 
 .rep-card:hover {
-  box-shadow: 0 4px 16px rgba(63, 42, 26, 0.1);
+  box-shadow: 0 4px 16px rgba(43, 38, 32, 0.1);
   transform: translateY(-1px);
 }
 
@@ -628,7 +645,7 @@ function renderChart(trend: TurnoverReportVO) {
   margin-left: auto;
   font-size: 12px;
   font-weight: 600;
-  color: #b0702e;
+  color: var(--pine);
 }
 
 .rep-list {
@@ -645,22 +662,23 @@ function renderChart(trend: TurnoverReportVO) {
 }
 
 .rep-num {
+  font-family: var(--font-serif);
   font-size: 22px;
   font-weight: 700;
-  color: #3f2a1a;
+  color: var(--ink);
   font-variant-numeric: tabular-nums;
 }
 
 .rep-num.amber {
-  color: #b0702e;
+  color: var(--gold);
 }
 
 .rep-num.green {
-  color: #4c7156;
+  color: var(--success);
 }
 
 .rep-num.danger {
-  color: #c0564a;
+  color: var(--danger);
 }
 
 .rep-label {
@@ -671,7 +689,7 @@ function renderChart(trend: TurnoverReportVO) {
 .rep-divider {
   width: 1px;
   height: 30px;
-  background: #f3ede3;
+  background: var(--card-line);
 }
 
 @media (max-width: 720px) {

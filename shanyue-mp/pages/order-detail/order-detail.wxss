@@ -10,7 +10,7 @@
 
 /* 状态头卡 */
 .hero {
-  background: linear-gradient(160deg, #2F5233, #3E6A45);
+  background: linear-gradient(160deg, var(--pine), #3E6A45);
   border-radius: 20rpx;
   color: #fff;
   padding: 36rpx 30rpx 30rpx;
@@ -69,31 +69,45 @@
   width: 36rpx;
   height: 36rpx;
   border-radius: 50%;
-  background: #EDF0EB;
-  border: 4rpx solid #E0E5DE;
+  background: var(--paper-deep);
+  border: 4rpx solid var(--card-line);
   box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 20rpx;
   color: #fff;
+  position: relative;
 }
 .step-label {
   margin-top: 12rpx;
   font-size: 20rpx;
-  color: #8A8A8A;
+  color: var(--ink-3);
   white-space: nowrap;
 }
 .step.done .dot {
-  background: #2F5233;
-  border-color: #2F5233;
+  background: var(--pine);
+  border-color: var(--pine);
+}
+/* 已完成步骤的白勾（CSS 绘制） */
+.step.done .dot::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: 8rpx;
+  height: 14rpx;
+  border-right: 4rpx solid #fff;
+  border-bottom: 4rpx solid #fff;
+  transform: translate(-50%, -50%) rotate(45deg);
+  border-radius: 1rpx;
 }
 .step.done .step-label {
-  color: #2F5233;
+  color: var(--pine);
 }
 .step.active .dot {
-  background: #C89B5A;
-  border-color: #C89B5A;
+  background: var(--gold);
+  border-color: var(--gold);
   box-shadow: 0 0 0 8rpx rgba(200, 155, 90, 0.18);
 }
 .step.active .step-label {
@@ -108,7 +122,7 @@
   margin-top: 15rpx;
 }
 .bar.done {
-  background: #2F5233;
+  background: var(--pine);
 }
 
 /* 通用标题 / 信息行 */
@@ -125,7 +139,7 @@
 }
 .info-row .k {
   width: 150rpx;
-  color: #8A8A8A;
+  color: var(--ink-3);
   flex: none;
 }
 .info-row .v {
@@ -143,13 +157,13 @@
   flex: none;
   margin-left: 16rpx;
   font-size: 22rpx;
-  color: #2F5233;
-  border: 2rpx solid #2F5233;
+  color: var(--pine);
+  border: 2rpx solid var(--pine);
   border-radius: 8rpx;
   padding: 2rpx 14rpx;
 }
 .paid {
-  color: #2F5233;
+  color: var(--pine);
   font-weight: 600;
 }
 .unpaid-text {
@@ -176,13 +190,13 @@
 }
 .g-spec {
   font-size: 22rpx;
-  color: #8A8A8A;
+  color: var(--ink-3);
   margin-top: 4rpx;
 }
 .g-qty {
   width: 90rpx;
   text-align: center;
-  color: #8A8A8A;
+  color: var(--ink-3);
   font-size: 26rpx;
 }
 .g-subtotal {
@@ -197,11 +211,11 @@
   display: flex;
   justify-content: space-between;
   font-size: 26rpx;
-  color: #5B655C;
+  color: var(--ink-2);
   padding: 8rpx 0;
 }
 .amount-row.total {
-  border-top: 2rpx solid #EFEFEA;
+  border-top: 2rpx solid var(--card-line);
   margin-top: 12rpx;
   padding-top: 20rpx;
   color: #2B2B2B;
@@ -210,12 +224,12 @@
 }
 .price .yen {
   font-size: 22rpx;
-  color: #C7542F;
+  color: var(--terracotta);
 }
 .price .num {
   font-size: 38rpx;
   font-weight: 700;
-  color: #C7542F;
+  color: var(--terracotta);
 }
 
 /* 底部操作条 */
@@ -240,15 +254,15 @@
   text-align: center;
 }
 .act-btn.primary {
-  background: #2F5233;
+  background: var(--pine);
   color: #fff;
 }
 .act-btn.pay {
-  background: #C7542F;
+  background: var(--terracotta);
   color: #fff;
   box-shadow: 0 8rpx 20rpx rgba(199, 84, 47, 0.28);
 }
 .act-btn.ghost {
   border: 2rpx solid #C9D2CA;
-  color: #5B655C;
+  color: var(--ink-2);
 }

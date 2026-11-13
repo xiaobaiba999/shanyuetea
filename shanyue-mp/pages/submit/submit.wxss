@@ -22,7 +22,7 @@
 }
 .seg-item.on {
   background: #fff;
-  color: #2F5233;
+  color: var(--pine);
   box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.06);
 }
 .seg-title {
@@ -43,17 +43,31 @@
   font-weight: 700;
   margin-bottom: 12rpx;
 }
+/* 地址/时间行：茶金小圆点前缀（替代 emoji 图标） */
 .store-row {
   font-size: 24rpx;
-  color: #6E776F;
+  color: var(--ink-3);
   line-height: 40rpx;
+  position: relative;
+  padding-left: 26rpx;
+  box-sizing: border-box;
+}
+.store-row::before {
+  content: '';
+  position: absolute;
+  left: 6rpx;
+  top: 18rpx;
+  width: 10rpx;
+  height: 10rpx;
+  border-radius: 50%;
+  background: var(--gold);
 }
 .pickup-tag {
   margin-top: 16rpx;
   display: inline-block;
   font-size: 22rpx;
-  color: #2F5233;
-  background: #EAF1EB;
+  color: var(--pine);
+  background: var(--pine-mist);
   border-radius: 10rpx;
   padding: 8rpx 16rpx;
 }
@@ -70,26 +84,26 @@
 }
 .addr-phone {
   margin-left: 16rpx;
-  color: #8A8A8A;
+  color: var(--ink-3);
   font-size: 26rpx;
 }
 .addr-label {
   margin-left: auto;
   font-size: 20rpx;
-  color: #C89B5A;
-  border: 2rpx solid #C89B5A;
+  color: var(--gold);
+  border: 2rpx solid var(--gold);
   border-radius: 8rpx;
   padding: 2rpx 12rpx;
 }
 .addr-detail {
   margin-top: 12rpx;
   font-size: 26rpx;
-  color: #4A4A4A;
+  color: var(--ink-2);
   line-height: 38rpx;
 }
 .addr-empty {
   font-size: 30rpx;
-  color: #2F5233;
+  color: var(--pine);
   text-align: center;
   padding: 20rpx 0;
   font-weight: 600;
@@ -115,13 +129,13 @@
 }
 .g-spec {
   font-size: 22rpx;
-  color: #8A8A8A;
+  color: var(--ink-3);
   margin-top: 4rpx;
 }
 .g-qty {
   width: 90rpx;
   text-align: center;
-  color: #8A8A8A;
+  color: var(--ink-3);
   font-size: 26rpx;
 }
 .g-subtotal {
@@ -150,11 +164,11 @@
   display: flex;
   justify-content: space-between;
   font-size: 26rpx;
-  color: #5B655C;
+  color: var(--ink-2);
   padding: 8rpx 0;
 }
 .amount-row.total {
-  border-top: 2rpx solid #EFEFEA;
+  border-top: 2rpx solid var(--card-line);
   margin-top: 12rpx;
   padding-top: 20rpx;
   color: #2B2B2B;
@@ -162,12 +176,12 @@
 }
 .price .yen {
   font-size: 22rpx;
-  color: #C7542F;
+  color: var(--terracotta);
 }
 .price .num {
   font-size: 38rpx;
   font-weight: 700;
-  color: #C7542F;
+  color: var(--terracotta);
 }
 
 /* 底部提交条 */
@@ -188,22 +202,22 @@
 }
 .sum-label {
   font-size: 26rpx;
-  color: #5B655C;
+  color: var(--ink-2);
 }
 .sum .yen {
   font-size: 24rpx;
-  color: #C7542F;
+  color: var(--terracotta);
 }
 .sum .num {
   font-size: 42rpx;
   font-weight: 700;
-  color: #C7542F;
+  color: var(--terracotta);
 }
 .submit-btn {
   width: 240rpx;
   height: 88rpx;
   border-radius: 44rpx;
-  background: #2F5233;
+  background: var(--pine);
   color: #fff;
   font-size: 32rpx;
   display: flex;
@@ -211,5 +225,5 @@
   justify-content: center;
 }
 .submit-btn.disabled {
-  background: #C7CFC8;
+  background: #C2CFC4;
 }

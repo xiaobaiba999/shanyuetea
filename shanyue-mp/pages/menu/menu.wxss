@@ -1,11 +1,12 @@
-/* pages/menu/menu.wxss —— 点单主页样式 */
+/* pages/menu/menu.wxss —— 点单主页样式（宣纸 / 墨绿 / 茶金 体系） */
 .page {
   height: 100vh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   position: relative;
-  background: #F5F6F4;
+  /* 透明以透出 page 级宣纸斜纹底 */
+  background: transparent;
 }
 
 /* 顶部类型切换 */
@@ -14,33 +15,39 @@
   display: flex;
   align-items: center;
   padding: 16rpx 24rpx;
-  background: #fff;
+  background: var(--card);
+  border-bottom: 1rpx solid var(--card-line);
 }
 .type-item {
   font-size: 32rpx;
-  color: #8A8A8A;
+  color: var(--ink-2);
   padding: 8rpx 28rpx;
   border-radius: 32rpx;
   margin-right: 16rpx;
+  transition: color .15s ease;
 }
 .type-item.on {
-  background: #2F5233;
+  background: linear-gradient(160deg, #3A6140, var(--pine) 60%, var(--pine-deep));
   color: #fff;
   font-weight: 600;
+  box-shadow: inset 0 2rpx 0 rgba(255, 255, 255, .12), 0 4rpx 12rpx rgba(47, 82, 51, .22);
 }
 .shop-state {
   margin-left: auto;
   font-size: 22rpx;
   padding: 6rpx 18rpx;
   border-radius: 24rpx;
+  box-sizing: border-box;
 }
 .shop-state.open {
-  color: #2F5233;
-  background: #EAF1EB;
+  color: var(--success);
+  background: rgba(62, 122, 78, .09);
+  border: 1rpx solid rgba(62, 122, 78, .22);
 }
 .shop-state.closed {
-  color: #D9534F;
-  background: #FBEDEC;
+  color: var(--danger);
+  background: rgba(181, 67, 47, .08);
+  border: 1rpx solid rgba(181, 67, 47, .22);
 }
 
 /* 主体两栏 */
@@ -49,33 +56,38 @@
   display: flex;
   min-height: 0;
 }
+/* 分类侧栏：深一档宣纸底 */
 .cat-rail {
   width: 176rpx;
   height: 100%;
-  background: #EFF1EC;
+  background: var(--paper-deep);
+  border-right: 1rpx solid var(--card-line);
   flex: none;
 }
 .cat-item {
   position: relative;
-  padding: 30rpx 16rpx 30rpx 22rpx;
+  padding: 30rpx 16rpx 30rpx 24rpx;
   font-size: 26rpx;
-  color: #5B655C;
+  color: var(--ink-2);
   line-height: 36rpx;
 }
+/* 激活项：白底 + 墨绿衬线加粗 + 左侧茶金竖条 */
 .cat-item.on {
-  background: #F5F6F4;
-  color: #2F5233;
+  background: var(--card);
+  color: var(--pine);
   font-weight: 700;
+  font-family: 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', 'STSong', 'SimSun', serif;
+  border-radius: 0 16rpx 16rpx 0;
 }
 .cat-bar {
   position: absolute;
   left: 0;
   top: 50%;
   transform: translateY(-50%);
-  width: 8rpx;
+  width: 6rpx;
   height: 0;
-  border-radius: 4rpx;
-  background: #2F5233;
+  border-radius: 3rpx;
+  background: var(--gold);
 }
 .cat-item.on .cat-bar {
   height: 40rpx;
@@ -91,13 +103,15 @@
   height: 40rpx;
 }
 
-/* 商品卡 */
+/* 商品卡：白底细描边 + 柔和投影 */
 .goods-card {
   display: flex;
-  background: #fff;
-  border-radius: 20rpx;
+  background: var(--card);
+  border: 1rpx solid var(--card-line);
+  border-radius: 24rpx;
   padding: 20rpx;
   margin-bottom: 20rpx;
+  box-shadow: 0 2rpx 6rpx rgba(43, 38, 32, .04), 0 8rpx 24rpx rgba(43, 38, 32, .06);
   /* 防溢出：内容超宽时裁剪在卡片内，避免加购按钮被推出屏幕（右侧被截断的绿圆就是它） */
   overflow: hidden;
   box-sizing: border-box;
@@ -110,7 +124,9 @@
   width: 150rpx;
   height: 150rpx;
   border-radius: 16rpx;
-  background: linear-gradient(135deg, #E8EFE7, #D8E4D6);
+  background: linear-gradient(135deg, var(--pine-mist), #D7E3D7);
+  border: 1rpx solid rgba(47, 82, 51, .08);
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -120,8 +136,9 @@
 .thumb-char {
   font-size: 60rpx;
   font-weight: 700;
-  color: #2F5233;
-  opacity: 0.5;
+  color: var(--pine);
+  opacity: 0.55;
+  font-family: 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', 'STSong', 'SimSun', serif;
 }
 /* 商品实拍图：绝对定位铺满缩略图，盖在首字上层（加载失败时 binderror 隐藏本层露出首字） */
 .thumb-img {
@@ -133,7 +150,7 @@
 .soldout-mask {
   position: absolute;
   inset: 0;
-  background: rgba(40, 40, 40, 0.45);
+  background: rgba(43, 38, 32, 0.45);
   color: #fff;
   font-size: 26rpx;
   display: flex;
@@ -154,10 +171,11 @@
 .goods-name {
   font-size: 30rpx;
   font-weight: 600;
+  font-family: 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', 'STSong', 'SimSun', serif;
 }
 .goods-desc {
   font-size: 22rpx;
-  color: #8A8A8A;
+  color: var(--ink-3);
   margin-top: 6rpx;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -170,14 +188,16 @@
 }
 .sales {
   font-size: 22rpx;
-  color: #8A8A8A;
+  color: var(--ink-3);
 }
 .spec-tag {
+  flex: none;
   font-size: 20rpx;
-  color: #C89B5A;
-  border: 2rpx solid #C89B5A;
-  border-radius: 8rpx;
-  padding: 2rpx 10rpx;
+  color: var(--gold);
+  border: 1rpx solid rgba(200, 155, 90, .55);
+  background: rgba(200, 155, 90, .08);
+  border-radius: 999rpx;
+  padding: 2rpx 12rpx;
   margin-left: 12rpx;
 }
 .goods-bottom {
@@ -186,26 +206,36 @@
   align-items: center;
   justify-content: space-between;
 }
+/* 价格：暖陶色 + 衬线等宽数字 */
 .price .yen {
   font-size: 22rpx;
-  color: #C7542F;
+  color: var(--terracotta);
 }
 .price .num {
   font-size: 34rpx;
   font-weight: 700;
-  color: #C7542F;
+  color: var(--terracotta);
+  font-family: 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', 'STSong', 'SimSun', serif;
+  font-variant-numeric: tabular-nums;
 }
+/* 加购小圆钮：墨绿渐变 + 内高光 + 按压回弹 */
 .add-btn {
-  width: 52rpx;
-  height: 52rpx;
+  width: 56rpx;
+  height: 56rpx;
   border-radius: 50%;
-  background: #2F5233;
+  background: linear-gradient(160deg, #3A6140, var(--pine) 60%, var(--pine-deep));
   color: #fff;
   font-size: 34rpx;
   display: flex;
   align-items: center;
   justify-content: center;
   line-height: 1;
+  box-shadow: inset 0 2rpx 0 rgba(255, 255, 255, .14), 0 4rpx 12rpx rgba(47, 82, 51, .25);
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.add-btn.btn-hover {
+  transform: scale(.9);
+  box-shadow: inset 0 2rpx 0 rgba(255, 255, 255, .14), 0 2rpx 6rpx rgba(47, 82, 51, .2);
 }
 
 /* 打烊遮罩 */
@@ -215,7 +245,7 @@
   right: 0;
   top: 88rpx;
   bottom: 0;
-  background: rgba(245, 246, 244, 0.92);
+  background: rgba(246, 243, 236, 0.92);
   z-index: 30;
   display: flex;
   align-items: center;
@@ -224,31 +254,39 @@
 .closed-card {
   text-align: center;
 }
-.closed-icon {
-  font-size: 90rpx;
-  color: #2F5233;
+/* 纯 CSS 月牙（替代字符图标） */
+.closed-moon {
+  width: 76rpx;
+  height: 76rpx;
+  border-radius: 50%;
+  box-shadow: inset 18rpx -12rpx 0 0 var(--gold);
+  transform: rotate(-30deg);
+  margin: 0 auto;
 }
 .closed-title {
-  font-size: 36rpx;
+  font-size: 38rpx;
   font-weight: 700;
-  color: #2B2B2B;
-  margin-top: 16rpx;
+  color: var(--ink);
+  margin-top: 20rpx;
+  letter-spacing: 4rpx;
+  font-family: 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', 'STSong', 'SimSun', serif;
 }
 .closed-sub {
   font-size: 24rpx;
-  color: #8A8A8A;
+  color: var(--ink-3);
   margin-top: 12rpx;
 }
 
-/* 底部购物车条 */
+/* 底部购物车条：白底 + 顶线 + 柔和投影 */
 .cart-bar {
   flex: none;
   display: flex;
   align-items: center;
-  background: #fff;
+  background: var(--card);
+  border-top: 1rpx solid var(--card-line);
   padding: 16rpx 24rpx;
   padding-top: 16rpx;
-  box-shadow: 0 -6rpx 20rpx rgba(0, 0, 0, 0.05);
+  box-shadow: 0 -8rpx 24rpx rgba(43, 38, 32, .06);
   z-index: 40;
 }
 .cart-left {
@@ -261,32 +299,38 @@
   width: 84rpx;
   height: 84rpx;
   border-radius: 50%;
-  background: #E5E9E4;
+  background: var(--paper-deep);
+  border: 1rpx solid var(--card-line);
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-top: -40rpx;
 }
 .cart-icon.has {
-  background: #2F5233;
+  background: linear-gradient(160deg, #3A6140, var(--pine) 60%, var(--pine-deep));
+  border-color: var(--pine-deep);
+  box-shadow: inset 0 2rpx 0 rgba(255, 255, 255, .14), 0 6rpx 16rpx rgba(47, 82, 51, .28);
 }
 .bag {
   width: 34rpx;
   height: 28rpx;
-  border: 4rpx solid #8A8A8A;
+  border: 4rpx solid var(--ink-3);
   border-radius: 6rpx;
   position: relative;
+  box-sizing: border-box;
 }
 .bag::before {
   content: '';
   position: absolute;
   width: 14rpx;
   height: 14rpx;
-  border: 4rpx solid #8A8A8A;
+  border: 4rpx solid var(--ink-3);
   border-bottom: none;
   border-radius: 10rpx 10rpx 0 0;
   top: -18rpx;
   left: 1rpx;
+  box-sizing: border-box;
 }
 .cart-icon.has .bag,
 .cart-icon.has .bag::before {
@@ -300,50 +344,62 @@
   height: 34rpx;
   padding: 0 6rpx;
   border-radius: 18rpx;
-  background: #C7542F;
+  background: var(--terracotta);
   color: #fff;
   font-size: 20rpx;
   display: flex;
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
+  box-shadow: 0 2rpx 6rpx rgba(199, 84, 47, .3);
 }
 .cart-total {
   margin-left: 20rpx;
 }
 .cart-total .yen {
   font-size: 24rpx;
-  color: #C7542F;
+  color: var(--terracotta);
 }
 .cart-total .num {
   font-size: 40rpx;
   font-weight: 700;
-  color: #C7542F;
+  color: var(--terracotta);
+  font-family: 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', 'STSong', 'SimSun', serif;
+  font-variant-numeric: tabular-nums;
 }
 .empty-text {
   font-size: 26rpx;
-  color: #8A8A8A;
+  color: var(--ink-3);
 }
+/* 去结算：主按钮光泽款 */
 .checkout-btn {
   width: 200rpx;
   height: 84rpx;
   border-radius: 44rpx;
-  background: #2F5233;
+  background: linear-gradient(160deg, #3A6140, var(--pine) 55%, var(--pine-deep));
   color: #fff;
   font-size: 30rpx;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: inset 0 2rpx 0 rgba(255, 255, 255, .12), 0 6rpx 20rpx rgba(47, 82, 51, .28);
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.checkout-btn.btn-hover {
+  transform: scale(.965);
+  box-shadow: inset 0 2rpx 0 rgba(255, 255, 255, .12), 0 2rpx 8rpx rgba(47, 82, 51, .22);
 }
 .checkout-btn.disabled {
-  background: #C7CFC8;
+  background: var(--card-line);
+  color: var(--ink-3);
+  box-shadow: none;
 }
 
 /* 弹层通用 */
 .popup-mask {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: rgba(43, 38, 32, 0.45);
   z-index: 50;
   display: flex;
   align-items: flex-end;
@@ -351,8 +407,9 @@
 .cart-sheet,
 .spec-sheet {
   width: 100%;
-  background: #fff;
+  background: var(--card);
   border-radius: 32rpx 32rpx 0 0;
+  border-top: 1rpx solid var(--card-line);
   padding: 30rpx 30rpx 20rpx;
   box-sizing: border-box;
   animation: rise 0.2s ease-out;
@@ -367,11 +424,12 @@
   font-size: 32rpx;
   font-weight: 600;
   padding-bottom: 16rpx;
-  border-bottom: 2rpx solid #EFEFEA;
+  border-bottom: 1rpx solid var(--card-line);
+  font-family: 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', 'STSong', 'SimSun', serif;
 }
 .clean-btn {
   font-size: 24rpx;
-  color: #8A8A8A;
+  color: var(--ink-3);
   font-weight: 400;
 }
 .cart-list {
@@ -381,7 +439,7 @@
   display: flex;
   align-items: center;
   padding: 24rpx 0;
-  border-bottom: 2rpx solid #F5F6F4;
+  border-bottom: 1rpx solid var(--card-line);
 }
 .ci-info {
   flex: 1;
@@ -393,7 +451,7 @@
 }
 .ci-spec {
   font-size: 22rpx;
-  color: #8A8A8A;
+  color: var(--ink-3);
   margin-top: 6rpx;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -402,9 +460,10 @@
 .ci-price {
   width: 130rpx;
   text-align: right;
-  color: #C7542F;
+  color: var(--terracotta);
   font-weight: 600;
   font-size: 28rpx;
+  font-variant-numeric: tabular-nums;
 }
 .stepper {
   display: flex;
@@ -415,22 +474,26 @@
   width: 48rpx;
   height: 48rpx;
   border-radius: 50%;
-  border: 2rpx solid #2F5233;
-  color: #2F5233;
+  border: 2rpx solid var(--pine);
+  color: var(--pine);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 30rpx;
   line-height: 1;
+  box-sizing: border-box;
 }
 .step-btn.plus {
-  background: #2F5233;
+  background: linear-gradient(160deg, #3A6140, var(--pine) 60%, var(--pine-deep));
+  border-color: var(--pine-deep);
   color: #fff;
+  box-shadow: inset 0 2rpx 0 rgba(255, 255, 255, .14);
 }
 .step-num {
   width: 60rpx;
   text-align: center;
   font-size: 28rpx;
+  font-variant-numeric: tabular-nums;
 }
 
 /* 规格弹层 */
@@ -442,10 +505,11 @@
 .spec-name {
   font-size: 34rpx;
   font-weight: 700;
+  font-family: 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', 'STSong', 'SimSun', serif;
 }
 .spec-close {
   font-size: 32rpx;
-  color: #8A8A8A;
+  color: var(--ink-3);
   padding: 8rpx;
 }
 .spec-scroll {
@@ -457,56 +521,67 @@
 }
 .group-name {
   font-size: 26rpx;
-  color: #8A8A8A;
+  color: var(--ink-3);
   margin-bottom: 14rpx;
+  letter-spacing: 2rpx;
 }
 .opt-row {
   display: flex;
   flex-wrap: wrap;
 }
+/* 规格选项：激活胶囊 = pine-mist 底 + pine 字 + 1rpx 描边 */
 .opt {
-  border: 2rpx solid #E3E6E0;
+  border: 1rpx solid var(--card-line);
   border-radius: 12rpx;
   padding: 12rpx 26rpx;
   font-size: 26rpx;
   margin: 0 16rpx 16rpx 0;
-  color: #4A4A4A;
+  color: var(--ink-2);
+  background: var(--card);
+  transition: background .15s ease, color .15s ease, border-color .15s ease;
 }
 .opt.on {
-  border-color: #2F5233;
-  background: #EAF1EB;
-  color: #2F5233;
+  border-color: rgba(47, 82, 51, .18);
+  background: var(--pine-mist);
+  color: var(--pine);
   font-weight: 600;
 }
 .delta {
   font-size: 20rpx;
   margin-left: 6rpx;
-  color: #C89B5A;
+  color: var(--gold);
 }
 .spec-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding-top: 24rpx;
-  border-top: 2rpx solid #EFEFEA;
+  border-top: 1rpx solid var(--card-line);
 }
+/* 加入购物车：主按钮光泽款 */
 .spec-add {
-  background: #2F5233;
+  background: linear-gradient(160deg, #3A6140, var(--pine) 55%, var(--pine-deep));
   color: #fff;
   border-radius: 44rpx;
   padding: 18rpx 56rpx;
   font-size: 30rpx;
+  box-shadow: inset 0 2rpx 0 rgba(255, 255, 255, .12), 0 6rpx 20rpx rgba(47, 82, 51, .28);
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.spec-add.btn-hover {
+  transform: scale(.965);
+  box-shadow: inset 0 2rpx 0 rgba(255, 255, 255, .12), 0 2rpx 8rpx rgba(47, 82, 51, .22);
 }
 .setmeal-desc {
   font-size: 24rpx;
-  color: #8A8A8A;
+  color: var(--ink-3);
   padding: 8rpx 0 4rpx;
 }
 .detail-row {
   display: flex;
   align-items: baseline;
   padding: 14rpx 0;
-  border-bottom: 2rpx dashed #F0F0EB;
+  border-bottom: 1rpx dashed var(--card-line);
 }
 .detail-name {
   font-size: 28rpx;
@@ -514,11 +589,11 @@
 }
 .detail-copies {
   font-size: 24rpx;
-  color: #C89B5A;
+  color: var(--gold);
   margin-left: 12rpx;
 }
 .detail-desc {
   font-size: 22rpx;
-  color: #8A8A8A;
+  color: var(--ink-3);
   margin-left: auto;
 }

@@ -13,7 +13,7 @@
   display: flex;
   align-items: center;
   padding: 26rpx 0;
-  border-bottom: 2rpx solid #F5F6F4;
+  border-bottom: 2rpx solid var(--paper);
 }
 .field:last-child {
   border-bottom: none;
@@ -43,7 +43,7 @@
 .f-sub {
   margin-top: 6rpx;
   font-size: 22rpx;
-  color: #8A8A8A;
+  color: var(--ink-3);
 }
 
 .f-input {
@@ -95,19 +95,19 @@
   padding: 12rpx 34rpx;
   font-size: 26rpx;
   margin: 0 16rpx 12rpx 0;
-  color: #4A4A4A;
+  color: var(--ink-2);
 }
 .chip.on {
-  border-color: #2F5233;
-  background: #EAF1EB;
-  color: #2F5233;
+  border-color: var(--pine);
+  background: var(--pine-mist);
+  color: var(--pine);
   font-weight: 600;
 }
 
 /* 保存按钮 */
 .save-btn {
   margin-top: 40rpx;
-  background: #2F5233;
+  background: var(--pine);
   color: #fff;
   border-radius: 48rpx;
   text-align: center;
@@ -116,15 +116,15 @@
   box-shadow: 0 10rpx 24rpx rgba(47, 82, 51, 0.24);
 }
 .save-btn.disabled {
-  background: #C7CFC8;
+  background: #C2CFC4;
   box-shadow: none;
 }
 
 /* 删除按钮（编辑态） */
 .delete-btn {
   margin-top: 24rpx;
-  border: 2rpx solid #D9534F;
-  color: #D9534F;
+  border: 2rpx solid var(--danger);
+  color: var(--danger);
   border-radius: 48rpx;
   text-align: center;
   font-size: 28rpx;

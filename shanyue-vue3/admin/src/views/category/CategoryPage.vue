@@ -238,8 +238,8 @@ onMounted(fetchPage)
   height: 24px;
   padding: 0 8px;
   border-radius: 8px;
-  background: #f8f2ea;
-  color: #8b5e3c;
+  background: var(--pine-mist);
+  color: var(--pine);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }

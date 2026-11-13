@@ -17,7 +17,7 @@ const panelOpen = ref(false)
 
 function togglePanel() {
   if (cart.totalCount === 0) {
-    showToast('先挑一杯喜欢的咖啡吧 ☕')
+    showToast('先挑一杯喜欢的咖啡吧')
     return
   }
   panelOpen.value = !panelOpen.value
@@ -25,11 +25,11 @@ function togglePanel() {
 
 function handleCheckout() {
   if (!props.shopOpen) {
-    showFailToast('门店已打烊，明天再来吧 🌙')
+    showFailToast('门店已打烊，明天再来吧')
     return
   }
   if (cart.totalCount === 0) {
-    showToast('先挑一杯喜欢的咖啡吧 ☕')
+    showToast('先挑一杯喜欢的咖啡吧')
     return
   }
   panelOpen.value = false
@@ -75,7 +75,7 @@ async function onClean() {
       <div v-if="panelOpen && cart.items.length" class="cart-panel">
         <div class="panel-head">
           <p class="panel-title">购物车 <span class="panel-count">({{ cart.totalCount }})</span></p>
-          <button class="clean-btn" @click="onClean">🗑 清空购物车</button>
+          <button class="clean-btn" @click="onClean">清空购物车</button>
         </div>
         <ul class="panel-list no-scrollbar">
           <li v-for="row in cart.items" :key="row.id" class="row">
@@ -123,11 +123,11 @@ async function onClean() {
         </button>
 
         <div class="total">
-          <p class="total-price">¥{{ fmtPrice(cart.totalPrice) }}</p>
+          <p class="total-price"><span class="yen">¥</span><span class="num price-num">{{ fmtPrice(cart.totalPrice) }}</span></p>
           <p class="total-sub">免打包费 · 门店自取</p>
         </div>
 
-        <button class="checkout-btn btn-gradient" :disabled="cart.totalCount === 0 || !props.shopOpen" @click="handleCheckout">
+        <button class="checkout-btn btn-primary" :disabled="cart.totalCount === 0 || !props.shopOpen" @click="handleCheckout">
           {{ props.shopOpen ? '去结算' : '已打烊' }}
         </button>
       </div>
@@ -161,8 +161,9 @@ async function onClean() {
   display: flex;
   flex-direction: column;
   background: var(--card);
+  border: 1px solid var(--card-line);
   border-radius: var(--radius-card);
-  box-shadow: 0 10px 32px rgba(30, 17, 8, 0.22);
+  box-shadow: 0 12px 32px rgba(43, 38, 32, 0.18);
   overflow: hidden;
 }
 
@@ -171,7 +172,7 @@ async function onClean() {
   align-items: center;
   justify-content: space-between;
   padding: 12px 16px;
-  border-bottom: 1px solid #f0e8dc;
+  border-bottom: 1px solid var(--card-line);
 }
 
 .panel-title {
@@ -211,7 +212,7 @@ async function onClean() {
   height: 44px;
   border-radius: 10px;
   overflow: hidden;
-  background: var(--cream-deep);
+  background: var(--paper-deep);
 }
 
 .row-info {
@@ -237,7 +238,9 @@ async function onClean() {
   margin-top: 2px;
   font-size: 13px;
   font-weight: 700;
-  color: var(--caramel-deep);
+  font-family: var(--font-serif);
+  font-variant-numeric: tabular-nums;
+  color: var(--terracotta);
 }
 
 .row-ops {
@@ -255,18 +258,19 @@ async function onClean() {
 }
 
 .op.minus {
-  border: 1px solid #ddd0bf;
+  border: 1px solid var(--card-line);
   color: var(--ink-2);
 }
 
 .op.plus {
-  background: linear-gradient(135deg, var(--amber-from), var(--amber-to));
+  background: linear-gradient(160deg, #3a6140, var(--pine) 55%, var(--pine-deep));
   color: #fff;
+  box-shadow: 0 2px 6px rgba(47, 82, 51, 0.26);
 }
 
 .op.remove {
   margin-left: 4px;
-  color: #c9b8a5;
+  color: var(--ink-3);
 }
 
 .op.remove:active {
@@ -280,7 +284,7 @@ async function onClean() {
   font-weight: 700;
 }
 
-/* 底栏 */
+/* 底栏：白底 + 顶线 + shadow-bar */
 .cart-bar {
   padding-left: 12px;
   padding-right: 12px;
@@ -292,10 +296,12 @@ async function onClean() {
   height: 56px;
   padding: 0 6px 0 7px;
   border-radius: 999px;
-  background: #2b1a10;
-  box-shadow: 0 10px 26px rgba(30, 17, 8, 0.35);
+  background: var(--card);
+  border: 1px solid var(--card-line);
+  box-shadow: var(--shadow-bar);
 }
 
+/* 购物车圆钮：墨绿描边（空态）→ 墨绿实底（有货） */
 .cart-btn {
   position: relative;
   display: grid;
@@ -304,9 +310,14 @@ async function onClean() {
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  color: rgba(255, 255, 255, 0.45);
-  background: rgba(255, 255, 255, 0.08);
-  transition: transform 0.15s ease;
+  color: var(--pine);
+  background: var(--card);
+  border: 1.5px solid var(--pine);
+  transition:
+    transform 0.15s ease,
+    background 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .cart-btn:active {
@@ -315,8 +326,9 @@ async function onClean() {
 
 .cart-btn.active {
   color: #fff;
-  background: linear-gradient(135deg, var(--amber-from), var(--amber-to));
-  box-shadow: 0 4px 14px rgba(192, 133, 82, 0.5);
+  background: linear-gradient(160deg, #3a6140, var(--pine) 55%, var(--pine-deep));
+  border-color: var(--pine-deep);
+  box-shadow: 0 4px 14px rgba(47, 82, 51, 0.32);
 }
 
 .badge {
@@ -332,8 +344,8 @@ async function onClean() {
   font-weight: 700;
   color: #fff;
   border-radius: 999px;
-  background: #f43f3f;
-  box-shadow: 0 0 0 2px #2b1a10;
+  background: var(--danger);
+  box-shadow: 0 0 0 2px var(--card);
 }
 
 .total {
@@ -345,13 +357,13 @@ async function onClean() {
 .total-price {
   font-size: 16px;
   font-weight: 800;
-  color: #fff;
+  color: var(--ink);
   line-height: 1.15;
 }
 
 .total-sub {
   font-size: 9px;
-  color: rgba(255, 255, 255, 0.45);
+  color: var(--ink-3);
   line-height: 1.2;
 }
 

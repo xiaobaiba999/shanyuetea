@@ -159,7 +159,7 @@ onMounted(async () => {
   width: 54px;
   height: 54px;
   border-radius: 14px;
-  background: linear-gradient(135deg, #7fa88b, #5f8d6b);
+  background: linear-gradient(135deg, var(--el-color-success-light-3), var(--success));
   color: #fff;
   display: flex;
   align-items: center;

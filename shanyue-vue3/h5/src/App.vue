@@ -2,21 +2,21 @@
 import { ConfigProvider } from 'vant'
 import type { ConfigProviderThemeVars } from 'vant'
 
-// UI 规范（API-SPEC 第 5 节）：主按钮焦糖 #C08552、深咖文字 #3F2A1A、奶油底 #FAF6F1
+// UI 主题（新中式「宣纸 · 墨绿 · 茶金」）：主按钮墨绿 #2F5233、墨色文字 #2B2620、宣纸底 #F6F3EC
 const themeVars: ConfigProviderThemeVars = {
-  primaryColor: '#C08552',
-  buttonPrimaryBackground: '#C08552',
-  buttonPrimaryBorderColor: '#C08552',
+  primaryColor: '#2F5233',
+  buttonPrimaryBackground: 'linear-gradient(160deg, #3A6140, #2F5233 55%, #243E28)',
+  buttonPrimaryBorderColor: '#2F5233',
   buttonRadius: '10px',
-  fieldLabelColor: '#3F2A1A',
-  stepsActiveColor: '#C08552',
-  stepsFinishLineColor: '#C08552',
-  tagPrimaryColor: '#C08552',
-  toastBackground: 'rgba(63, 42, 26, 0.92)',
-  toastTextColor: '#FAF6F1',
-  dialogBorderRadius: '16px',
-  stepperInputTextColor: '#3F2A1A',
-  emptyDescriptionColor: '#A08B78',
+  fieldLabelColor: '#2B2620',
+  stepsActiveColor: '#2F5233',
+  stepsFinishLineColor: '#2F5233',
+  tagPrimaryColor: '#2F5233',
+  toastBackground: 'rgba(43, 38, 32, 0.92)',
+  toastTextColor: '#F6F3EC',
+  dialogBorderRadius: '14px',
+  stepperInputTextColor: '#2B2620',
+  emptyDescriptionColor: '#9C927F',
 }
 </script>
 

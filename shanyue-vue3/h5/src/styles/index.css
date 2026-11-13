@@ -1,27 +1,43 @@
 /* ============================================================
-   山月茶咖 C端 H5 全局样式
-   规范：奶油底 #FAF6F1 / 深咖文字 #3F2A1A / 焦糖主按钮 #C08552
-        卡片圆角 16px / 按钮圆角 10px / 阴影 0 2px 12px rgba(63,42,26,.06)
+   山月茶咖 · C 端 H5 全局样式
+   品牌：新中式「宣纸 · 墨绿 · 茶金」
+   底色：宣纸米白 #F6F3EC / 深一档 #EDE8DC / 白卡 + 1px 描边 #E8E2D4
+   主色：墨绿 #2F5233（按钮 / 激活态） 点缀：茶金 #C89B5A / 暖陶 #C7542F
+   标题与价格大数字走衬线系统字体栈（--font-serif，不引入 webfont）
    ============================================================ */
 
 :root {
-  --cream: #faf6f1;
-  --cream-deep: #f3ebdd;
-  --ink: #3f2a1a;
-  --ink-2: #6f573f;
-  --ink-3: #a08b78;
-  --caramel: #c08552;
-  --caramel-deep: #a96c3c;
-  --mocha: #8b5e3c;
+  --paper: #f6f3ec;
+  --paper-deep: #ede8dc;
   --card: #ffffff;
-  --danger: #c0564a;
-  --success: #5f8d6b;
-  --amber-from: #e0a35c;
-  --amber-to: #c07a3e;
-  --radius-card: 16px;
+  --card-line: #e8e2d4;
+  --ink: #2b2620;
+  --ink-2: #6b6155;
+  --ink-3: #9c927f;
+  --pine: #2f5233;
+  --pine-deep: #243e28;
+  --pine-mist: #e8f0e9;
+  --gold: #c89b5a;
+  --terracotta: #c7542f;
+  --danger: #b5432f;
+  --success: #3e7a4e;
+  --radius-card: 14px;
   --radius-btn: 10px;
-  --shadow-card: 0 2px 12px rgba(63, 42, 26, 0.06);
-  --shadow-bar: 0 -2px 16px rgba(63, 42, 26, 0.08);
+  --shadow-card: 0 1px 2px rgba(43, 38, 32, 0.04), 0 6px 18px rgba(43, 38, 32, 0.06);
+  --shadow-bar: 0 -4px 24px rgba(43, 38, 32, 0.1);
+  --font-serif: 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', 'STSong', 'SimSun', serif;
+}
+
+/* Vant 主题变量对齐（html:root 提权，确保覆盖 Vant 基础 :root 默认值） */
+html:root {
+  --van-primary-color: var(--pine);
+  --van-text-color: var(--ink);
+  --van-border-color: var(--card-line);
+  --van-skeleton-background: var(--paper-deep);
+  --van-tag-danger-color: var(--danger);
+  --van-toast-background: rgba(43, 38, 32, 0.92);
+  --van-toast-text-color: #f6f3ec;
+  --van-nav-bar-icon-color: var(--ink-2);
 }
 
 * {
@@ -33,7 +49,7 @@ html,
 body {
   margin: 0;
   padding: 0;
-  background: #efe7dc;
+  background: var(--paper);
   color: var(--ink);
   font-family:
     -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans SC',
@@ -41,7 +57,20 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* 宣纸细噪点纹理（置于最底层、不拦截交互） */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.45;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .03 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
 #app {
+  position: relative;
+  z-index: 0;
   min-height: 100dvh;
 }
 
@@ -52,13 +81,13 @@ body {
   width: 100%;
   max-width: 480px;
   min-height: 100dvh;
-  background: var(--cream);
+  background: transparent;
   overflow-x: hidden;
 }
 
 @media (min-width: 520px) {
   .app-shell {
-    box-shadow: 0 0 48px rgba(63, 42, 26, 0.16);
+    box-shadow: 0 0 48px rgba(43, 38, 32, 0.12);
   }
 }
 
@@ -106,21 +135,163 @@ ul {
   overflow: hidden;
 }
 
-.card {
-  background: var(--card);
-  border-radius: var(--radius-card);
-  box-shadow: var(--shadow-card);
-}
-
 /* 底部安全区 */
 .safe-bottom {
   padding-bottom: calc(env(safe-area-inset-bottom) + 12px);
 }
 
-/* 价格（琥珀色大数字） */
+/* ---------- 卡片（白底 + 1px 描边 + 悬浮微抬升） ---------- */
+.card {
+  background: var(--card);
+  border: 1px solid var(--card-line);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  transition:
+    transform 0.22s ease,
+    box-shadow 0.22s ease,
+    border-color 0.22s ease;
+}
+
+@media (hover: hover) {
+  .card:hover {
+    transform: translateY(-2px);
+    border-color: #d9cdb2;
+    box-shadow: 0 1px 2px rgba(43, 38, 32, 0.05), 0 10px 26px rgba(43, 38, 32, 0.1);
+  }
+}
+
+.card:active {
+  transform: translateY(-2px);
+  border-color: #d9cdb2;
+  box-shadow: 0 1px 2px rgba(43, 38, 32, 0.05), 0 10px 26px rgba(43, 38, 32, 0.1);
+}
+
+/* ---------- 主按钮（墨绿渐变 + 内高光 + 光泽扫过） ---------- */
+.btn-primary {
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 42px;
+  padding: 0 24px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: #fff;
+  border-radius: var(--radius-btn);
+  background: linear-gradient(160deg, #3a6140, var(--pine) 55%, var(--pine-deep));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 4px 14px rgba(47, 82, 51, 0.28);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.btn-primary::after {
+  content: '';
+  position: absolute;
+  top: -40%;
+  bottom: -40%;
+  left: 0;
+  width: 36%;
+  background: linear-gradient(105deg, transparent, rgba(255, 255, 255, 0.28), transparent);
+  transform: translateX(-160%) skewX(-18deg);
+  transition: transform 0.6s ease;
+  pointer-events: none;
+}
+
+@media (hover: hover) {
+  .btn-primary:hover::after {
+    transform: translateX(420%) skewX(-18deg);
+  }
+}
+
+.btn-primary:active {
+  transform: scale(0.965);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 2px 8px rgba(47, 82, 51, 0.18);
+}
+
+.btn-primary:disabled {
+  opacity: 0.45;
+  box-shadow: none;
+}
+
+/* ---------- 次级按钮（透明底 + 墨绿描边） ---------- */
+.btn-ghost {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 42px;
+  padding: 0 24px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: var(--pine);
+  background: transparent;
+  border: 1.5px solid var(--pine);
+  border-radius: var(--radius-btn);
+  transition:
+    background 0.2s ease,
+    transform 0.15s ease;
+}
+
+@media (hover: hover) {
+  .btn-ghost:hover {
+    background: var(--pine-mist);
+  }
+}
+
+.btn-ghost:active {
+  transform: scale(0.97);
+  background: var(--pine-mist);
+}
+
+/* ---------- 印章（品牌标识：茶金描边 + 墨绿衬线字） ---------- */
+.seal {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border: 1.5px solid var(--gold);
+  border-radius: 50%;
+  font-family: var(--font-serif);
+  color: var(--pine);
+  font-size: 13px;
+  line-height: 1.05;
+  letter-spacing: 1px;
+  transform: rotate(-4deg);
+  user-select: none;
+}
+
+.seal i {
+  display: block;
+  font-style: normal;
+  font-size: 11px;
+  line-height: 1.08;
+  letter-spacing: 0.5px;
+}
+
+/* ---------- 玻璃拟态吸顶（宣纸半透明 + 毛玻璃） ---------- */
+.glass {
+  background: rgba(246, 243, 236, 0.86);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--card-line);
+}
+
+/* 价格（衬线大数字 · 暖陶色 · 等宽数字） */
 .price-num {
-  color: var(--caramel-deep);
-  font-weight: 800;
+  color: var(--terracotta);
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 
 /* 「+」按钮弹性动画（CSS scale） */
@@ -168,14 +339,14 @@ ul {
   animation: marquee-move 16s linear infinite;
 }
 
-/* 营业状态灯点呼吸 */
+/* 营业状态灯点呼吸（墨绿呼吸光） */
 @keyframes soft-pulse {
   0%,
   100% {
-    box-shadow: 0 0 0 0 rgba(94, 214, 155, 0.55);
+    box-shadow: 0 0 0 0 rgba(62, 122, 78, 0.55);
   }
   50% {
-    box-shadow: 0 0 0 4px rgba(94, 214, 155, 0);
+    box-shadow: 0 0 0 4px rgba(62, 122, 78, 0);
   }
 }
 
@@ -206,19 +377,24 @@ ul {
   opacity: 0;
 }
 
-/* 通用琥珀渐变主按钮 */
-.btn-gradient {
-  background: linear-gradient(135deg, var(--amber-from), var(--amber-to));
-  color: #fff;
-  font-weight: 700;
-  border-radius: var(--radius-btn);
-  transition:
-    transform 0.15s ease,
-    opacity 0.15s ease;
+/* ---------- Vant 吸顶导航：宣纸玻璃拟态 + 衬线标题 ---------- */
+body .van-nav-bar {
+  background: rgba(246, 243, 236, 0.86);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
 }
-.btn-gradient:active {
-  transform: scale(0.96);
+
+body .van-nav-bar::after {
+  border-bottom-color: var(--card-line);
 }
-.btn-gradient:disabled {
-  opacity: 0.45;
+
+body .van-nav-bar .van-nav-bar__title {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: var(--ink);
+}
+
+body .van-nav-bar .van-icon {
+  color: var(--ink-2);
 }

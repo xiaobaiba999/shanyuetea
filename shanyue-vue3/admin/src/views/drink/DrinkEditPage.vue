@@ -459,8 +459,8 @@ onMounted(async () => {
 
 .back-btn {
   margin-top: 2px;
-  border-color: #e8dccd;
-  color: #8b5e3c;
+  border-color: var(--card-line);
+  color: var(--pine);
 }
 
 .edit-grid {
@@ -486,13 +486,13 @@ onMounted(async () => {
   margin-left: 10px;
 }
 
-/* ---------- 图片上传 ---------- */
+/* ---------- 图片上传（茶金虚线描边，hover 转墨绿） ---------- */
 .image-box {
   width: 132px;
   height: 132px;
   border-radius: 14px;
-  border: 1.5px dashed #d8c9b8;
-  background: #fdfaf6;
+  border: 1.5px dashed var(--gold-soft);
+  background: var(--paper);
   overflow: hidden;
   position: relative;
   cursor: pointer;
@@ -500,7 +500,7 @@ onMounted(async () => {
 }
 
 .image-box:hover {
-  border-color: #8b5e3c;
+  border-color: var(--pine);
 }
 
 .image-preview {
@@ -525,7 +525,7 @@ onMounted(async () => {
 .image-mask {
   position: absolute;
   inset: 0;
-  background: rgba(63, 42, 26, 0.55);
+  background: rgba(43, 38, 32, 0.55);
   color: #fff;
   font-size: 12px;
   display: flex;
@@ -565,8 +565,8 @@ onMounted(async () => {
   gap: 8px;
   flex-wrap: wrap;
   padding: 10px 12px;
-  background: #faf5ee;
-  border: 1px solid #f3ede3;
+  background: var(--paper);
+  border: 1px solid var(--card-line);
   border-radius: 12px;
   margin-bottom: 14px;
 }
@@ -584,7 +584,7 @@ onMounted(async () => {
 }
 
 .spec-group {
-  border: 1px solid #f0e6da;
+  border: 1px solid var(--card-line);
   background: #fcfaf7;
   border-radius: 14px;
   padding: 14px 16px 12px;
@@ -592,7 +592,7 @@ onMounted(async () => {
 }
 
 .spec-group:hover {
-  box-shadow: 0 4px 14px rgba(63, 42, 26, 0.07);
+  box-shadow: 0 4px 14px rgba(43, 38, 32, 0.07);
 }
 
 .sg-head {
@@ -605,7 +605,7 @@ onMounted(async () => {
   width: 22px;
   height: 22px;
   border-radius: 8px;
-  background: linear-gradient(135deg, #c08552, #8b5e3c);
+  background: linear-gradient(135deg, var(--gold), var(--el-color-warning-dark-2));
   color: #fff;
   font-size: 12px;
   font-weight: 700;
@@ -649,13 +649,13 @@ onMounted(async () => {
   gap: 8px;
   align-items: center;
   background: #ffffff;
-  border: 1px solid #f3ede3;
+  border: 1px solid var(--card-line);
   border-radius: 10px;
   padding: 8px 10px;
 }
 
 .opt-row:hover {
-  border-color: #dccfc5;
+  border-color: var(--card-line-hover);
 }
 
 .opt-name {
@@ -690,8 +690,8 @@ onMounted(async () => {
 .add-opt {
   width: 100%;
   border-style: dashed;
-  color: #8b5e3c;
-  --el-button-hover-bg-color: #fdfaf6;
+  color: var(--pine);
+  --el-button-hover-bg-color: var(--paper);
 }
 
 /* 列表过渡 */
@@ -712,7 +712,7 @@ onMounted(async () => {
   right: 0;
   bottom: 0;
   padding: 12px 22px 16px;
-  background: linear-gradient(180deg, rgba(250, 246, 241, 0), rgba(250, 246, 241, 0.9) 40%);
+  background: linear-gradient(180deg, rgba(246, 243, 236, 0), rgba(246, 243, 236, 0.9) 40%);
   z-index: 15;
 }
 

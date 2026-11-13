@@ -59,7 +59,7 @@
 
     <!-- 空态（文字插画） -->
     <view wx:if="{{!records.length && !loading}}" class="empty">
-      <view class="empty-icon">🍵</view>
+      <view class="empty-icon">茶</view>
       <view class="empty-text">这里还没有订单</view>
       <view class="empty-sub">去点一杯山月茶咖，好喝的正在等你</view>
     </view>

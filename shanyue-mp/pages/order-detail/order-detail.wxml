@@ -21,7 +21,7 @@
       <view class="steps">
         <block wx:for="{{steps}}" wx:key="label">
           <view class="step {{index < stepActive ? 'done' : ''}} {{index === stepActive ? 'active' : ''}}">
-            <view class="dot">{{index < stepActive ? '✓' : ''}}</view>
+            <view class="dot" />
             <view class="step-label">{{item.label}}</view>
           </view>
           <view wx:if="{{index < steps.length - 1}}" class="bar {{index < stepActive ? 'done' : ''}}"></view>

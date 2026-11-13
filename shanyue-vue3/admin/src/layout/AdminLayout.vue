@@ -1,11 +1,12 @@
 <template>
   <div class="layout">
-    <!-- 左侧深咖色固定侧边栏 -->
+    <!-- 左侧墨绿夜色固定侧边栏 -->
     <aside class="sidebar">
       <div class="logo" @click="router.push('/dashboard')">
         <div class="logo-cn">山月</div>
         <div class="logo-en">SHANYUE TEA &amp; COFFEE</div>
         <div class="logo-slogan">山月入杯 · 茶咖相宜</div>
+        <div class="logo-seal" aria-hidden="true">山月</div>
       </div>
 
       <el-menu class="side-menu" :default-active="activeMenu" router>
@@ -301,32 +302,55 @@ async function onChangePassword() {
   inset: 0 auto 0 0;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(180deg, #46301e 0%, #3f2a1a 55%, #352313 100%);
+  background: linear-gradient(180deg, #2E4A32 0%, #243E28 60%, #1E3322 100%);
   z-index: 20;
 }
 
 .logo {
   padding: 26px 20px 20px;
   cursor: pointer;
-  border-bottom: 1px solid rgba(250, 246, 241, 0.08);
+  position: relative;
+  border-bottom: 1px solid rgba(232, 240, 233, 0.1);
 }
 
 .logo-cn {
-  font-family: 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', 'STSong', 'SimSun', serif;
+  font-family: var(--font-serif);
   font-size: 40px;
   font-weight: 700;
   letter-spacing: 12px;
   line-height: 1.1;
-  color: #faf6f1;
+  color: #F6F3EC;
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
   margin-left: 2px;
+}
+
+/* 茶金印章：34px 圆形、微倾，衬线「山月」 */
+.logo-seal {
+  position: absolute;
+  top: 24px;
+  right: 18px;
+  width: 34px;
+  height: 34px;
+  border: 1.5px solid var(--gold);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-serif);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-indent: 1px;
+  color: var(--gold-soft);
+  transform: rotate(-4deg);
+  opacity: 0.92;
 }
 
 .logo-en {
   margin-top: 8px;
   font-size: 10px;
   letter-spacing: 2.6px;
-  color: rgba(250, 246, 241, 0.55);
+  color: rgba(232, 240, 233, 0.55);
   font-weight: 600;
 }
 
@@ -334,7 +358,7 @@ async function onChangePassword() {
   margin-top: 6px;
   font-size: 11px;
   letter-spacing: 2px;
-  color: #e9b968;
+  color: var(--gold-soft);
 }
 
 .side-menu {
@@ -349,20 +373,33 @@ async function onChangePassword() {
   height: 46px;
   margin: 4px 12px;
   border-radius: 10px;
-  color: rgba(250, 246, 241, 0.68);
+  color: rgba(232, 240, 233, 0.7);
   transition: all 0.2s;
 }
 
 .side-menu :deep(.el-menu-item:hover) {
-  background: rgba(255, 255, 255, 0.07);
+  background: rgba(232, 240, 233, 0.08);
   color: #ffffff;
 }
 
-/* 菜单 active：琥珀色 */
+/* 菜单 active：墨绿夜色上的宣纸底 + 左侧茶金竖条 */
 .side-menu :deep(.el-menu-item.is-active) {
-  background: linear-gradient(90deg, rgba(192, 133, 82, 0.34), rgba(192, 133, 82, 0.12));
-  color: #e9b968;
+  background: rgba(232, 240, 233, 0.14);
+  color: #F6F3EC;
   font-weight: 600;
+  position: relative;
+}
+
+.side-menu :deep(.el-menu-item.is-active)::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 18px;
+  border-radius: 2px;
+  background: var(--gold);
 }
 
 .side-menu :deep(.el-menu-item .el-icon) {
@@ -373,8 +410,8 @@ async function onChangePassword() {
   padding: 14px 20px;
   font-size: 11px;
   letter-spacing: 1px;
-  color: rgba(250, 246, 241, 0.35);
-  border-top: 1px solid rgba(250, 246, 241, 0.08);
+  color: rgba(232, 240, 233, 0.4);
+  border-top: 1px solid rgba(232, 240, 233, 0.08);
 }
 
 /* ---------- 主区 ---------- */
@@ -388,8 +425,10 @@ async function onChangePassword() {
 
 .topbar {
   height: 60px;
-  background: #fffdf9;
-  border-bottom: 1px solid #f3ede3;
+  background: rgba(246, 243, 236, 0.88);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--card-line);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -410,9 +449,9 @@ async function onChangePassword() {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  border: 1px dashed #e3cba8;
-  background: #fdf8ef;
-  color: #a0763e;
+  border: 1px dashed #D9C29A;
+  background: #FBF7EC;
+  color: #A9793F;
   font-size: 12px;
   font-weight: 600;
   padding: 5px 12px;
@@ -423,22 +462,23 @@ async function onChangePassword() {
 
 .sim-badge.on {
   border-style: solid;
-  background: #fbf1e2;
-  color: #b0702e;
+  border-color: var(--gold);
+  background: #F5EBD8;
+  color: #A9793F;
 }
 
 .sim-badge:hover {
   filter: brightness(0.97);
 }
 
-/* 营业状态徽标 */
+/* 营业状态徽标（茶金描边胶囊） */
 .shop-badge {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  border: 1px solid #d9e8dc;
-  background: #eff7f1;
-  color: #4c7156;
+  border: 1px solid var(--gold);
+  background: #FAF3E4;
+  color: #A9793F;
   font-size: 12px;
   font-weight: 600;
   padding: 5px 12px;
@@ -451,19 +491,19 @@ async function onChangePassword() {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #5f8d6b;
-  box-shadow: 0 0 0 3px rgba(95, 141, 107, 0.18);
+  background: var(--gold);
+  box-shadow: 0 0 0 3px rgba(200, 155, 90, 0.22);
 }
 
 .shop-badge.closed {
-  background: #f6f3f0;
-  border-color: #e4ddd4;
-  color: #8c7a6b;
+  background: var(--paper);
+  border-color: var(--card-line);
+  color: var(--ink-3);
 }
 
 .shop-badge.closed .dot {
-  background: #b3a08e;
-  box-shadow: 0 0 0 3px rgba(179, 160, 142, 0.18);
+  background: var(--ink-3);
+  box-shadow: 0 0 0 3px rgba(156, 146, 127, 0.18);
 }
 
 .shop-badge:hover {
@@ -488,14 +528,14 @@ async function onChangePassword() {
 }
 
 .admin-chip:hover {
-  background: #f8f2ea;
+  background: var(--pine-mist);
 }
 
 .avatar {
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #c08552, #8b5e3c);
+  background: linear-gradient(135deg, #5A7A5E, #243E28);
   color: #fff;
   font-size: 14px;
   font-weight: 700;
@@ -507,12 +547,12 @@ async function onChangePassword() {
 .admin-name {
   font-size: 13px;
   font-weight: 600;
-  color: #3f2a1a;
+  color: var(--ink);
 }
 
 .arrow {
   font-size: 12px;
-  color: #8c7a6b;
+  color: var(--ink-3);
 }
 
 /* 修改密码弹窗底部提示 */
@@ -520,9 +560,9 @@ async function onChangePassword() {
   margin: 4px 0 0;
   padding: 8px 12px;
   border-radius: 8px;
-  background: #fdf8ef;
-  border: 1px dashed #e3cba8;
-  color: #a0763e;
+  background: #FBF7EC;
+  border: 1px dashed #D9C29A;
+  color: #A9793F;
   font-size: 12px;
   line-height: 1.6;
 }

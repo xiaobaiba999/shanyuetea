@@ -36,7 +36,7 @@ async function goHome() {
 <template>
   <div class="success-page">
     <div class="hero">
-      <span class="hero-emoji">🎉</span>
+      <div class="seal hero-seal" aria-hidden="true"><i>山</i><i>月</i></div>
       <h1>下单成功</h1>
       <p class="hero-sub">店家已收到您的订单，正在准备</p>
     </div>
@@ -68,7 +68,7 @@ async function goHome() {
         <b>{{ wait }} 分钟</b>
       </div>
       <div v-if="amount > 0" class="meta-row points-hint">
-        <span>☕ 完成订单后可得积分</span>
+        <span>完成订单后可得积分</span>
         <b>+{{ Math.floor(amount / 100) }}</b>
       </div>
       <div v-if="orderNumber" class="meta-row">
@@ -78,7 +78,7 @@ async function goHome() {
     </div>
 
     <div class="actions safe-bottom">
-      <button class="btn-primary btn-gradient" @click="goQuery">查询订单进度</button>
+      <button class="btn-primary" @click="goQuery">查询订单进度</button>
       <button class="btn-ghost" @click="goHome">继续点单</button>
     </div>
   </div>
@@ -91,7 +91,7 @@ async function goHome() {
   align-items: center;
   min-height: 100dvh;
   padding: 40px 20px 0;
-  background: var(--cream);
+  background: var(--paper);
 }
 
 .hero {
@@ -100,14 +100,25 @@ async function goHome() {
   align-items: center;
 }
 
-.hero-emoji {
-  font-size: 44px;
+/* 印章（品牌标识）：茶金描边 + 墨绿衬线「山月」 */
+.hero-seal {
+  width: 54px;
+  height: 54px;
+  background: var(--card);
+  box-shadow: 0 4px 14px rgba(43, 38, 32, 0.12);
+}
+
+.hero-seal i {
+  font-size: 17px;
+  line-height: 1.12;
 }
 
 .hero h1 {
-  margin-top: 8px;
-  font-size: 20px;
-  font-weight: 800;
+  margin-top: 10px;
+  font-family: var(--font-serif);
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: 4px;
 }
 
 .hero-sub {
@@ -116,8 +127,9 @@ async function goHome() {
   color: var(--ink-3);
 }
 
-/* 取餐号大卡 */
+/* 取餐号大卡：白底描边 + 内层茶金虚线框（信笺感） */
 .code-card {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -125,9 +137,18 @@ async function goHome() {
   margin-top: 24px;
   padding: 26px 0 22px;
   border-radius: var(--radius-card);
-  background: linear-gradient(150deg, #fdf9f4, #f7ead9);
-  border: 1px solid #f0dfc8;
+  background: var(--card);
+  border: 1px solid var(--card-line);
   box-shadow: var(--shadow-card);
+}
+
+.code-card::before {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border: 1px dashed rgba(200, 155, 90, 0.5);
+  border-radius: 10px;
+  pointer-events: none;
 }
 
 .code-label {
@@ -138,11 +159,13 @@ async function goHome() {
 
 .code {
   margin-top: 6px;
+  font-family: var(--font-serif);
   font-size: 2.6rem;
   font-weight: 800;
+  font-variant-numeric: tabular-nums;
   letter-spacing: 6px;
   line-height: 1.1;
-  color: var(--caramel-deep);
+  color: var(--pine);
 }
 
 .code-tip {
@@ -158,6 +181,7 @@ async function goHome() {
   padding: 6px 16px;
   border-radius: var(--radius-card);
   background: var(--card);
+  border: 1px solid var(--card-line);
   box-shadow: var(--shadow-card);
 }
 
@@ -171,7 +195,7 @@ async function goHome() {
 }
 
 .meta-row + .meta-row {
-  border-top: 1px dashed #f0e8dc;
+  border-top: 1px dashed var(--card-line);
 }
 
 .meta-row b {
@@ -181,17 +205,17 @@ async function goHome() {
 
 .meta-row.saving span,
 .meta-row.saving b {
-  color: #d4552e;
+  color: var(--terracotta);
   font-weight: 700;
 }
 
 /* 积分提示行 */
 .meta-row.points-hint span {
-  color: #8b5e3c;
+  color: var(--ink-2);
 }
 
 .meta-row.points-hint b {
-  color: #c08552;
+  color: var(--pine);
   font-weight: 800;
 }
 
@@ -221,11 +245,13 @@ async function goHome() {
   font-weight: 600;
   color: var(--ink-2);
   border-radius: var(--radius-btn);
-  border: 1px solid #e3d7c6;
+  border: 1px solid var(--card-line);
   background: var(--card);
+  transition: transform 0.15s ease, border-color 0.2s ease;
 }
 
 .btn-ghost:active {
   transform: scale(0.97);
+  border-color: var(--gold);
 }
 </style>

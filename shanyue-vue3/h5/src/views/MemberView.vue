@@ -41,11 +41,6 @@ async function loadMyReviews() {
   myReviews.value = await getMyReviews().catch(() => [])
 }
 
-/** 星星渲染：5 星制 */
-function starsOf(score: number): string {
-  return '★★★★★'.slice(0, score) + '☆☆☆☆☆'.slice(0, 5 - score)
-}
-
 /** 已领取的模板 id 集合（每模板限领 1 张） */
 const receivedIds = computed(() => new Set(myCoupons.value.map((c) => c.couponId)))
 
@@ -164,8 +159,8 @@ async function handleReceive(t: CouponTemplateVO) {
   }
 }
 
-/** 明细行图标 */
-const TYPE_EMOJI: Record<number, string> = { 1: '☀️', 2: '☕', 3: '🎫' }
+/** 明细行图标：衬线单字（签到 / 消费 / 兑换），印章风 */
+const TYPE_ICON: Record<number, string> = { 1: '签', 2: '茶', 3: '兑' }
 
 /* ---------------- 连签奖励（每连签 7 天额外 +20） ---------------- */
 const STREAK_TARGET = 7
@@ -180,24 +175,24 @@ const bonusProgress = computed(() => {
 
 /** 签到按钮文案：今天签到将达成连签时给出明确预期 */
 const checkinBtnText = computed(() => {
-  if (pointSummary.value?.checkedToday) return '今日已签到 ✓'
+  if (pointSummary.value?.checkedToday) return '今日已签到'
   if (checkingIn.value) return '签到中…'
   const s = pointSummary.value?.streak ?? 0
-  if ((s + 1) % STREAK_TARGET === 0) return `立即签到 · 达成连签 +${7 + 20} 积分 🎉`
+  if ((s + 1) % STREAK_TARGET === 0) return `立即签到 · 达成连签 +${7 + 20} 积分`
   return '立即签到 +7 积分'
 })
 
-/* ---------------- 连签达成庆祝动效（emoji 彩带 + 中央徽章） ---------------- */
+/* ---------------- 连签达成庆祝动效（衬线字彩带 + 中央印章） ---------------- */
 const celebrating = ref(false)
 const bonusAmount = ref(0)
-const confetti = ref<{ emoji: string; style: Record<string, string> }[]>([])
-const CONFETTI_EMOJIS = ['🎉', '✨', '☕', '🍵', '🎫', '🧋', '⭐', '💛']
+const confetti = ref<{ char: string; style: Record<string, string> }[]>([])
+const CONFETTI_CHARS = ['山', '月', '茶', '金', '客', '缘', '盏', '香']
 let celeTimer: number | null = null
 
 function triggerCelebration(amount: number) {
   bonusAmount.value = amount
   confetti.value = Array.from({ length: 26 }, (_, i) => ({
-    emoji: CONFETTI_EMOJIS[i % CONFETTI_EMOJIS.length],
+    char: CONFETTI_CHARS[i % CONFETTI_CHARS.length],
     style: {
       left: `${(i * 37) % 100}%`,
       fontSize: `${14 + ((i * 13) % 12)}px`,
@@ -236,12 +231,12 @@ async function handleSeedStreak() {
       <!-- 会员卡 -->
       <div class="vip-card">
         <div class="vip-head">
-          <span class="vip-logo">🌙</span>
+          <div class="seal vip-logo-seal" aria-hidden="true"><i>山</i><i>月</i></div>
           <div class="vip-user">
             <p class="vip-name">山月茶友</p>
             <p class="vip-no">{{ summary?.memberNo || 'SHY-2026-0001' }}</p>
           </div>
-          <span class="vip-tier">☕ 茶咖会员</span>
+          <span class="vip-tier">茶咖会员</span>
         </div>
         <div class="vip-stats">
           <div class="vs-item">
@@ -271,10 +266,10 @@ async function handleSeedStreak() {
         <div class="checkin-card">
           <div class="ck-head">
             <div class="ck-title-wrap">
-              <h2 class="ck-title">☀️ 每日签到</h2>
+              <h2 class="ck-title">每日签到</h2>
               <p class="ck-sub">每日 +7 积分，积分可兑优惠券</p>
             </div>
-            <span v-if="(pointSummary?.streak ?? 0) > 0" class="ck-streak">🔥 连续 {{ pointSummary?.streak }} 天</span>
+            <span v-if="(pointSummary?.streak ?? 0) > 0" class="ck-streak">连续 {{ pointSummary?.streak }} 天</span>
           </div>
           <div class="ck-week">
             <div
@@ -284,7 +279,7 @@ async function handleSeedStreak() {
               :class="{ checked: d.checked, today: d.isToday, future: d.isFuture }"
             >
               <span class="ck-dow">{{ d.label }}</span>
-              <span class="ck-mark">{{ d.checked ? '✓' : d.isFuture ? '·' : '＋7' }}</span>
+              <span class="ck-mark">{{ d.checked ? '签' : d.isFuture ? '·' : '＋7' }}</span>
             </div>
           </div>
 
@@ -292,7 +287,7 @@ async function handleSeedStreak() {
           <div class="ck-progress">
             <div class="ckp-head">
               <span class="ckp-label">
-                {{ bonusProgress.done ? '🎉 连签奖励已达成' : `已连签 ${pointSummary?.streak ?? 0} 天` }}
+                {{ bonusProgress.done ? '连签奖励已达成' : `已连签 ${pointSummary?.streak ?? 0} 天` }}
               </span>
               <span class="ckp-tip">
                 {{ bonusProgress.done ? '再签 7 天可再得 +20' : `再签 ${pointSummary?.nextBonusIn ?? 7} 天额外 +20 积分` }}
@@ -305,7 +300,14 @@ async function handleSeedStreak() {
                 class="ckp-seg"
                 :class="{ lit: i <= bonusProgress.lit, goal: i === STREAK_TARGET }"
               />
-              <span class="ckp-gift" :class="{ lit: bonusProgress.done }">🎁</span>
+              <span class="ckp-gift" :class="{ lit: bonusProgress.done }" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="8" width="18" height="4" rx="1" />
+                  <path d="M5 12v8h14v-8" />
+                  <path d="M12 8v12" />
+                  <path d="M12 8c-1.5 0-4-.7-4-2.5S10.5 3 12 5c1.5-2 4-1.7 4 0S13.5 8 12 8z" />
+                </svg>
+              </span>
             </div>
             <button
               v-if="USE_MOCK && !pointSummary?.checkedToday"
@@ -313,7 +315,7 @@ async function handleSeedStreak() {
               :disabled="seeding"
               @click="handleSeedStreak"
             >
-              {{ seeding ? '注入中…' : `⏩ 演示：补签 ${STREAK_TARGET - 1} 天` }}
+              {{ seeding ? '注入中…' : `演示：补签 ${STREAK_TARGET - 1} 天` }}
             </button>
           </div>
 
@@ -326,7 +328,7 @@ async function handleSeedStreak() {
       <!-- 积分兑换 -->
       <div v-if="shelf.length" class="section">
         <div class="section-head">
-          <h2>✨ 积分兑换</h2>
+          <h2>积分兑换</h2>
           <span class="section-tip">余额 {{ pointSummary?.balance ?? 0 }} 分 · 1 积分 ≈ 0.1 元</span>
         </div>
         <div class="shelf-list">
@@ -354,7 +356,7 @@ async function handleSeedStreak() {
       <!-- 券广场 -->
       <div class="section">
         <div class="section-head">
-          <h2>🎫 领券中心</h2>
+          <h2>领券中心</h2>
           <span class="section-tip">每张限领 1 张</span>
         </div>
         <div class="tpl-list">
@@ -382,7 +384,7 @@ async function handleSeedStreak() {
       <!-- 我的优惠券 -->
       <div class="section">
         <div class="section-head">
-          <h2>🎟 我的优惠券</h2>
+          <h2>我的优惠券</h2>
           <span class="section-tip">可用 {{ usableCoupons.length }} 张</span>
         </div>
 
@@ -399,7 +401,7 @@ async function handleSeedStreak() {
             <button class="mc-use" @click="router.push('/')">去使用</button>
           </div>
         </div>
-        <div v-else class="my-empty">还没有可用优惠券，上方领一张吧 ✨</div>
+        <div v-else class="my-empty">还没有可用优惠券，上方领一张吧</div>
 
         <div v-if="usedCoupons.length" class="history">
           <p class="history-title">历史券</p>
@@ -421,12 +423,12 @@ async function handleSeedStreak() {
       <!-- 积分明细 -->
       <div class="section">
         <div class="section-head">
-          <h2>📖 积分明细</h2>
+          <h2>积分明细</h2>
           <span class="section-tip">共 {{ pointRecords.length }} 条</span>
         </div>
         <div v-if="visibleRecords.length" class="pt-timeline">
           <div v-for="r in visibleRecords" :key="r.id" class="pt-row">
-            <span class="pt-icon">{{ TYPE_EMOJI[r.type] }}</span>
+            <span class="pt-icon">{{ TYPE_ICON[r.type] }}</span>
             <div class="pt-main">
               <p class="pt-title">{{ r.title }}</p>
               <p class="pt-sub">{{ r.sub }}</p>
@@ -440,20 +442,22 @@ async function handleSeedStreak() {
             {{ recordsExpanded ? '收起 ▲' : `展开全部 ${pointRecords.length} 条 ▼` }}
           </button>
         </div>
-        <div v-else class="my-empty">还没有积分记录，签个到或点一杯就有了 ☕</div>
+        <div v-else class="my-empty">还没有积分记录，签个到或点一杯就有了</div>
       </div>
 
       <!-- 我的评价 -->
       <div class="section">
         <div class="section-head">
-          <h2>⭐ 我的评价</h2>
+          <h2>我的评价</h2>
           <span class="section-tip">共 {{ myReviews.length }} 条</span>
         </div>
         <div v-if="visibleReviews.length" class="rv-list">
           <div v-for="r in visibleReviews" :key="r.id" class="rv-item">
             <div class="rv-head">
               <span class="rv-code">{{ r.pickUpCode }}</span>
-              <span class="rv-stars">{{ starsOf(r.score) }}</span>
+              <span class="rv-stars" :aria-label="`${r.score} 星`">
+                <svg v-for="i in 5" :key="i" class="st" :class="{ on: i <= r.score }" viewBox="0 0 24 24" width="11" height="11" fill="currentColor" aria-hidden="true"><path d="M12 2.5l2.7 5.8 6.3.7-4.7 4.3 1.3 6.2-5.6-3.2-5.6 3.2 1.3-6.2-4.7-4.3 6.3-.7L12 2.5z" /></svg>
+              </span>
               <span class="rv-time">{{ r.createTime.slice(0, 16) }}</span>
             </div>
             <p v-if="r.content" class="rv-content">{{ r.content }}</p>
@@ -472,7 +476,7 @@ async function handleSeedStreak() {
         </div>
       </div>
 
-      <p v-if="USE_MOCK" class="demo-note">💡 优惠券与积分为演示功能（mock 数据，存于本地浏览器）</p>
+      <p v-if="USE_MOCK" class="demo-note">优惠券与积分为演示功能（mock 数据，存于本地浏览器）</p>
     </div>
 
     <!-- 连签达成庆祝动效（全屏无事件穿透，自动消失） -->
@@ -484,9 +488,9 @@ async function handleSeedStreak() {
             :key="i"
             class="confetti"
             :style="c.style"
-          >{{ c.emoji }}</span>
+          >{{ c.char }}</span>
           <div class="cele-card">
-            <span class="cele-emoji">🎉</span>
+            <span class="cele-seal" aria-hidden="true">签</span>
             <p class="cele-title">连签达成</p>
             <p class="cele-sub">额外奖励 <b>+{{ bonusAmount }}</b> 积分已入账</p>
           </div>
@@ -501,7 +505,7 @@ async function handleSeedStreak() {
   display: flex;
   flex-direction: column;
   min-height: 100dvh;
-  background: var(--cream);
+  background: var(--paper);
 }
 
 .page-body {
@@ -509,18 +513,18 @@ async function handleSeedStreak() {
   padding: 12px 12px 28px;
 }
 
-/* ---------- 会员卡 ---------- */
+/* ---------- 会员卡：墨绿卡面 + 茶金描边印章 ---------- */
 .vip-card {
   position: relative;
   overflow: hidden;
   border-radius: 18px;
   padding: 18px 18px 14px;
-  background: linear-gradient(135deg, #46301e 0%, #6f4b30 55%, #8b5e3c 100%);
-  color: #faf6f1;
-  box-shadow: 0 12px 28px rgba(70, 48, 30, 0.28);
+  background: linear-gradient(135deg, var(--pine-deep) 0%, var(--pine) 55%, #3a6140 100%);
+  color: #f6f3ec;
+  box-shadow: 0 12px 28px rgba(36, 62, 40, 0.3);
 }
 
-/* 卡面装饰：右上角月牙光晕 */
+/* 卡面装饰：右上角茶金光晕 */
 .vip-card::after {
   content: '';
   position: absolute;
@@ -529,7 +533,7 @@ async function handleSeedStreak() {
   width: 140px;
   height: 140px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(240, 200, 140, 0.35), transparent 65%);
+  background: radial-gradient(circle, rgba(200, 155, 90, 0.3), transparent 65%);
   pointer-events: none;
 }
 
@@ -539,16 +543,18 @@ async function handleSeedStreak() {
   gap: 12px;
 }
 
-.vip-logo {
+/* 印章 logo（品牌位，墨绿卡面上用宣纸底 + 茶金描边） */
+.vip-logo-seal {
   width: 42px;
   height: 42px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.14);
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 22px;
+  background: rgba(246, 243, 236, 0.94);
+  color: var(--pine);
+  box-shadow: 0 3px 10px rgba(36, 62, 40, 0.35);
+}
+
+.vip-logo-seal i {
+  font-size: 13px;
+  line-height: 1.12;
 }
 
 .vip-user {
@@ -570,13 +576,14 @@ async function handleSeedStreak() {
   letter-spacing: 0.5px;
 }
 
+/* 会员等级徽标：茶金实底 */
 .vip-tier {
   flex-shrink: 0;
   font-size: 10px;
   padding: 4px 10px;
   border-radius: 999px;
-  background: linear-gradient(135deg, #f0d9b5, #d9b083);
-  color: #5c4632;
+  background: linear-gradient(135deg, #dcb87e, var(--gold));
+  color: var(--ink);
   font-weight: 800;
 }
 
@@ -626,8 +633,10 @@ async function handleSeedStreak() {
 }
 
 .section-head h2 {
+  font-family: var(--font-serif);
   font-size: 15px;
-  font-weight: 800;
+  font-weight: 700;
+  letter-spacing: 1px;
 }
 
 .section-tip {
@@ -650,7 +659,7 @@ async function handleSeedStreak() {
   border-radius: 14px;
   background: var(--card);
   box-shadow: var(--shadow-card);
-  border: 1px solid #f1e7d7;
+  border: 1px solid var(--card-line);
 }
 
 .tpl-card.received {
@@ -662,13 +671,15 @@ async function handleSeedStreak() {
   min-width: 86px;
   text-align: center;
   padding-right: 12px;
-  border-right: 1px dashed #e0d2bd;
+  border-right: 1px dashed var(--card-line);
 }
 
 .tpl-amount {
   font-size: 24px;
   font-weight: 800;
-  color: #d4552e;
+  font-family: var(--font-serif);
+  font-variant-numeric: tabular-nums;
+  color: var(--terracotta);
 }
 
 .tpl-amount i {
@@ -702,7 +713,7 @@ async function handleSeedStreak() {
 .tpl-remain {
   margin-top: 2px;
   font-size: 10px;
-  color: #c08552;
+  color: var(--ink-3);
 }
 
 .tpl-btn {
@@ -711,11 +722,12 @@ async function handleSeedStreak() {
   height: 32px;
   border: none;
   border-radius: 999px;
-  background: linear-gradient(135deg, #c08552, #b0702e);
+  background: linear-gradient(160deg, #3a6140, var(--pine) 55%, var(--pine-deep));
   color: #fff;
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
+  box-shadow: 0 3px 10px rgba(47, 82, 51, 0.26);
   transition: transform 0.12s, box-shadow 0.12s;
 }
 
@@ -724,8 +736,9 @@ async function handleSeedStreak() {
 }
 
 .tpl-btn:disabled {
-  background: #e8ddcc;
-  color: #a89a86;
+  background: var(--paper-deep);
+  color: var(--ink-3);
+  box-shadow: none;
   cursor: not-allowed;
 }
 
@@ -743,7 +756,7 @@ async function handleSeedStreak() {
   padding: 13px 14px;
   border-radius: 14px;
   background: var(--card);
-  border: 1px solid #f1e7d7;
+  border: 1px solid var(--card-line);
   box-shadow: var(--shadow-card);
 }
 
@@ -757,13 +770,15 @@ async function handleSeedStreak() {
   min-width: 76px;
   text-align: center;
   padding-right: 12px;
-  border-right: 1px dashed #e0d2bd;
+  border-right: 1px dashed var(--card-line);
 }
 
 .mc-amount {
   font-size: 20px;
   font-weight: 800;
-  color: #d4552e;
+  font-family: var(--font-serif);
+  font-variant-numeric: tabular-nums;
+  color: var(--terracotta);
 }
 
 .mc-amount i {
@@ -797,23 +812,23 @@ async function handleSeedStreak() {
   flex-shrink: 0;
   height: 30px;
   padding: 0 14px;
-  border: 1px solid #b0702e;
+  border: 1px solid rgba(47, 82, 51, 0.4);
   border-radius: 999px;
-  background: #fff;
-  color: #b0702e;
+  background: var(--card);
+  color: var(--pine);
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
 }
 
 .mc-use:active {
-  background: #fdf3e6;
+  background: var(--pine-mist);
 }
 
 .mc-flag {
   flex-shrink: 0;
   font-size: 11px;
-  color: #a89a86;
+  color: var(--ink-3);
   font-weight: 700;
 }
 
@@ -824,7 +839,7 @@ async function handleSeedStreak() {
   color: var(--ink-3);
   background: var(--card);
   border-radius: 14px;
-  border: 1px dashed #eadfcc;
+  border: 1px dashed var(--card-line);
 }
 
 /* 历史券 */
@@ -838,18 +853,18 @@ async function handleSeedStreak() {
   color: var(--ink-3);
 }
 
-/* ---------- 每日签到卡 ---------- */
+/* ---------- 每日签到卡：宣纸渐变 + 茶金光晕 ---------- */
 .checkin-card {
   position: relative;
   overflow: hidden;
   border-radius: 14px;
   padding: 14px;
-  background: linear-gradient(135deg, #fffdf8, #fdf3e4);
-  border: 1px solid #f3e3c8;
+  background: linear-gradient(135deg, var(--card), var(--paper));
+  border: 1px solid var(--card-line);
   box-shadow: var(--shadow-card);
 }
 
-/* 卡面装饰：左上月牙光晕 */
+/* 卡面装饰：左上茶金光晕 */
 .checkin-card::before {
   content: '';
   position: absolute;
@@ -858,7 +873,7 @@ async function handleSeedStreak() {
   width: 90px;
   height: 90px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(240, 200, 140, 0.28), transparent 65%);
+  background: radial-gradient(circle, rgba(200, 155, 90, 0.22), transparent 65%);
   pointer-events: none;
 }
 
@@ -869,8 +884,10 @@ async function handleSeedStreak() {
 }
 
 .ck-title {
+  font-family: var(--font-serif);
   font-size: 15px;
-  font-weight: 800;
+  font-weight: 700;
+  letter-spacing: 1px;
 }
 
 .ck-sub {
@@ -879,15 +896,16 @@ async function handleSeedStreak() {
   color: var(--ink-3);
 }
 
+/* 连签天数徽标：暖陶胶囊 */
 .ck-streak {
   flex-shrink: 0;
   font-size: 11px;
   font-weight: 800;
-  color: #c0562e;
+  color: var(--terracotta);
   padding: 4px 10px;
   border-radius: 999px;
-  background: #fdeee2;
-  border: 1px solid #f5d9c2;
+  background: rgba(199, 84, 47, 0.08);
+  border: 1px solid rgba(199, 84, 47, 0.22);
 }
 
 .ck-week {
@@ -904,8 +922,8 @@ async function handleSeedStreak() {
   gap: 4px;
   padding: 8px 0 7px;
   border-radius: 10px;
-  background: #fff;
-  border: 1px solid #f1e7d7;
+  background: var(--card);
+  border: 1px solid var(--card-line);
   transition: transform 0.15s;
 }
 
@@ -915,19 +933,20 @@ async function handleSeedStreak() {
 }
 
 .ck-mark {
+  font-family: var(--font-serif);
   font-size: 11px;
-  font-weight: 800;
-  color: #c9b896;
+  font-weight: 700;
+  color: var(--ink-3);
 }
 
 .ck-day.future .ck-mark {
-  color: #ddd0bc;
+  color: var(--card-line);
 }
 
 .ck-day.checked {
-  background: linear-gradient(135deg, #e9b26f, #c08552);
+  background: linear-gradient(160deg, #3a6140, var(--pine) 55%, var(--pine-deep));
   border-color: transparent;
-  box-shadow: 0 4px 10px rgba(192, 133, 82, 0.35);
+  box-shadow: 0 4px 10px rgba(47, 82, 51, 0.3);
 }
 
 .ck-day.checked .ck-mark,
@@ -936,34 +955,39 @@ async function handleSeedStreak() {
 }
 
 .ck-day.today:not(.checked) {
-  border: 1.5px dashed #c08552;
+  border: 1.5px dashed var(--gold);
   animation: ck-pulse 1.8s ease-in-out infinite;
 }
 
 @keyframes ck-pulse {
   0%,
   100% {
-    box-shadow: 0 0 0 0 rgba(192, 133, 82, 0.35);
+    box-shadow: 0 0 0 0 rgba(200, 155, 90, 0.35);
   }
   50% {
-    box-shadow: 0 0 0 5px rgba(192, 133, 82, 0.12);
+    box-shadow: 0 0 0 5px rgba(200, 155, 90, 0.12);
   }
 }
 
+/* 签到主按钮：墨绿光泽款（与全局 .btn-primary 同族） */
 .ck-btn {
+  position: relative;
+  overflow: hidden;
   margin-top: 12px;
   width: 100%;
-  height: 42px;
+  height: 44px;
   border: none;
   border-radius: 12px;
-  background: linear-gradient(135deg, #c08552, #a5623a);
+  background: linear-gradient(160deg, #3a6140, var(--pine) 55%, var(--pine-deep));
   color: #fff;
   font-size: 14px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 1px;
   cursor: pointer;
   transition: transform 0.12s, box-shadow 0.2s;
-  box-shadow: 0 6px 16px rgba(165, 98, 58, 0.35);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 6px 16px rgba(47, 82, 51, 0.3);
 }
 
 .ck-btn:not(:disabled):active {
@@ -971,8 +995,8 @@ async function handleSeedStreak() {
 }
 
 .ck-btn:disabled {
-  background: #efe6d6;
-  color: #a89a86;
+  background: var(--paper-deep);
+  color: var(--ink-3);
   box-shadow: none;
   cursor: default;
 }
@@ -982,8 +1006,8 @@ async function handleSeedStreak() {
   margin-top: 12px;
   padding: 10px 12px 8px;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.65);
-  border: 1px dashed #ecdcc6;
+  background: rgba(246, 243, 236, 0.6);
+  border: 1px dashed rgba(200, 155, 90, 0.4);
 }
 
 .ckp-head {
@@ -1018,32 +1042,34 @@ async function handleSeedStreak() {
   flex: 1;
   height: 7px;
   border-radius: 999px;
-  background: #f0e6d8;
+  background: rgba(43, 38, 32, 0.08);
   transition: background 0.3s ease;
 }
 
 .ckp-seg.lit {
-  background: linear-gradient(90deg, var(--amber-from), var(--amber-to));
-  box-shadow: 0 1px 4px rgba(233, 162, 59, 0.35);
+  background: linear-gradient(90deg, #dcb87e, var(--gold));
+  box-shadow: 0 1px 4px rgba(200, 155, 90, 0.4);
 }
 
 .ckp-seg.goal:not(.lit) {
-  background: repeating-linear-gradient(45deg, #f4e3c8, #f4e3c8 3px, #f9efe0 3px, #f9efe0 6px);
+  background: repeating-linear-gradient(45deg, rgba(200, 155, 90, 0.2), rgba(200, 155, 90, 0.2) 3px, rgba(200, 155, 90, 0.08) 3px, rgba(200, 155, 90, 0.08) 6px);
 }
 
+/* 礼物标记（SVG 描边）：未点亮墨灰，点亮茶金 */
 .ckp-gift {
   position: absolute;
   right: 0;
   top: 50%;
   transform: translateY(-58%);
-  font-size: 15px;
-  filter: grayscale(1);
-  opacity: 0.45;
+  display: grid;
+  place-items: center;
+  color: var(--ink-3);
+  opacity: 0.55;
   transition: all 0.3s ease;
 }
 
 .ckp-gift.lit {
-  filter: none;
+  color: var(--gold);
   opacity: 1;
   animation: gift-bounce 0.9s ease infinite alternate;
 }
@@ -1063,17 +1089,17 @@ async function handleSeedStreak() {
   padding: 4px 10px;
   font-size: 10px;
   font-weight: 600;
-  color: #a05e2b;
-  border: 1px dashed #d8a86f;
+  color: #9a7135;
+  border: 1px dashed rgba(200, 155, 90, 0.55);
   border-radius: 999px;
-  background: linear-gradient(135deg, #fdf6ec, #faeeda);
+  background: rgba(200, 155, 90, 0.1);
 }
 
 .ck-demo:active {
   transform: scale(0.96);
 }
 
-/* ---------- 连签达成庆祝动效 ---------- */
+/* ---------- 连签达成庆祝动效：衬线字彩带（茶金/墨绿） + 印章 ---------- */
 .cele-layer {
   position: fixed;
   inset: 0;
@@ -1085,9 +1111,16 @@ async function handleSeedStreak() {
 .confetti {
   position: absolute;
   top: -5vh;
+  font-family: var(--font-serif);
+  font-weight: 700;
+  color: var(--gold);
   animation-name: confetti-fall;
   animation-timing-function: linear;
   animation-fill-mode: forwards;
+}
+
+.confetti:nth-child(even) {
+  color: var(--pine);
 }
 
 @keyframes confetti-fall {
@@ -1112,23 +1145,35 @@ async function handleSeedStreak() {
   gap: 6px;
   padding: 26px 44px 24px;
   border-radius: 24px;
-  background: linear-gradient(160deg, #fffdf8, #fff3dd);
-  border: 2px solid #e8b568;
+  background: var(--card);
+  border: 2px solid var(--gold);
   box-shadow:
-    0 18px 60px rgba(160, 94, 43, 0.35),
-    0 0 0 8px rgba(232, 181, 104, 0.15);
+    0 18px 60px rgba(36, 62, 40, 0.28),
+    0 0 0 8px rgba(200, 155, 90, 0.15);
   animation: cele-pop 0.5s cubic-bezier(0.22, 1.4, 0.36, 1) both;
 }
 
-.cele-emoji {
-  font-size: 42px;
-  line-height: 1;
+/* 中央印章：茶金描边 + 墨绿衬线「签」 */
+.cele-seal {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border: 2px solid var(--gold);
+  border-radius: 50%;
+  background: var(--paper);
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--pine);
+  transform: rotate(-4deg);
 }
 
 .cele-title {
+  font-family: var(--font-serif);
   font-size: 19px;
-  font-weight: 800;
-  letter-spacing: 2px;
+  font-weight: 700;
+  letter-spacing: 3px;
   color: var(--ink);
 }
 
@@ -1140,7 +1185,7 @@ async function handleSeedStreak() {
 .cele-sub b {
   font-size: 15px;
   font-weight: 800;
-  color: #d9822b;
+  color: var(--terracotta);
 }
 
 @keyframes cele-pop {
@@ -1179,7 +1224,7 @@ async function handleSeedStreak() {
   padding: 13px 14px;
   border-radius: 14px;
   background: var(--card);
-  border: 1px solid #f1e7d7;
+  border: 1px solid var(--card-line);
   box-shadow: var(--shadow-card);
 }
 
@@ -1192,13 +1237,15 @@ async function handleSeedStreak() {
   min-width: 88px;
   text-align: center;
   padding-right: 12px;
-  border-right: 1px dashed #e0d2bd;
+  border-right: 1px dashed var(--card-line);
 }
 
 .sh-cost {
   font-size: 18px;
   font-weight: 800;
-  color: #8b5e3c;
+  font-family: var(--font-serif);
+  font-variant-numeric: tabular-nums;
+  color: var(--pine);
   white-space: nowrap;
 }
 
@@ -1206,10 +1253,6 @@ async function handleSeedStreak() {
   font-style: normal;
   font-size: 22px;
   margin-right: 3px;
-  background: linear-gradient(135deg, #c08552, #8b5e3c);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
 }
 
 .sh-worth {
@@ -1240,7 +1283,7 @@ async function handleSeedStreak() {
 .sh-remain {
   margin-top: 2px;
   font-size: 10px;
-  color: #c08552;
+  color: var(--ink-3);
 }
 
 .sh-btn {
@@ -1249,11 +1292,12 @@ async function handleSeedStreak() {
   height: 32px;
   border: none;
   border-radius: 999px;
-  background: linear-gradient(135deg, #8b5e3c, #6f4b30);
+  background: linear-gradient(160deg, #3a6140, var(--pine) 55%, var(--pine-deep));
   color: #fff;
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
+  box-shadow: 0 3px 10px rgba(47, 82, 51, 0.26);
   transition: transform 0.12s;
 }
 
@@ -1262,8 +1306,9 @@ async function handleSeedStreak() {
 }
 
 .sh-btn:disabled {
-  background: #e8ddcc;
-  color: #a89a86;
+  background: var(--paper-deep);
+  color: var(--ink-3);
+  box-shadow: none;
   cursor: not-allowed;
 }
 
@@ -1271,7 +1316,7 @@ async function handleSeedStreak() {
 .pt-timeline {
   background: var(--card);
   border-radius: 14px;
-  border: 1px solid #f1e7d7;
+  border: 1px solid var(--card-line);
   box-shadow: var(--shadow-card);
   padding: 4px 14px;
 }
@@ -1281,7 +1326,7 @@ async function handleSeedStreak() {
   align-items: center;
   gap: 12px;
   padding: 12px 0;
-  border-bottom: 1px dashed #f3ede3;
+  border-bottom: 1px dashed var(--card-line);
   position: relative;
 }
 
@@ -1289,17 +1334,21 @@ async function handleSeedStreak() {
   border-bottom: none;
 }
 
+/* 明细行图标：衬线单字印章风（签 / 茶 / 兑） */
 .pt-icon {
   flex-shrink: 0;
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background: #fdf6ec;
-  border: 1px solid #f3e3c8;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 15px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--pine-mist);
+  border: 1px solid rgba(47, 82, 51, 0.18);
+  font-family: var(--font-serif);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--pine);
 }
 
 .pt-main {
@@ -1333,11 +1382,11 @@ async function handleSeedStreak() {
 }
 
 .pt-points.plus {
-  color: #5f8d6b;
+  color: var(--success);
 }
 
 .pt-points.minus {
-  color: #d4552e;
+  color: var(--terracotta);
 }
 
 .pt-time {
@@ -1351,15 +1400,15 @@ async function handleSeedStreak() {
   padding: 10px 0;
   border: none;
   background: transparent;
-  color: #b0702e;
+  color: var(--pine);
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
-  border-top: 1px dashed #f3ede3;
+  border-top: 1px dashed var(--card-line);
 }
 
 .pt-more:active {
-  background: #fdfaf6;
+  background: var(--pine-mist);
 }
 
 .demo-note {
@@ -1376,7 +1425,7 @@ async function handleSeedStreak() {
 
 .rv-item {
   padding: 12px 0;
-  border-bottom: 1px dashed #f3ede3;
+  border-bottom: 1px dashed var(--card-line);
 }
 
 .rv-item:last-of-type {
@@ -1394,15 +1443,23 @@ async function handleSeedStreak() {
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 1px;
-  color: var(--caramel-deep);
+  color: var(--pine);
   border-radius: 6px;
-  background: #f9ecdd;
+  background: var(--pine-mist);
 }
 
+/* 星级：SVG 星点，未选墨灰 / 选中茶金 */
 .rv-stars {
-  font-size: 11px;
-  color: #e9a23b;
-  letter-spacing: 1px;
+  display: inline-flex;
+  gap: 1px;
+}
+
+.rv-stars .st {
+  color: rgba(43, 38, 32, 0.15);
+}
+
+.rv-stars .st.on {
+  color: var(--gold);
 }
 
 .rv-time {
@@ -1430,7 +1487,7 @@ async function handleSeedStreak() {
   font-size: 10px;
   color: var(--ink-3);
   border-radius: 999px;
-  background: var(--cream-deep);
+  background: var(--paper-deep);
 }
 
 .rv-reply {
@@ -1438,13 +1495,14 @@ async function handleSeedStreak() {
   padding: 8px 10px;
   font-size: 11px;
   line-height: 1.6;
-  color: #8a7f6f;
+  color: var(--ink-2);
   border-radius: 8px;
-  background: #faf6ef;
+  background: var(--paper);
+  border-left: 2px solid rgba(200, 155, 90, 0.5);
 }
 
 .rv-reply b {
-  color: var(--caramel-deep);
+  color: var(--pine);
 }
 
 .rv-more {
@@ -1452,22 +1510,22 @@ async function handleSeedStreak() {
   padding: 10px 0;
   border: none;
   background: transparent;
-  color: #b0702e;
+  color: var(--pine);
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
-  border-top: 1px dashed #f3ede3;
+  border-top: 1px dashed var(--card-line);
 }
 
 .rv-more:active {
-  background: #fdfaf6;
+  background: var(--pine-mist);
 }
 
 .rv-go {
   margin-top: 10px;
   font-size: 11px;
   font-weight: 600;
-  color: #b0702e;
+  color: var(--pine);
   text-decoration: underline;
   text-underline-offset: 3px;
 }

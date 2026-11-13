@@ -277,14 +277,14 @@ onMounted(async () => {
   width: 56px;
   height: 56px;
   border-radius: 10px;
-  background: #f8f2ea;
+  background: var(--paper);
 }
 
 .thumb-fallback {
   width: 56px;
   height: 56px;
   border-radius: 10px;
-  background: linear-gradient(135deg, #e8d5c0, #c08552);
+  background: linear-gradient(135deg, var(--gold-soft), var(--gold));
   color: #fff;
   font-size: 20px;
   font-weight: 700;

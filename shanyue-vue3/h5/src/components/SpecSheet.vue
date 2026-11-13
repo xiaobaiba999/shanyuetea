@@ -77,8 +77,10 @@ function close() {
 </script>
 
 <template>
-  <van-popup :show="show" position="bottom" round close-on-click-overlay :style="{ maxHeight: '82%' }" @update:show="close">
+  <van-popup :show="show" position="bottom" class="spec-popup" close-on-click-overlay :style="{ maxHeight: '82%' }" @update:show="close">
     <div v-if="product" class="spec-sheet">
+      <!-- 抓手条 -->
+      <span class="sheet-handle" aria-hidden="true" />
       <!-- 顶部商品信息 -->
       <div class="sheet-head">
         <div class="thumb">
@@ -131,7 +133,7 @@ function close() {
           <span class="qty-label">数量</span>
           <van-stepper v-model="qty" :min="1" :max="99" integer button-size="26" />
         </div>
-        <button class="confirm-btn btn-gradient" @click="handleAdd">
+        <button class="confirm-btn btn-primary" @click="handleAdd">
           选好了 ¥{{ fmtPrice(unitPrice * qty) }}
         </button>
       </div>
@@ -140,6 +142,21 @@ function close() {
 </template>
 
 <style scoped>
+/* 弹层圆角 18px（去掉 Vant round 默认 16px，统一新中式大圆角） */
+.spec-popup {
+  border-radius: 18px 18px 0 0;
+}
+
+/* 顶部抓手条 */
+.sheet-handle {
+  display: block;
+  width: 36px;
+  height: 4px;
+  margin: 8px auto 4px;
+  border-radius: 999px;
+  background: var(--paper-deep);
+}
+
 .spec-sheet {
   display: flex;
   flex-direction: column;
@@ -158,7 +175,7 @@ function close() {
   height: 64px;
   border-radius: 12px;
   overflow: hidden;
-  background: var(--cream-deep);
+  background: var(--paper-deep);
 }
 
 .head-info {
@@ -187,7 +204,7 @@ function close() {
 .head-price .yen {
   font-size: 11px;
   font-weight: 700;
-  color: var(--caramel-deep);
+  color: var(--terracotta);
 }
 
 .head-price .num {
@@ -202,7 +219,7 @@ function close() {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: var(--cream-deep);
+  background: var(--paper-deep);
   color: var(--ink-2);
 }
 
@@ -247,8 +264,8 @@ function close() {
   font-size: 12px;
   color: var(--ink-2);
   border-radius: 999px;
-  border: 1px solid #e8dfd3;
-  background: #faf7f2;
+  border: 1px solid var(--card-line);
+  background: var(--paper);
   transition: all 0.15s ease;
 }
 
@@ -256,12 +273,13 @@ function close() {
   transform: scale(0.95);
 }
 
+/* 选中项：墨绿实底胶囊 */
 .chip.active {
   border-color: transparent;
   color: #fff;
   font-weight: 600;
-  background: linear-gradient(135deg, var(--amber-from), var(--amber-to));
-  box-shadow: 0 3px 10px rgba(192, 133, 82, 0.35);
+  background: linear-gradient(160deg, #3a6140, var(--pine) 55%, var(--pine-deep));
+  box-shadow: 0 3px 10px rgba(47, 82, 51, 0.28);
 }
 
 .chip-delta {
@@ -269,7 +287,7 @@ function close() {
 }
 
 .chip:not(.active) .chip-delta {
-  color: var(--caramel-deep);
+  color: var(--terracotta);
 }
 
 .sheet-footer {
@@ -279,7 +297,7 @@ function close() {
   gap: 12px;
   margin-top: 14px;
   padding-top: 12px;
-  border-top: 1px solid #f0e8dc;
+  border-top: 1px solid var(--card-line);
 }
 
 .qty-block {
@@ -294,10 +312,12 @@ function close() {
   color: var(--ink-2);
 }
 
+/* 底部按钮：全局 .btn-primary 光泽款（墨绿渐变+扫光） */
 .confirm-btn {
   flex: 1;
-  max-width: 200px;
-  padding: 11px 0;
+  max-width: 220px;
+  height: 44px;
+  padding: 0 18px;
   font-size: 14px;
   border-radius: 999px;
 }

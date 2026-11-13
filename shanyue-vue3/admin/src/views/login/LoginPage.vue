@@ -93,9 +93,19 @@ async function onSubmit() {
   position: relative;
   overflow: hidden;
   background:
-    radial-gradient(1200px 600px at 85% -10%, rgba(192, 133, 82, 0.16), transparent 60%),
-    radial-gradient(900px 500px at -10% 110%, rgba(139, 94, 60, 0.14), transparent 55%),
-    #faf6f1;
+    radial-gradient(1200px 600px at 85% -10%, rgba(200, 155, 90, 0.16), transparent 60%),
+    radial-gradient(900px 500px at -10% 110%, rgba(47, 82, 51, 0.14), transparent 55%),
+    var(--paper);
+}
+
+/* 宣纸噪点背景层 */
+.login-page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .03 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 /* 装饰光斑 */
@@ -109,14 +119,14 @@ async function onSubmit() {
 .blob-1 {
   width: 340px;
   height: 340px;
-  background: rgba(192, 133, 82, 0.35);
+  background: rgba(200, 155, 90, 0.3);
   top: 8%;
   left: 12%;
 }
 .blob-2 {
   width: 300px;
   height: 300px;
-  background: rgba(95, 141, 107, 0.22);
+  background: rgba(47, 82, 51, 0.2);
   bottom: 6%;
   right: 14%;
 }
@@ -124,12 +134,12 @@ async function onSubmit() {
 .login-card {
   width: 420px;
   background: #ffffff;
-  border: 1px solid #f3ede3;
-  border-radius: 20px;
-  box-shadow: 0 12px 40px rgba(63, 42, 26, 0.1);
+  border: 1px solid var(--card-line);
+  border-radius: 14px;
+  box-shadow: 0 14px 44px rgba(43, 38, 32, 0.12);
   padding: 40px 40px 28px;
   position: relative;
-  z-index: 1;
+  z-index: 2;
 }
 
 /* 品牌区：书法感「山月」 */
@@ -142,15 +152,15 @@ async function onSubmit() {
   height: 44px;
   margin: 0 auto 12px;
   border-radius: 12px;
-  background: linear-gradient(135deg, #c08552, #8b5e3c);
-  color: #faf6f1;
+  background: linear-gradient(135deg, var(--terracotta), var(--danger));
+  color: var(--paper);
   font-family: 'Noto Serif SC', 'Songti SC', 'SimSun', serif;
   font-size: 24px;
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 6px 16px rgba(139, 94, 60, 0.35);
+  box-shadow: 0 6px 16px rgba(199, 84, 47, 0.32);
 }
 
 .brand-cn {
@@ -158,7 +168,7 @@ async function onSubmit() {
   font-size: 34px;
   font-weight: 700;
   letter-spacing: 10px;
-  color: #3f2a1a;
+  color: var(--ink);
   text-indent: 10px; /* 抵消最后一个字的字距，保持视觉居中 */
 }
 
@@ -166,7 +176,7 @@ async function onSubmit() {
   margin-top: 8px;
   font-size: 11px;
   letter-spacing: 4px;
-  color: #8b5e3c;
+  color: var(--el-color-warning-dark-2);
   font-weight: 600;
 }
 

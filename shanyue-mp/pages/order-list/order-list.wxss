@@ -16,14 +16,14 @@
 .tab {
   display: inline-block;
   font-size: 28rpx;
-  color: #5B655C;
+  color: var(--ink-2);
   padding: 12rpx 28rpx;
   border-radius: 32rpx;
   margin-right: 12rpx;
-  background: #F2F4F0;
+  background: var(--paper-deep);
 }
 .tab.on {
-  background: #2F5233;
+  background: var(--pine);
   color: #fff;
   font-weight: 600;
 }
@@ -44,7 +44,7 @@
 }
 .oc-time {
   font-size: 24rpx;
-  color: #8A8A8A;
+  color: var(--ink-3);
 }
 .oc-status {
   font-size: 28rpx;
@@ -67,8 +67,8 @@
 .mode-tag {
   flex: none;
   font-size: 20rpx;
-  color: #2F5233;
-  background: #EAF1EB;
+  color: var(--pine);
+  background: var(--pine-mist);
   border-radius: 8rpx;
   padding: 4rpx 12rpx;
 }
@@ -79,13 +79,13 @@
 .pickup-no {
   margin-left: 12rpx;
   font-size: 24rpx;
-  color: #2F5233;
+  color: var(--pine);
   font-weight: 600;
 }
 .addr {
   margin-left: 12rpx;
   font-size: 22rpx;
-  color: #8A8A8A;
+  color: var(--ink-3);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -104,12 +104,12 @@
 }
 .oc-amount .yen {
   font-size: 22rpx;
-  color: #C7542F;
+  color: var(--terracotta);
 }
 .oc-amount .num {
   font-size: 36rpx;
   font-weight: 700;
-  color: #C7542F;
+  color: var(--terracotta);
 }
 .unpaid-badge {
   margin-left: 14rpx;
@@ -131,12 +131,12 @@
   line-height: 1.4;
 }
 .mini-btn.primary {
-  background: #2F5233;
+  background: var(--pine);
   color: #fff;
 }
 .mini-btn.ghost {
   border: 2rpx solid #C9D2CA;
-  color: #5B655C;
+  color: var(--ink-2);
 }
 
 /* 空态（文字插画） */
@@ -147,19 +147,30 @@
   padding: 140rpx 0 80rpx;
 }
 .empty-icon {
-  font-size: 96rpx;
-  line-height: 1.2;
+  width: 132rpx;
+  height: 132rpx;
+  margin: 0 auto;
+  border: 4rpx solid var(--gold);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Songti SC', 'STSong', 'SimSun', serif;
+  font-size: 60rpx;
+  color: var(--pine);
+  transform: rotate(-4deg);
+  opacity: .85;
 }
 .empty-text {
   margin-top: 20rpx;
   font-size: 30rpx;
   font-weight: 600;
-  color: #4A4A4A;
+  color: var(--ink-2);
 }
 .empty-sub {
   margin-top: 12rpx;
   font-size: 24rpx;
-  color: #8A8A8A;
+  color: var(--ink-3);
 }
 
 /* 底部加载提示 */

@@ -44,7 +44,7 @@ function onNoticeClick() {
 
 <template>
   <header class="store-header">
-    <!-- banner 背景（失败时露出底下的深咖渐变） -->
+    <!-- banner 背景（失败时露出底下的墨绿渐变） -->
     <img v-if="!bannerError" class="banner" src="/menu/banner.png" alt="山月茶咖门店" @error="bannerError = true" />
     <div class="banner-overlay" />
 
@@ -52,15 +52,18 @@ function onNoticeClick() {
       <!-- 品牌行（点击进入门店信息页） -->
       <div class="brand-row" role="button" tabindex="0" aria-label="查看门店信息" @click="router.push('/shop-info')" @keydown.enter="router.push('/shop-info')">
         <div class="brand-left">
-          <div class="logo">🌙</div>
+          <div class="seal logo-seal" aria-hidden="true"><i>山</i><i>月</i></div>
           <div>
             <h1 class="brand-name">{{ shop.name }}</h1>
             <p class="slogan">山月入杯，茶咖相宜</p>
           </div>
         </div>
         <div class="brand-right">
-          <div class="pickup-chip">🛍️ 门店自取</div>
-          <span v-if="reviewTotal > 0" class="rating-chip" aria-label="门店评分">★ {{ avgScore.toFixed(1) }}</span>
+          <div class="pickup-chip">门店自取</div>
+          <span v-if="reviewTotal > 0" class="rating-chip" aria-label="门店评分">
+            <svg viewBox="0 0 24 24" width="9" height="9" fill="currentColor" aria-hidden="true"><path d="M12 2.5l2.7 5.8 6.3.7-4.7 4.3 1.3 6.2-5.6-3.2-5.6 3.2 1.3-6.2-4.7-4.3 6.3-.7L12 2.5z" /></svg>
+            {{ avgScore.toFixed(1) }}
+          </span>
         </div>
       </div>
 
@@ -70,7 +73,10 @@ function onNoticeClick() {
           <span class="dot" :class="shop.status === 1 ? 'dot-open dot-pulse' : 'dot-closed'" />
           <b>{{ shop.status === 1 ? '营业中' : '已打烊' }}</b>
         </span>
-        <span class="status-item">🕐 {{ shop.openHours }}</span>
+        <span class="status-item">
+          <svg class="st-ico" viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
+          {{ shop.openHours }}
+        </span>
         <span class="row-links">
           <button class="query-link" @click="router.push('/shop-info')">门店信息 ›</button>
           <button class="query-link" @click="router.push('/member')">会员·领券 ›</button>
@@ -80,7 +86,7 @@ function onNoticeClick() {
 
       <!-- 公告跑马灯（CSS 无限横向滚动 + 两端渐隐遮罩）；运营位：点击进入会员中心领券 -->
       <button v-if="shop.notice" class="notice marquee" :class="{ clickable: claimable > 0 }" @click="onNoticeClick">
-        <span class="notice-icon">📢</span>
+        <svg class="notice-ico" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5v3a1 1 0 0 0 1 1h2l3.5 3.5v-12L6 9.5H4a1 1 0 0 0-1 1z" /><path d="M14.5 8.5a5 5 0 0 1 0 7" /><path d="M17.5 5.5a9 9 0 0 1 0 13" /></svg>
         <div class="notice-viewport">
           <div class="marquee-track">
             <span>{{ shop.notice }}</span>
@@ -88,7 +94,7 @@ function onNoticeClick() {
           </div>
         </div>
         <span v-if="claimable > 0" class="notice-coupon-hint">
-          🎫 {{ claimable }} 张券可领 <i class="hint-arrow">›</i>
+          {{ claimable }} 张券可领 <i class="hint-arrow">›</i>
         </span>
       </button>
     </div>
@@ -100,8 +106,8 @@ function onNoticeClick() {
   position: relative;
   flex-shrink: 0;
   overflow: hidden;
-  /* 图片加载失败时的渐变兜底 */
-  background: linear-gradient(150deg, #2b1a10 0%, #4a2c17 55%, #2b1a10 100%);
+  /* 图片加载失败时的墨绿渐变兜底 */
+  background: linear-gradient(150deg, var(--pine-deep) 0%, var(--pine) 55%, var(--pine-deep) 100%);
 }
 
 .banner {
@@ -115,7 +121,7 @@ function onNoticeClick() {
 .banner-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(43, 26, 16, 0.72) 0%, rgba(58, 36, 21, 0.62) 50%, rgba(43, 26, 16, 0.88) 100%);
+  background: linear-gradient(180deg, rgba(36, 62, 40, 0.68) 0%, rgba(36, 62, 40, 0.44) 50%, rgba(36, 62, 40, 0.86) 100%);
 }
 
 .header-body {
@@ -147,15 +153,34 @@ function onNoticeClick() {
   gap: 5px;
 }
 
-/* 门店评分徽标（金星级） */
+/* 印章 logo（品牌位） */
+.logo-seal {
+  width: 42px;
+  height: 42px;
+  background: rgba(246, 243, 236, 0.94);
+  box-shadow: 0 3px 10px rgba(36, 62, 40, 0.35);
+}
+
+.logo-seal i {
+  display: block;
+  font-size: 13px;
+  line-height: 1.12;
+  letter-spacing: 0.5px;
+}
+
+/* 门店评分徽标（茶金底 + 墨字，衬线数字） */
 .rating-chip {
-  padding: 2px 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px 9px;
   font-size: 10px;
-  font-weight: 800;
-  color: #3b2413;
+  font-weight: 700;
+  font-family: var(--font-serif);
+  color: var(--ink);
   border-radius: 999px;
-  background: linear-gradient(135deg, #f4d9a6, #e9b968);
-  box-shadow: 0 2px 6px rgba(233, 185, 104, 0.35);
+  background: linear-gradient(135deg, #dcb87e, var(--gold));
+  box-shadow: 0 2px 6px rgba(200, 155, 90, 0.35);
 }
 
 .brand-left {
@@ -165,31 +190,21 @@ function onNoticeClick() {
   min-width: 0;
 }
 
-.logo {
-  display: grid;
-  place-items: center;
-  width: 42px;
-  height: 42px;
-  font-size: 20px;
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(6px);
-}
-
 .brand-name {
-  font-size: 17px;
+  font-family: var(--font-serif);
+  font-size: 18px;
   font-weight: 700;
-  letter-spacing: 0.5px;
+  letter-spacing: 2px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .slogan {
-  margin-top: 2px;
+  margin-top: 3px;
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.7);
+  letter-spacing: 1px;
+  color: rgba(246, 243, 236, 0.75);
 }
 
 .pickup-chip {
@@ -201,8 +216,9 @@ function onNoticeClick() {
   font-size: 11px;
   font-weight: 500;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(246, 243, 236, 0.4);
+  background: rgba(246, 243, 236, 0.16);
+  -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
 }
 
@@ -213,13 +229,17 @@ function onNoticeClick() {
   gap: 6px 14px;
   margin-top: 12px;
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.82);
+  color: rgba(246, 243, 236, 0.85);
 }
 
 .status-item {
   display: inline-flex;
   align-items: center;
   gap: 5px;
+}
+
+.st-ico {
+  opacity: 0.8;
 }
 
 .dot {
@@ -229,11 +249,11 @@ function onNoticeClick() {
 }
 
 .dot-open {
-  background: #5ed69b;
+  background: var(--success);
 }
 
 .dot-closed {
-  background: #a89888;
+  background: var(--ink-3);
 }
 
 .row-links {
@@ -245,7 +265,7 @@ function onNoticeClick() {
 
 .query-link {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(246, 243, 236, 0.9);
   padding: 2px 4px;
 }
 
@@ -258,14 +278,14 @@ function onNoticeClick() {
   align-items: center;
   gap: 8px;
   margin-top: 12px;
-  padding: 6px 12px;
+  padding: 7px 12px;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(6px);
+  border: 1px solid rgba(200, 155, 90, 0.5);
+  background: var(--paper-deep);
   width: 100%;
   font: inherit;
   text-align: left;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 /* 遮罩从整条公告栏移到文字视口：右侧领券徽标不被渐隐淡出 */
@@ -275,17 +295,20 @@ function onNoticeClick() {
   overflow: visible;
 }
 
+.notice-ico {
+  flex-shrink: 0;
+  color: var(--gold);
+}
+
 /* 可领券时变为可点击运营位 */
 .notice.clickable {
   cursor: pointer;
-  border-color: rgba(233, 185, 104, 0.45);
-  background: linear-gradient(90deg, rgba(233, 185, 104, 0.16), rgba(255, 255, 255, 0.08) 55%);
-  transition: transform 0.15s ease, filter 0.15s ease;
+  border-color: var(--gold);
+  box-shadow: 0 3px 12px rgba(200, 155, 90, 0.28);
 }
 
 .notice.clickable:active {
   transform: scale(0.985);
-  filter: brightness(1.1);
 }
 
 .notice-coupon-hint {
@@ -295,11 +318,11 @@ function onNoticeClick() {
   gap: 2px;
   font-size: 10px;
   font-weight: 700;
-  color: #2b1a10;
+  color: var(--ink);
   padding: 3px 8px;
   border-radius: 999px;
-  background: linear-gradient(135deg, #f4d9a6, #e9b968);
-  box-shadow: 0 2px 6px rgba(233, 185, 104, 0.35);
+  background: linear-gradient(135deg, #dcb87e, var(--gold));
+  box-shadow: 0 2px 6px rgba(200, 155, 90, 0.35);
   white-space: nowrap;
 }
 
@@ -320,11 +343,6 @@ function onNoticeClick() {
   }
 }
 
-.notice-icon {
-  flex-shrink: 0;
-  font-size: 11px;
-}
-
 .notice-viewport {
   flex: 1;
   min-width: 0;
@@ -335,6 +353,6 @@ function onNoticeClick() {
 
 .marquee-track span {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.85);
+  color: var(--ink-2);
 }
 </style>

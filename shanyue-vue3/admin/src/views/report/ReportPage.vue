@@ -196,9 +196,9 @@ let chartT: echarts.ECharts | null = null
 let chartO: echarts.ECharts | null = null
 let chartP: echarts.ECharts | null = null
 
-const AXIS_LABEL = { color: '#8c7a6b', fontSize: 11 }
-const SPLIT_LINE = { lineStyle: { color: '#f3ede3' } }
-const TOOLTIP_BG = { backgroundColor: '#fffdf9', borderColor: '#f0e6da', textStyle: { color: '#3f2a1a' } }
+const AXIS_LABEL = { color: '#6B6155', fontSize: 11 }
+const SPLIT_LINE = { lineStyle: { color: '#E8E2D4' } }
+const TOOLTIP_BG = { backgroundColor: '#FFFFFF', borderColor: '#E8E2D4', textStyle: { color: '#2B2620' } }
 
 function renderTurnover() {
   const t = turnover.value
@@ -218,7 +218,7 @@ function renderTurnover() {
         return `${dates[p.dataIndex]}<br/>营业额：<b>¥ ${fmtMoney(p.value)}</b>`
       },
     },
-    xAxis: { type: 'category', boundaryGap: false, data: labels, axisTick: { show: false }, axisLine: { lineStyle: { color: '#e4d9cb' } }, axisLabel: AXIS_LABEL },
+    xAxis: { type: 'category', boundaryGap: false, data: labels, axisTick: { show: false }, axisLine: { lineStyle: { color: '#E8E2D4' } }, axisLabel: AXIS_LABEL },
     yAxis: { type: 'value', splitLine: SPLIT_LINE, axisLabel: { ...AXIS_LABEL, formatter: (v: number) => `¥${Math.round(v / 100)}` } },
     series: [
       {
@@ -228,20 +228,20 @@ function renderTurnover() {
         symbol: 'circle',
         symbolSize: 6,
         data: t.turnoverList,
-        lineStyle: { width: 3, color: '#c08552' },
-        itemStyle: { color: '#c08552', borderColor: '#fffdf9', borderWidth: 2 },
+        lineStyle: { width: 3, color: '#2F5233' },
+        itemStyle: { color: '#2F5233', borderColor: '#FFFFFF', borderWidth: 2 },
         areaStyle: {
           color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-            { offset: 0, color: 'rgba(192, 133, 82, 0.32)' },
-            { offset: 1, color: 'rgba(192, 133, 82, 0.02)' },
+            { offset: 0, color: 'rgba(47, 82, 51, 0.28)' },
+            { offset: 1, color: 'rgba(47, 82, 51, 0.02)' },
           ]),
         },
         markLine: {
           silent: true,
           symbol: 'none',
-          lineStyle: { color: '#b3a08e', type: 'dashed' },
+          lineStyle: { color: '#9C927F', type: 'dashed' },
           label: {
-            color: '#8c7a6b',
+            color: '#6B6155',
             position: 'insideStartTop',
             formatter: (p: { value: number }) => `日均 ¥${fmtMoney(p.value)}`,
           },
@@ -269,7 +269,7 @@ function renderOrders() {
         return `${dates[p.dataIndex]}<br/>有效订单：<b>${p.value} 单</b>`
       },
     },
-    xAxis: { type: 'category', data: labels, axisTick: { show: false }, axisLine: { lineStyle: { color: '#e4d9cb' } }, axisLabel: { ...AXIS_LABEL, interval: 'auto' } },
+    xAxis: { type: 'category', data: labels, axisTick: { show: false }, axisLine: { lineStyle: { color: '#E8E2D4' } }, axisLabel: { ...AXIS_LABEL, interval: 'auto' } },
     yAxis: { type: 'value', minInterval: 1, splitLine: SPLIT_LINE, axisLabel: AXIS_LABEL },
     series: [
       {
@@ -279,8 +279,8 @@ function renderOrders() {
         data: values.map((v, i) => ({
           value: v,
           itemStyle: {
-            // 今日柱琥珀高亮，历史日摩卡棕
-            color: i === values.length - 1 ? '#d9a06b' : '#8b5e3c',
+            // 今日柱茶金高亮，历史柱墨绿
+            color: i === values.length - 1 ? '#C89B5A' : '#2F5233',
             borderRadius: [5, 5, 0, 0],
           },
         })),
@@ -307,7 +307,7 @@ function renderTop10() {
       },
     },
     xAxis: { type: 'value', minInterval: 1, splitLine: SPLIT_LINE, axisLabel: AXIS_LABEL },
-    yAxis: { type: 'category', inverse: true, data: names, axisTick: { show: false }, axisLine: { show: false }, axisLabel: { color: '#3f2a1a', fontSize: 12, fontWeight: 600 } },
+    yAxis: { type: 'category', inverse: true, data: names, axisTick: { show: false }, axisLine: { show: false }, axisLabel: { color: '#2B2620', fontSize: 12, fontWeight: 600 } },
     series: [
       {
         name: '销量',
@@ -319,14 +319,14 @@ function renderTop10() {
             color:
               i === 0
                 ? new echarts.graphic.LinearGradient(0, 0, 1, 0, [
-                    { offset: 0, color: '#e9b968' },
-                    { offset: 1, color: '#c08552' },
+                    { offset: 0, color: '#D9B47E' },
+                    { offset: 1, color: '#C89B5A' },
                   ])
-                : '#a9846b',
+                : '#8CA38F',
             borderRadius: [0, 8, 8, 0],
           },
         })),
-        label: { show: true, position: 'right', color: '#8c7a6b', fontWeight: 600 },
+        label: { show: true, position: 'right', color: '#6B6155', fontWeight: 600 },
       },
     ],
   })
@@ -415,7 +415,7 @@ onBeforeUnmount(() => {
   gap: 4px;
   margin: 14px 0 4px;
   padding: 4px;
-  background: #f6f0e8;
+  background: var(--paper-deep);
   border-radius: 12px;
   width: fit-content;
 }
@@ -424,20 +424,20 @@ onBeforeUnmount(() => {
   padding: 6px 18px;
   font-size: 13px;
   font-weight: 600;
-  color: #8c7a6b;
+  color: var(--ink-2);
   border-radius: 9px;
   transition: all 0.18s;
   cursor: pointer;
 }
 
 .range-tab:hover {
-  color: #3f2a1a;
+  color: var(--ink);
 }
 
 .range-tab.active {
-  background: #fffdf9;
-  color: #b0702e;
-  box-shadow: 0 2px 6px rgba(63, 42, 26, 0.12);
+  background: var(--card);
+  color: var(--pine);
+  box-shadow: 0 2px 6px rgba(43, 38, 32, 0.12);
 }
 
 /* KPI 卡 */
@@ -455,19 +455,20 @@ onBeforeUnmount(() => {
 
 .kpi-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 22px rgba(63, 42, 26, 0.1);
+  box-shadow: 0 8px 22px rgba(43, 38, 32, 0.1);
 }
 
 .kpi-label {
   font-size: 13px;
-  color: #8c7a6b;
+  color: var(--ink-2);
 }
 
 .kpi-value {
   margin-top: 8px;
+  font-family: var(--font-serif);
   font-size: 24px;
-  font-weight: 800;
-  color: #3f2a1a;
+  font-weight: 700;
+  color: var(--ink);
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.5px;
 }

@@ -213,7 +213,7 @@
           补后总量 <b>{{ restockRow.totalCount + (restockAmount || 0) }}</b> 张，剩余可领
           <b>{{ restockRow.totalCount + (restockAmount || 0) - (restockRow.totalCount - restockRow.remainCount) }}</b> 张
         </p>
-        <p class="restock-hint">💡 已领取张数只增不减，服务端会校验新总量 ≥ 已领取；面试点：高并发领券可用 Redis 原子扣减库存</p>
+        <p class="restock-hint">已领取张数只增不减，服务端会校验新总量 ≥ 已领取；面试点：高并发领券可用 Redis 原子扣减库存</p>
       </div>
       <template #footer>
         <el-button @click="restockVisible = false">取消</el-button>
@@ -301,9 +301,9 @@ function progressOf(row: CouponTemplate): number {
 }
 
 function progressColor(row: CouponTemplate): string {
-  if (row.remainCount <= 0) return '#d97706'
-  if (progressOf(row) >= 80) return '#e9a23b'
-  return '#8b5e3c'
+  if (row.remainCount <= 0) return '#B5432F'
+  if (progressOf(row) >= 80) return '#C89B5A'
+  return '#2F5233'
 }
 
 /* ---------- 状态切换 ---------- */
@@ -534,24 +534,25 @@ async function onRestock() {
   padding: 12px 20px;
   min-width: 132px;
   border-radius: 14px;
-  background: #fffdf9;
-  border: 1px solid #f3ede3;
-  box-shadow: 0 1px 4px rgba(139, 94, 60, 0.06);
+  background: var(--card);
+  border: 1px solid var(--card-line);
+  box-shadow: 0 1px 4px rgba(43, 38, 32, 0.06);
 }
 
 .stat-num {
+  font-family: var(--font-serif);
   font-size: 22px;
   font-weight: 700;
-  color: #3f2a1a;
+  color: var(--ink);
   font-variant-numeric: tabular-nums;
 }
 
 .stat-num.amber {
-  color: #b0702e;
+  color: var(--gold);
 }
 
 .stat-num.green {
-  color: #4c7156;
+  color: var(--success);
 }
 
 .stat-label {
@@ -581,7 +582,7 @@ async function onRestock() {
 
 .coupon-name {
   font-weight: 600;
-  color: #3f2a1a;
+  color: var(--ink);
 }
 
 .coupon-name.off {
@@ -597,21 +598,21 @@ async function onRestock() {
 
 .amount {
   font-weight: 700;
-  color: #b0702e;
+  color: var(--terracotta);
   font-variant-numeric: tabular-nums;
 }
 
 .threshold {
   font-size: 12px;
-  color: #6b5847;
-  background: #f8f2ea;
+  color: var(--ink-2);
+  background: var(--paper);
   border-radius: 999px;
   padding: 2px 10px;
 }
 
 .threshold.none {
-  color: #4c7156;
-  background: #eff7f1;
+  color: var(--success);
+  background: var(--el-color-success-light-9);
 }
 
 /* ---------- 进度 ---------- */
@@ -630,7 +631,7 @@ async function onRestock() {
 .progress-text em.sold-out {
   font-style: normal;
   margin-left: 6px;
-  color: #b4432f;
+  color: var(--danger);
   font-weight: 600;
 }
 
@@ -654,13 +655,13 @@ async function onRestock() {
   gap: 12px;
   padding: 12px 14px;
   border-radius: 12px;
-  background: #fffdf9;
-  border: 1px solid #f3ede3;
+  background: var(--card);
+  border: 1px dashed var(--gold);
 }
 
 .restock-name {
   font-weight: 700;
-  color: var(--el-color-primary, #8b5e3c);
+  color: var(--pine);
 }
 
 .restock-meta {
@@ -678,22 +679,22 @@ async function onRestock() {
   height: 34px;
   font-size: 13px;
   font-weight: 700;
-  color: #8b5e3c;
-  border: 1px solid #e8ddcc;
+  color: var(--pine);
+  border: 1px solid var(--card-line);
   border-radius: 10px;
-  background: #fffdf9;
+  background: var(--card);
   transition: all 0.15s ease;
 }
 
 .restock-chip:hover {
-  border-color: #d8a86f;
+  border-color: var(--gold);
 }
 
 .restock-chip.active {
   color: #fff;
   border-color: transparent;
-  background: linear-gradient(135deg, #e9a23b, #d9822b);
-  box-shadow: 0 2px 8px rgba(217, 130, 43, 0.35);
+  background: linear-gradient(135deg, var(--gold), var(--el-color-warning-dark-2));
+  box-shadow: 0 2px 8px rgba(200, 155, 90, 0.35);
 }
 
 .restock-preview {
@@ -703,15 +704,15 @@ async function onRestock() {
 
 .restock-preview b {
   font-weight: 800;
-  color: #d9822b;
+  color: var(--terracotta);
 }
 
 .restock-hint {
   font-size: 11px;
   line-height: 1.6;
-  color: #b3a08e;
+  color: var(--ink-3);
   padding: 8px 10px;
   border-radius: 8px;
-  background: #faf6ef;
+  background: var(--paper);
 }
 </style>

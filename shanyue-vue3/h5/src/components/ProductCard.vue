@@ -25,10 +25,11 @@ async function handleAdd() {
 </script>
 
 <template>
-  <div class="product-card">
+  <div class="product-card" :class="{ sold: drink.status === 0 }">
     <div class="thumb">
       <ProductImage :src="drink.image" :alt="drink.name" :name="drink.name" :food="drink.categoryId === 5" />
       <span v-if="drink.featured === 1" class="featured-tag">招牌</span>
+      <span v-if="drink.status === 0" class="sold-mark">今日售罄</span>
     </div>
 
     <div class="info">
@@ -45,7 +46,7 @@ async function handleAdd() {
           </del>
         </div>
 
-        <button v-if="hasSpecs" class="spec-btn btn-gradient" @click="handleAdd">选规格</button>
+        <button v-if="hasSpecs" class="spec-btn btn-primary" @click="handleAdd">选规格</button>
         <button v-else class="add-btn plus-pop" aria-label="加入购物车" @click="handleAdd">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
             <path d="M12 5v14M5 12h14" />
@@ -62,8 +63,32 @@ async function handleAdd() {
   gap: 12px;
   padding: 12px;
   background: var(--card);
+  border: 1px solid var(--card-line);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-card);
+  transition:
+    transform 0.22s ease,
+    box-shadow 0.22s ease,
+    border-color 0.22s ease;
+}
+
+@media (hover: hover) {
+  .product-card:hover {
+    transform: translateY(-2px);
+    border-color: #d9cdb2;
+    box-shadow: 0 1px 2px rgba(43, 38, 32, 0.05), 0 10px 26px rgba(43, 38, 32, 0.1);
+  }
+}
+
+.product-card:active {
+  transform: translateY(-2px);
+  border-color: #d9cdb2;
+  box-shadow: 0 1px 2px rgba(43, 38, 32, 0.05), 0 10px 26px rgba(43, 38, 32, 0.1);
+}
+
+/* 售罄态：茶金虚线描边 */
+.product-card.sold {
+  border: 1px dashed var(--gold);
 }
 
 .thumb {
@@ -71,21 +96,38 @@ async function handleAdd() {
   flex-shrink: 0;
   width: 80px;
   height: 80px;
-  border-radius: 12px;
+  border-radius: 10px;
   overflow: hidden;
-  background: var(--cream-deep);
+  background: var(--paper-deep);
 }
 
 .featured-tag {
   position: absolute;
   left: 0;
   top: 0;
-  padding: 2px 7px;
+  padding: 2px 8px;
   font-size: 9px;
   font-weight: 700;
-  color: #fff;
-  border-radius: 0 0 10px 0;
-  background: linear-gradient(135deg, var(--amber-from), var(--amber-to));
+  letter-spacing: 1px;
+  color: var(--pine);
+  border-radius: 0 10px 0 10px;
+  background: rgba(232, 240, 233, 0.94);
+  border-right: 1px solid rgba(47, 82, 51, 0.18);
+  border-bottom: 1px solid rgba(47, 82, 51, 0.18);
+}
+
+/* 售罄角标（宣纸底 + 衬线小字） */
+.sold-mark {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-serif);
+  font-size: 11px;
+  letter-spacing: 3px;
+  color: var(--terracotta);
+  background: rgba(246, 243, 236, 0.82);
+  pointer-events: none;
 }
 
 .info {
@@ -130,7 +172,7 @@ async function handleAdd() {
 .yen {
   font-size: 11px;
   font-weight: 700;
-  color: var(--caramel-deep);
+  color: var(--terracotta);
 }
 
 .num {
@@ -141,15 +183,20 @@ async function handleAdd() {
 .origin {
   margin-left: 4px;
   font-size: 10px;
-  color: #c9b8a5;
+  color: var(--ink-3);
 }
 
 .spec-btn {
-  padding: 7px 14px;
+  height: 30px;
+  padding: 0 14px;
   font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1px;
   border-radius: 999px;
+  box-shadow: 0 2px 8px rgba(47, 82, 51, 0.24);
 }
 
+/* 「+」加购：墨绿小圆钮（按压回弹由全局 .plus-pop 提供） */
 .add-btn {
   display: grid;
   place-items: center;
@@ -157,7 +204,9 @@ async function handleAdd() {
   height: 30px;
   border-radius: 50%;
   color: #fff;
-  background: linear-gradient(135deg, var(--amber-from), var(--amber-to));
-  box-shadow: 0 3px 10px rgba(192, 133, 82, 0.4);
+  background: linear-gradient(160deg, #3a6140, var(--pine) 55%, var(--pine-deep));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 3px 10px rgba(47, 82, 51, 0.3);
 }
 </style>

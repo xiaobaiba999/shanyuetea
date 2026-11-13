@@ -159,10 +159,13 @@ function onScroll() {
     <StoreHeader v-if="shop" :shop="shop" />
     <div v-else class="header-fallback" />
 
-    <!-- 商品搜索框 -->
-    <div class="search-wrap">
+    <!-- 商品搜索框（玻璃拟态：宣纸半透明 + 毛玻璃 + 底部发丝线） -->
+    <div class="search-wrap glass">
       <div class="search-box" :class="{ focus: searching }">
-        <span class="search-ico" aria-hidden="true">🔍</span>
+        <svg class="search-ico" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="7" />
+          <path d="M16.5 16.5L21 21" />
+        </svg>
         <input
           v-model="keyword"
           class="search-input"
@@ -171,7 +174,11 @@ function onScroll() {
           enterkeyhint="search"
           aria-label="搜索商品"
         />
-        <button v-if="searching" class="search-clear" aria-label="清空搜索" @click="keyword = ''">✕</button>
+        <button v-if="searching" class="search-clear" aria-label="清空搜索" @click="keyword = ''">
+          <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+            <path d="M6 6l12 12M18 6L6 18" />
+          </svg>
+        </button>
       </div>
     </div>
 
@@ -186,7 +193,6 @@ function onScroll() {
           @click="onCatClick(c.id)"
         >
           <span v-if="c.id === activeCat" class="active-bar" />
-          <span class="cat-icon">{{ c.icon }}</span>
           <span class="cat-name">{{ c.name }}</span>
         </button>
       </aside>
@@ -199,7 +205,7 @@ function onScroll() {
         <template v-else-if="searching">
           <section class="cat-section search-section">
             <h2 class="section-title">
-              <span>🔍</span>
+              <span class="title-mark" aria-hidden="true" />
               搜索结果
               <span class="section-count">（{{ searchResults.length }}）</span>
             </h2>
@@ -211,7 +217,7 @@ function onScroll() {
               image="search"
               description="没有找到相关商品，换个关键词试试"
             />
-            <p v-else class="search-hint">💡 支持按商品名 / 描述 / 分类名搜索</p>
+            <p v-else class="search-hint">支持按商品名 / 描述 / 分类名搜索</p>
           </section>
         </template>
 
@@ -219,7 +225,7 @@ function onScroll() {
           <!-- 招牌推荐横滑（scroll-snap） -->
           <section v-if="featured.length" class="featured">
             <div class="featured-head">
-              <h2>🔥 今日招牌 · 店长最爱</h2>
+              <h2>今日招牌 · 店长最爱</h2>
               <span class="featured-tip">第二杯半价</span>
             </div>
             <div
@@ -256,7 +262,7 @@ function onScroll() {
           <!-- 分类分区 -->
           <section v-for="c in grouped" :key="c.id" :data-section="c.id" class="cat-section">
             <h2 class="section-title">
-              <span>{{ c.icon }}</span>
+              <span class="title-mark" aria-hidden="true" />
               {{ c.name }}
               <span class="section-count">（{{ c.products.length }}）</span>
             </h2>
@@ -281,7 +287,9 @@ function onScroll() {
     <Transition name="fade">
       <div v-if="shop && shop.status === 0" class="closed-mask">
         <div class="closed-card">
-          <span class="closed-moon">🌙</span>
+          <svg class="closed-moon" viewBox="0 0 24 24" width="42" height="42" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />
+          </svg>
           <h3>已打烊</h3>
           <p class="closed-hours">营业时间 {{ shop.openHours }}</p>
           <p class="closed-tip">明天再来喝一杯吧</p>
@@ -298,11 +306,10 @@ function onScroll() {
   height: 100dvh;
 }
 
-/* 搜索框 */
+/* 搜索框：背景/毛玻璃/底边线由全局 .glass 提供 */
 .search-wrap {
   flex-shrink: 0;
   padding: 8px 12px 4px;
-  background: var(--cream);
 }
 
 .search-box {
@@ -312,24 +319,22 @@ function onScroll() {
   height: 38px;
   padding: 0 14px;
   border-radius: 999px;
-  background: #fff;
-  border: 1.5px solid #f0e6d6;
-  box-shadow: 0 2px 8px rgba(139, 94, 60, 0.05);
+  background: var(--paper-deep);
+  border: 1.5px solid var(--card-line);
+  box-shadow: 0 1px 2px rgba(43, 38, 32, 0.04);
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease;
 }
 
 .search-box.focus {
-  border-color: var(--amber-to);
-  box-shadow:
-    0 0 0 3px rgba(233, 162, 59, 0.14),
-    0 2px 8px rgba(139, 94, 60, 0.05);
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(200, 155, 90, 0.22);
 }
 
 .search-ico {
-  font-size: 14px;
-  opacity: 0.75;
+  flex-shrink: 0;
+  color: var(--ink-3);
 }
 
 .search-input {
@@ -344,7 +349,7 @@ function onScroll() {
 }
 
 .search-input::placeholder {
-  color: #b8a892;
+  color: var(--ink-3);
 }
 
 .search-input::-webkit-search-cancel-button {
@@ -353,13 +358,13 @@ function onScroll() {
 
 .search-clear {
   flex-shrink: 0;
+  display: grid;
+  place-items: center;
   width: 22px;
   height: 22px;
-  font-size: 11px;
-  line-height: 1;
-  color: #a08d75;
+  color: var(--ink-3);
   border-radius: 50%;
-  background: #f4ede1;
+  background: rgba(43, 38, 32, 0.08);
 }
 
 .search-clear:active {
@@ -376,7 +381,7 @@ function onScroll() {
 .header-fallback {
   flex-shrink: 0;
   height: 132px;
-  background: linear-gradient(150deg, #2b1a10, #4a2c17 55%, #2b1a10);
+  background: linear-gradient(150deg, var(--pine-deep), var(--pine) 55%, var(--pine-deep));
 }
 
 .menu-board {
@@ -385,13 +390,13 @@ function onScroll() {
   min-height: 0;
 }
 
-/* 左侧分类栏 */
+/* 左侧分类栏：宣纸深底 + 墨绿圆点激活 */
 .cat-nav {
   flex-shrink: 0;
   width: 84px;
   overflow-y: auto;
   padding: 8px 0;
-  background: var(--cream-deep);
+  background: var(--paper-deep);
 }
 
 .cat-item {
@@ -410,25 +415,22 @@ function onScroll() {
 }
 
 .cat-item.active {
-  background: var(--cream);
+  background: var(--paper);
   color: var(--ink);
   font-weight: 700;
 }
 
+/* 激活态：左侧 8px 墨绿圆点 */
 .active-bar {
   position: absolute;
-  left: 0;
+  left: 6px;
   top: 50%;
   transform: translateY(-50%);
-  width: 3px;
-  height: 24px;
-  border-radius: 0 999px 999px 0;
-  background: linear-gradient(180deg, var(--amber-from), var(--amber-to));
-}
-
-.cat-icon {
-  font-size: 16px;
-  line-height: 1;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--pine);
+  box-shadow: 0 0 0 3px rgba(47, 82, 51, 0.14);
 }
 
 .cat-name {
@@ -463,8 +465,10 @@ function onScroll() {
 }
 
 .featured-head h2 {
+  font-family: var(--font-serif);
   font-size: 13px;
   font-weight: 700;
+  letter-spacing: 1px;
 }
 
 .featured-tip {
@@ -488,9 +492,9 @@ function onScroll() {
   border-radius: var(--radius-card);
   overflow: hidden;
   text-align: left;
-  box-shadow: 0 2px 12px rgba(74, 44, 23, 0.1);
+  box-shadow: 0 2px 12px rgba(43, 38, 32, 0.1);
   scroll-snap-align: start;
-  background: var(--cream-deep);
+  background: var(--paper-deep);
 }
 
 .featured-img {
@@ -524,7 +528,8 @@ function onScroll() {
   margin-top: 1px;
   font-size: 11px;
   font-weight: 600;
-  color: #ffd9a8;
+  font-family: var(--font-serif);
+  color: #e8c886;
 }
 
 /* 招牌卡片：当前轮播卡轻微提亮放大 */
@@ -536,7 +541,7 @@ function onScroll() {
 
 .featured-card.current {
   transform: scale(1.03);
-  box-shadow: 0 4px 16px rgba(74, 44, 23, 0.16);
+  box-shadow: 0 4px 16px rgba(43, 38, 32, 0.16);
 }
 
 /* 轮播指示点 */
@@ -551,16 +556,16 @@ function onScroll() {
   width: 5px;
   height: 5px;
   border-radius: 999px;
-  background: #d8c9b8;
+  background: rgba(43, 38, 32, 0.18);
   transition: all 0.3s ease;
 }
 
 .featured-dots .dot.on {
   width: 14px;
-  background: linear-gradient(90deg, var(--amber-from), var(--amber-to));
+  background: var(--pine);
 }
 
-/* 分区 */
+/* 分区：衬线标题 + 茶金短横 */
 .cat-section {
   padding-top: 16px;
 }
@@ -571,8 +576,18 @@ function onScroll() {
   gap: 6px;
   margin-bottom: 10px;
   padding: 0 2px;
+  font-family: var(--font-serif);
   font-size: 13px;
   font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.title-mark {
+  display: inline-block;
+  width: 14px;
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #dcb87e, var(--gold));
 }
 
 .section-count {
@@ -609,7 +624,7 @@ function onScroll() {
   z-index: 300;
   display: grid;
   place-items: center;
-  background: rgba(43, 26, 16, 0.55);
+  background: rgba(43, 38, 32, 0.55);
   backdrop-filter: blur(6px);
 }
 
@@ -622,23 +637,26 @@ function onScroll() {
   padding: 30px 20px;
   border-radius: var(--radius-card);
   background: var(--card);
+  border: 1px solid var(--card-line);
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
 }
 
 .closed-moon {
-  font-size: 40px;
+  color: var(--gold);
 }
 
 .closed-card h3 {
   margin-top: 4px;
+  font-family: var(--font-serif);
   font-size: 18px;
-  font-weight: 800;
+  font-weight: 700;
+  letter-spacing: 3px;
 }
 
 .closed-hours {
   font-size: 13px;
   font-weight: 600;
-  color: var(--caramel-deep);
+  color: var(--pine);
 }
 
 .closed-tip {

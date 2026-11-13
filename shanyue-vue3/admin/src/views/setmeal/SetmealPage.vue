@@ -657,14 +657,14 @@ onMounted(async () => {
   width: 56px;
   height: 56px;
   border-radius: 10px;
-  background: #f8f2ea;
+  background: var(--paper);
 }
 
 .thumb-fallback {
   width: 56px;
   height: 56px;
   border-radius: 10px;
-  background: linear-gradient(135deg, #e8d5c0, #c08552);
+  background: linear-gradient(135deg, var(--gold-soft), var(--gold));
   color: #fff;
   font-size: 20px;
   font-weight: 700;
@@ -694,24 +694,14 @@ onMounted(async () => {
 }
 
 .card-title {
-  font-size: 14px;
+  font-family: var(--font-serif);
+  font-size: 15px;
   font-weight: 700;
-  color: #3f2a1a;
-  position: relative;
-  padding-left: 10px;
+  color: var(--ink);
+  letter-spacing: 0.5px;
 }
 
-.card-title::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 4px;
-  height: 14px;
-  border-radius: 2px;
-  background: linear-gradient(180deg, #c08552, #8b5e3c);
-}
+/* 竖条装饰由全局 .card-title-bar::before 提供（茶金→墨绿），此处不再重复绘制 */
 
 .pick-head {
   margin-top: 6px;
@@ -729,13 +719,13 @@ onMounted(async () => {
   margin-top: 2px;
 }
 
-/* 图片上传（与饮品编辑页同款视觉） */
+/* 图片上传（与饮品编辑页同款视觉：茶金虚线描边） */
 .image-box {
   width: 96px;
   height: 96px;
   border-radius: 12px;
-  border: 1.5px dashed #d8c9b8;
-  background: #fdfaf6;
+  border: 1.5px dashed var(--gold-soft);
+  background: var(--paper);
   overflow: hidden;
   position: relative;
   cursor: pointer;
@@ -743,7 +733,7 @@ onMounted(async () => {
 }
 
 .image-box:hover {
-  border-color: #8b5e3c;
+  border-color: var(--pine);
 }
 
 .image-preview {
@@ -768,7 +758,7 @@ onMounted(async () => {
 .image-mask {
   position: absolute;
   inset: 0;
-  background: rgba(63, 42, 26, 0.55);
+  background: rgba(43, 38, 32, 0.55);
   color: #fff;
   font-size: 12px;
   display: flex;
@@ -800,7 +790,7 @@ onMounted(async () => {
   width: 34px;
   height: 34px;
   border-radius: 8px;
-  background: #f8f2ea;
+  background: var(--paper);
   flex-shrink: 0;
 }
 
@@ -808,7 +798,7 @@ onMounted(async () => {
   width: 34px;
   height: 34px;
   border-radius: 8px;
-  background: linear-gradient(135deg, #e8d5c0, #c08552);
+  background: linear-gradient(135deg, var(--gold-soft), var(--gold));
   color: #fff;
   font-size: 14px;
   font-weight: 700;
@@ -821,10 +811,10 @@ onMounted(async () => {
   margin-top: 12px;
   padding: 10px 14px;
   border-radius: 12px;
-  background: #faf5ee;
-  border: 1px solid #f3ede3;
+  background: var(--pine-mist);
+  border: 1px solid var(--el-color-primary-light-7);
   font-size: 13px;
-  color: #5c4632;
+  color: var(--ink-2);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -833,7 +823,7 @@ onMounted(async () => {
 }
 
 .summary-save b {
-  color: #b0702e;
+  color: var(--terracotta);
 }
 
 .summary-empty {

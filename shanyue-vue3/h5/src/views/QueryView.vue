@@ -104,7 +104,7 @@ async function submitReview() {
       content: reviewContent.value.trim(),
     })
     showReviewSheet.value = false
-    showSuccessToast('评价成功，感谢反馈 💛')
+    showSuccessToast('评价成功，感谢反馈')
   } catch (e) {
     showFailToast(e instanceof Error ? e.message : '评价失败')
   } finally {
@@ -193,9 +193,9 @@ function handleCancel() {
 
 /** 演示推进（仅 mock）：模拟商家侧沿状态机推进一步 1→2→3→4 */
 const ADVANCE_TIP: Record<number, string> = {
-  2: '商家已接单 · 制作中 ☕',
-  3: '制作完成 · 请叫号取餐 📣',
-  4: '顾客已取餐 · 订单完成 ✅',
+  2: '商家已接单 · 制作中',
+  3: '制作完成 · 请叫号取餐',
+  4: '顾客已取餐 · 订单完成',
 }
 
 async function handleAdvance() {
@@ -325,7 +325,7 @@ async function toggleShop() {
           </div>
 
           <!-- 状态步骤条 -->
-          <van-steps v-if="order.status !== 5" class="steps" :active="stepActive" active-color="#C08552">
+          <van-steps v-if="order.status !== 5" class="steps" :active="stepActive" active-color="#2F5233">
             <van-step v-for="s in STEPS" :key="s">{{ s }}</van-step>
           </van-steps>
           <p v-else class="cancel-reason">取消原因：{{ order.cancelReason || '-' }}</p>
@@ -354,7 +354,7 @@ async function toggleShop() {
           </ul>
 
           <div v-if="order.discountAmount > 0" class="discount-row">
-            <span>🎫 券抵扣</span>
+            <span>券抵扣</span>
             <b>-¥{{ fmtPrice(order.discountAmount) }}</b>
           </div>
 
@@ -365,27 +365,27 @@ async function toggleShop() {
 
           <!-- 操作 -->
           <div class="order-actions">
-            <button v-if="canRemind" class="action-ghost" @click="handleRemind">🔔 催单</button>
+            <button v-if="canRemind" class="action-ghost" @click="handleRemind">催单</button>
             <button v-if="canCancel" class="action-danger" @click="handleCancel">取消订单</button>
             <button
               v-if="order.status === 4 && !reviewedReview"
               class="action-review"
               @click="openReviewSheet"
             >
-              ⭐ 评价
+              评价
             </button>
             <button v-if="canReorder" class="action-reorder" :disabled="reordering" @click="handleReorder">
-              {{ reordering ? '加入中…' : '🛒 再来一单' }}
+              {{ reordering ? '加入中…' : '再来一单' }}
             </button>
             <span v-if="order.status === 4 && reviewedReview" class="reviewed-flag" role="status">
-              已评价 ★ {{ reviewedReview.score }}.0
+              已评价 · {{ reviewedReview.score }} 分
             </span>
             <button
               v-if="USE_MOCK && order.status >= 1 && order.status <= 3"
               class="action-ghost action-advance"
               @click="handleAdvance"
             >
-              ⏩ 演示推进（模拟商家{{ order.status === 1 ? '接单' : order.status === 2 ? '出餐' : '取餐' }}）
+              演示推进（模拟商家{{ order.status === 1 ? '接单' : order.status === 2 ? '出餐' : '取餐' }}）
             </button>
           </div>
         </div>
@@ -402,9 +402,9 @@ async function toggleShop() {
       <div v-if="USE_MOCK" class="demo-tools">
         <span class="demo-label">演示工具（mock）</span>
         <div class="demo-btns">
-          <button v-if="shopStatus === 1" class="demo-btn" @click="toggleShop">🌑 模拟打烊</button>
-          <button v-else class="demo-btn" @click="toggleShop">☀️ 恢复营业</button>
-          <button class="demo-btn" @click="resetDemo">♻️ 重置演示数据</button>
+          <button v-if="shopStatus === 1" class="demo-btn" @click="toggleShop">模拟打烊</button>
+          <button v-else class="demo-btn" @click="toggleShop">恢复营业</button>
+          <button class="demo-btn" @click="resetDemo">重置演示数据</button>
         </div>
         <p class="demo-hint">演示取餐号：A01（待接单）/ A02（制作中）/ A03（待取餐）</p>
       </div>
@@ -415,7 +415,11 @@ async function toggleShop() {
       <div class="rp-body">
         <div class="rp-head">
           <h3 class="rp-title">评价这单体验</h3>
-          <button class="rp-close" aria-label="关闭评价" @click="showReviewSheet = false">✕</button>
+          <button class="rp-close" aria-label="关闭评价" @click="showReviewSheet = false">
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+              <path d="M6 6l12 12M18 6L6 18" />
+            </svg>
+          </button>
         </div>
         <p class="rp-order">取餐号 {{ order?.pickUpCode }} · {{ order?.orderItems.map((i) => i.drinkName).join('、') }}</p>
 
@@ -432,7 +436,7 @@ async function toggleShop() {
               :aria-label="`${s} 星`"
               @click="reviewScore = s"
             >
-              ★
+              <svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor" aria-hidden="true"><path d="M12 2.5l2.7 5.8 6.3.7-4.7 4.3 1.3 6.2-5.6-3.2-5.6 3.2 1.3-6.2-4.7-4.3 6.3-.7L12 2.5z" /></svg>
             </button>
           </div>
           <span class="rp-score-text">{{ SCORE_TEXT[reviewScore] }}</span>
@@ -478,7 +482,7 @@ async function toggleShop() {
   display: flex;
   flex-direction: column;
   min-height: 100dvh;
-  background: var(--cream);
+  background: var(--paper);
 }
 
 .page-body {
@@ -493,6 +497,7 @@ async function toggleShop() {
   gap: 10px;
   padding: 8px 8px 8px 4px;
   background: var(--card);
+  border: 1px solid var(--card-line);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-card);
 }
@@ -529,15 +534,16 @@ async function toggleShop() {
   color: var(--ink-3);
 }
 
+/* 最近查询：标签胶囊 pine-mist */
 .recent-chip {
   padding: 4px 12px;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 1px;
-  color: var(--caramel-deep);
+  color: var(--pine);
   border-radius: 999px;
-  border: 1px solid #ecdcc6;
-  background: #fdf9f3;
+  border: 1px solid rgba(47, 82, 51, 0.18);
+  background: var(--pine-mist);
 }
 
 /* 订单卡 */
@@ -545,6 +551,7 @@ async function toggleShop() {
   margin-top: 12px;
   padding: 16px;
   background: var(--card);
+  border: 1px solid var(--card-line);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-card);
 }
@@ -565,8 +572,10 @@ async function toggleShop() {
   margin-top: 2px;
   font-size: 28px;
   font-weight: 800;
+  font-family: var(--font-serif);
+  font-variant-numeric: tabular-nums;
   letter-spacing: 4px;
-  color: var(--caramel-deep);
+  color: var(--pine);
 }
 
 .status-tag {
@@ -576,24 +585,25 @@ async function toggleShop() {
   border-radius: 999px;
 }
 
+/* 状态标签：待接单（茶金）/ 制作中（暖陶）/ 待取餐（墨绿）/ 已完成（墨灰） */
 .st-1 {
-  color: #a96c3c;
-  background: #f9ecdd;
+  color: #9a7135;
+  background: rgba(200, 155, 90, 0.14);
 }
 
 .st-2 {
-  color: #8b5e3c;
-  background: #f3e7db;
+  color: var(--terracotta);
+  background: rgba(199, 84, 47, 0.1);
 }
 
 .st-3 {
-  color: #3f7d54;
-  background: #e6f2e9;
+  color: var(--pine);
+  background: var(--pine-mist);
 }
 
 .st-4 {
-  color: #6f7d6f;
-  background: #eef0ec;
+  color: var(--ink-2);
+  background: var(--paper-deep);
 }
 
 .cancel-reason {
@@ -613,7 +623,7 @@ async function toggleShop() {
 .meta {
   margin-top: 12px;
   padding: 4px 0;
-  border-top: 1px dashed #f0e8dc;
+  border-top: 1px dashed var(--card-line);
 }
 
 .meta-row {
@@ -634,7 +644,7 @@ async function toggleShop() {
 
 .items {
   margin-top: 8px;
-  border-top: 1px dashed #f0e8dc;
+  border-top: 1px dashed var(--card-line);
   padding-top: 10px;
 }
 
@@ -654,7 +664,7 @@ async function toggleShop() {
   height: 42px;
   border-radius: 10px;
   overflow: hidden;
-  background: var(--cream-deep);
+  background: var(--paper-deep);
 }
 
 .info {
@@ -677,7 +687,9 @@ async function toggleShop() {
   flex-shrink: 0;
   font-size: 13px;
   font-weight: 700;
-  color: var(--caramel-deep);
+  font-family: var(--font-serif);
+  font-variant-numeric: tabular-nums;
+  color: var(--terracotta);
 }
 
 .total-row {
@@ -686,7 +698,7 @@ async function toggleShop() {
   justify-content: space-between;
   margin-top: 12px;
   padding-top: 10px;
-  border-top: 1px dashed #f0e8dc;
+  border-top: 1px dashed var(--card-line);
   font-size: 13px;
   color: var(--ink-2);
 }
@@ -694,7 +706,9 @@ async function toggleShop() {
 .total-row b {
   font-size: 16px;
   font-weight: 800;
-  color: var(--caramel-deep);
+  font-family: var(--font-serif);
+  font-variant-numeric: tabular-nums;
+  color: var(--terracotta);
 }
 
 .discount-row {
@@ -703,9 +717,9 @@ async function toggleShop() {
   justify-content: space-between;
   margin-top: 12px;
   padding-top: 10px;
-  border-top: 1px dashed #f0e8dc;
+  border-top: 1px dashed var(--card-line);
   font-size: 12px;
-  color: #d4552e;
+  color: var(--terracotta);
 }
 
 .discount-row b {
@@ -731,16 +745,16 @@ async function toggleShop() {
   transition: transform 0.15s ease;
 }
 
-/* 评价：金星描边样式，区别于普通幽灵按钮 */
+/* 评价：茶金描边样式，区别于普通幽灵按钮 */
 .action-review {
   height: 32px;
   padding: 0 16px;
   font-size: 12px;
   font-weight: 700;
   border-radius: 999px;
-  color: #a05e2b;
-  border: 1px solid #ecc98f;
-  background: linear-gradient(135deg, #fdf3e0, #fbeecb);
+  color: #9a7135;
+  border: 1px solid rgba(200, 155, 90, 0.5);
+  background: rgba(200, 155, 90, 0.12);
   transition: transform 0.15s ease;
 }
 
@@ -756,16 +770,16 @@ async function toggleShop() {
   padding: 0 14px;
   font-size: 12px;
   font-weight: 700;
-  color: #8a7f6f;
+  color: var(--ink-3);
   border-radius: 999px;
-  background: #f4f0e9;
-  border: 1px dashed #ddd3c2;
+  background: var(--paper-deep);
+  border: 1px dashed var(--card-line);
 }
 
 .action-ghost {
-  color: var(--caramel-deep);
-  border: 1px solid #ecdcc6;
-  background: #fdf9f3;
+  color: var(--pine);
+  border: 1px solid rgba(47, 82, 51, 0.28);
+  background: var(--card);
 }
 
 .action-danger {
@@ -773,11 +787,11 @@ async function toggleShop() {
   background: var(--danger);
 }
 
-/* 再来一单：主操作级琥珀实底 */
+/* 再来一单：主操作级墨绿实底 */
 .action-reorder {
   color: #fff;
-  background: linear-gradient(135deg, var(--amber-from), var(--amber-to));
-  box-shadow: 0 3px 10px rgba(217, 130, 43, 0.3);
+  background: linear-gradient(160deg, #3a6140, var(--pine) 55%, var(--pine-deep));
+  box-shadow: 0 3px 10px rgba(47, 82, 51, 0.3);
 }
 
 .action-reorder:disabled {
@@ -790,13 +804,13 @@ async function toggleShop() {
   transform: scale(0.96);
 }
 
-/* 演示推进：琥珀描边 + 呼吸脉冲，明确区别于真实操作 */
+/* 演示推进：茶金虚线描边 + 呼吸脉冲，明确区别于真实操作 */
 .action-advance {
   flex-basis: 100%;
   height: 36px;
-  color: #a05e2b;
-  border: 1px dashed #d8a86f;
-  background: linear-gradient(135deg, #fdf6ec, #faeeda);
+  color: #9a7135;
+  border: 1px dashed rgba(200, 155, 90, 0.6);
+  background: rgba(200, 155, 90, 0.08);
   animation: advance-pulse 2.2s ease-in-out infinite;
 }
 
@@ -808,10 +822,10 @@ async function toggleShop() {
 @keyframes advance-pulse {
   0%,
   100% {
-    box-shadow: 0 0 0 0 rgba(192, 133, 82, 0.28);
+    box-shadow: 0 0 0 0 rgba(200, 155, 90, 0.3);
   }
   50% {
-    box-shadow: 0 0 0 5px rgba(192, 133, 82, 0.06);
+    box-shadow: 0 0 0 5px rgba(200, 155, 90, 0.06);
   }
 }
 
@@ -820,7 +834,7 @@ async function toggleShop() {
   margin-top: 20px;
   padding: 14px 16px;
   border-radius: var(--radius-card);
-  border: 1px dashed #e3d3bc;
+  border: 1px dashed var(--card-line);
   background: rgba(255, 255, 255, 0.6);
 }
 
@@ -841,7 +855,7 @@ async function toggleShop() {
   font-size: 11px;
   color: var(--ink-2);
   border-radius: 8px;
-  border: 1px solid #e3d7c6;
+  border: 1px solid var(--card-line);
   background: var(--card);
 }
 
@@ -869,12 +883,13 @@ async function toggleShop() {
 }
 
 .rp-close {
+  display: grid;
+  place-items: center;
   width: 28px;
   height: 28px;
-  font-size: 13px;
   color: var(--ink-3);
   border-radius: 50%;
-  background: var(--cream-deep);
+  background: var(--paper-deep);
 }
 
 .rp-order {
@@ -898,16 +913,17 @@ async function toggleShop() {
   gap: 6px;
 }
 
+/* 星级：SVG 星点，未选墨灰 / 选中茶金 */
 .rp-star {
-  font-size: 30px;
-  line-height: 1;
-  color: #e5ddcd;
+  display: grid;
+  place-items: center;
+  color: rgba(43, 38, 32, 0.14);
   transition: transform 0.12s ease, color 0.12s ease;
 }
 
 .rp-star.on {
-  color: #e9a23b;
-  text-shadow: 0 2px 6px rgba(233, 162, 59, 0.35);
+  color: var(--gold);
+  filter: drop-shadow(0 2px 5px rgba(200, 155, 90, 0.35));
 }
 
 .rp-star:active {
@@ -917,7 +933,7 @@ async function toggleShop() {
 .rp-score-text {
   font-size: 12px;
   font-weight: 700;
-  color: #c07f36;
+  color: #9a7135;
 }
 
 .rp-label {
@@ -939,7 +955,7 @@ async function toggleShop() {
   font-size: 12px;
   color: var(--ink-2);
   border-radius: 999px;
-  border: 1px solid #e8ddcb;
+  border: 1px solid var(--card-line);
   background: var(--card);
   transition: all 0.15s ease;
 }
@@ -948,8 +964,8 @@ async function toggleShop() {
   color: #fff;
   font-weight: 600;
   border-color: transparent;
-  background: linear-gradient(135deg, var(--amber-from), var(--amber-to));
-  box-shadow: 0 2px 8px rgba(217, 130, 43, 0.28);
+  background: linear-gradient(160deg, #3a6140, var(--pine) 55%, var(--pine-deep));
+  box-shadow: 0 2px 8px rgba(47, 82, 51, 0.28);
 }
 
 .rp-input {
@@ -964,14 +980,16 @@ async function toggleShop() {
   line-height: 1.6;
   color: var(--ink);
   border-radius: 12px;
-  border: 1px solid #eee3d2;
-  background: var(--cream-deep);
+  border: 1px solid var(--card-line);
+  background: var(--paper-deep);
   resize: none;
   outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .rp-textarea:focus {
-  border-color: #d8a86f;
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(200, 155, 90, 0.22);
 }
 
 .rp-count {
@@ -994,8 +1012,10 @@ async function toggleShop() {
   font-weight: 700;
   color: #fff;
   border-radius: 999px;
-  background: linear-gradient(135deg, var(--amber-from), var(--amber-to));
-  box-shadow: 0 4px 14px rgba(217, 130, 43, 0.32);
+  background: linear-gradient(160deg, #3a6140, var(--pine) 55%, var(--pine-deep));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 4px 14px rgba(47, 82, 51, 0.32);
 }
 
 .rp-submit:disabled {

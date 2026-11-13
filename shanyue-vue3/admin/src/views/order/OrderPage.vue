@@ -255,7 +255,7 @@
 
           <div class="rc-actions">
             <el-button @click="receiptVisible = false">关闭</el-button>
-            <el-button type="primary" @click="printReceipt">🖨 打印小票</el-button>
+            <el-button type="primary" @click="printReceipt"><svg viewBox="0 0 24 24" fill="currentColor" fill-rule="evenodd" aria-hidden="true"><path d="M18 3H6a1 1 0 0 0-1 1v4H4a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h3v-3h10v3h3a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2h-1V4a1 1 0 0 0-1-1Zm-1 3v2H7V6Z"/></svg>打印小票</el-button>
           </div>
         </template>
       </div>
@@ -553,20 +553,20 @@ onUnmounted(() => {
   padding: 8px 16px;
   border-radius: 999px;
   font-size: 13px;
-  color: #5c4632;
+  color: var(--ink-2);
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .status-pill:hover {
-  background: #faf5ee;
+  background: var(--pine-mist);
 }
 
 .status-pill.active {
-  background: linear-gradient(135deg, #8b5e3c, #a9846b);
+  background: linear-gradient(135deg, var(--pine), var(--pine-deep));
   color: #ffffff;
   font-weight: 600;
-  box-shadow: 0 4px 12px rgba(139, 94, 60, 0.3);
+  box-shadow: 0 4px 12px rgba(47, 82, 51, 0.3);
 }
 
 .pill-badge {
@@ -574,8 +574,8 @@ onUnmounted(() => {
   height: 18px;
   padding: 0 5px;
   border-radius: 9px;
-  background: #f0e6da;
-  color: #8b5e3c;
+  background: var(--paper-deep);
+  color: var(--pine);
   font-size: 11px;
   font-weight: 700;
   display: inline-flex;
@@ -613,8 +613,8 @@ onUnmounted(() => {
   min-width: 52px;
   padding: 3px 10px;
   border-radius: 8px;
-  background: #f8ede0;
-  color: #b0702e;
+  background: var(--el-color-warning-light-8);
+  color: var(--el-color-warning-dark-2);
   font-size: 15px;
   font-weight: 800;
   letter-spacing: 1px;
@@ -630,7 +630,7 @@ onUnmounted(() => {
   font-size: 12px;
 }
 
-/* 6 色状态 tag（1 待付款…6 已取消） */
+/* 6 色状态胶囊（1 待付款…6 已取消），均带 1px 同色系描边 */
 .status-tag {
   display: inline-block;
   padding: 3px 10px;
@@ -640,12 +640,12 @@ onUnmounted(() => {
   line-height: 1.5;
 }
 
-.st-1 { color: #8c7a6b; background: #f6f3f0; border: 1px solid #e4ddd4; } /* 待付款 灰褐 */
-.st-2 { color: #b0702e; background: #f9f3ee; border: 1px solid #edded0; } /* 待接单 琥珀 */
-.st-3 { color: #8b5e3c; background: #f3efec; border: 1px solid #dccfc5; } /* 制作中 摩卡 */
-.st-4 { color: #4a7ba6; background: #eef4fa; border: 1px solid #d8e5f1; } /* 待取餐/派送中 青蓝 */
-.st-5 { color: #5f8d6b; background: #eff4f0; border: 1px solid #d5e3d9; } /* 已完成 茶园绿 */
-.st-6 { color: #c0564a; background: #f9f0ed; border: 1px solid #edd3cf; } /* 已取消 陶红 */
+.st-1 { color: var(--ink-2); background: var(--el-color-info-light-9); border: 1px solid var(--el-color-info-light-7); } /* 待付款 烟墨 */
+.st-2 { color: var(--el-color-warning-dark-2); background: var(--el-color-warning-light-9); border: 1px solid var(--el-color-warning-light-7); } /* 待接单 茶金 */
+.st-3 { color: var(--pine); background: var(--pine-mist); border: 1px solid var(--el-color-primary-light-7); } /* 制作中 墨绿 */
+.st-4 { color: var(--pine); background: var(--el-color-primary-light-8); border: 1px solid var(--el-color-primary-light-7); } /* 待取餐/派送中 浅墨绿 */
+.st-5 { color: var(--success); background: var(--el-color-success-light-9); border: 1px solid var(--el-color-success-light-7); } /* 已完成 成绿 */
+.st-6 { color: var(--danger); background: var(--el-color-error-light-9); border: 1px solid var(--el-color-error-light-7); } /* 已取消 陶红 */
 
 /* 待支付/货到付款徽标 */
 .pay-tag {
@@ -671,20 +671,20 @@ onUnmounted(() => {
 }
 
 .mode-pickup {
-  background: rgba(233, 185, 104, 0.24);
-  color: #f5d9a4;
-  border: 1px solid rgba(233, 185, 104, 0.45);
+  background: rgba(200, 155, 90, 0.26);
+  color: var(--gold-soft);
+  border: 1px solid rgba(217, 180, 126, 0.5);
 }
 
 .mode-delivery {
-  background: rgba(74, 123, 166, 0.26);
-  color: #b7d4ee;
-  border: 1px solid rgba(122, 168, 209, 0.45);
+  background: rgba(140, 163, 143, 0.26);
+  color: var(--el-color-primary-light-7);
+  border: 1px solid rgba(194, 207, 196, 0.45);
 }
 
 .d-pay {
   font-size: 12px;
-  color: rgba(250, 246, 241, 0.78);
+  color: rgba(246, 243, 236, 0.78);
 }
 
 .d-grand {
@@ -701,10 +701,10 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: linear-gradient(135deg, #46301e, #6f4b30);
+  background: linear-gradient(135deg, var(--pine), var(--pine-deep));
   border-radius: 14px;
   padding: 18px 20px;
-  color: #faf6f1;
+  color: var(--paper);
   margin-bottom: 14px;
 }
 
@@ -743,7 +743,7 @@ onUnmounted(() => {
   gap: 12px;
   align-items: center;
   padding: 10px 0;
-  border-bottom: 1px dashed #f3ede3;
+  border-bottom: 1px dashed var(--card-line);
 }
 
 .d-item:last-of-type {
@@ -754,14 +754,14 @@ onUnmounted(() => {
   width: 48px;
   height: 48px;
   border-radius: 10px;
-  background: #f8f2ea;
+  background: var(--paper);
 }
 
 .d-item-img-fallback {
   width: 48px;
   height: 48px;
   border-radius: 10px;
-  background: linear-gradient(135deg, #e8d5c0, #c08552);
+  background: linear-gradient(135deg, var(--gold-soft), var(--gold));
   color: #fff;
   font-weight: 700;
   display: flex;
@@ -797,7 +797,7 @@ onUnmounted(() => {
   min-width: 72px;
   text-align: right;
   font-weight: 700;
-  color: #8b5e3c;
+  color: var(--ink-2);
   font-variant-numeric: tabular-nums;
 }
 
@@ -807,9 +807,9 @@ onUnmounted(() => {
   align-items: center;
   margin-top: 10px;
   padding-top: 12px;
-  border-top: 1px solid #f3ede3;
+  border-top: 1px solid var(--card-line);
   font-size: 13px;
-  color: #5c4632;
+  color: var(--ink-2);
 }
 
 .d-total-num {
@@ -830,7 +830,7 @@ onUnmounted(() => {
 }
 
 .d-info-row.cancel {
-  color: #c0564a;
+  color: var(--danger);
 }
 
 /* ---------- 小票打印预览 ---------- */
@@ -847,7 +847,7 @@ onUnmounted(() => {
   color: #2c2c2c;
   padding: 18px 18px 14px;
   border-radius: 4px;
-  box-shadow: 0 6px 22px rgba(63, 42, 26, 0.14);
+  box-shadow: 0 6px 22px rgba(43, 38, 32, 0.14);
   font-family: 'SFMono-Regular', 'Menlo', 'Consolas', 'Courier New', monospace;
   position: relative;
 }
@@ -920,7 +920,7 @@ onUnmounted(() => {
 .rc-status {
   text-align: center;
   font-size: 11px;
-  color: #b0702e;
+  color: var(--terracotta);
   font-weight: 700;
 }
 
@@ -939,7 +939,7 @@ onUnmounted(() => {
 }
 
 .rc-row.rc-discount {
-  color: #c0564a;
+  color: var(--danger);
 }
 
 .rc-item {
@@ -987,8 +987,8 @@ onUnmounted(() => {
 .rc-remark {
   margin-top: 6px;
   font-size: 10px;
-  color: #c0564a;
-  background: #fdf1ef;
+  color: var(--danger);
+  background: var(--el-color-error-light-9);
   border-radius: 4px;
   padding: 4px 8px;
 }
@@ -1035,6 +1035,12 @@ onUnmounted(() => {
   display: flex;
   justify-content: center;
   gap: 10px;
+}
+
+.rc-actions .el-button svg {
+  width: 14px;
+  height: 14px;
+  margin-right: 6px;
 }
 
 /* 打印态：只保留小票本体 */

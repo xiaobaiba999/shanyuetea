@@ -3,8 +3,8 @@ import { computed, ref, watch } from 'vue'
 import { DEFAULT_DRINK_EMOJI, DEFAULT_FOOD_EMOJI, emojiForName } from '@/utils/emoji'
 
 /**
- * 商品图：加载失败时降级为「咖啡色渐变底 + emoji 兜底」
- * emoji 优先级：显式传入 > name 精确映射表 > 分类兜底（饮品 🧋 / 轻食甜点 🍰）
+ * 商品图：加载失败时降级为「宣纸深底 + 衬线字兜底」（去 emoji，新中式字章风）
+ * 兜底字优先级：显式传入 > name 精确映射表 > 分类兜底（饮品「茶」 / 轻食甜点「食」）
  */
 const props = withDefaults(
   defineProps<{
@@ -49,12 +49,13 @@ const fallbackEmoji = computed(
 .img-fallback {
   display: grid;
   place-items: center;
-  background: linear-gradient(135deg, #f3dfc2, #f7ecd9 45%, #ecd3ae);
+  background: var(--paper-deep);
 }
 
 .img-fallback span {
-  font-size: 26px;
-  opacity: 0.85;
-  filter: saturate(0.9);
+  font-family: var(--font-serif);
+  font-size: 24px;
+  color: var(--pine);
+  opacity: 0.55;
 }
 </style>

@@ -200,7 +200,7 @@ Page({
     wx.showModal({
       title: '取消订单',
       content: '确定要取消这个订单吗？',
-      confirmColor: '#D9534F',
+      confirmColor: '#B5432F',
       success: (res) => {
         if (!res.confirm) return;
         request({ url: '/user/order/cancel/' + this.data.id, method: 'PUT' })

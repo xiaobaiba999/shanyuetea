@@ -32,11 +32,6 @@ onMounted(async () => {
   stats.value = st
   reviews.value = rs
 })
-
-/** 星星渲染：5 星制，实心 = i <= score */
-function starsOf(score: number): string {
-  return '★★★★★'.slice(0, score) + '☆☆☆☆☆'.slice(0, 5 - score)
-}
 </script>
 
 <template>
@@ -49,12 +44,14 @@ function starsOf(score: number): string {
         <img class="hero-banner" src="/menu/banner.png" alt="山月茶咖门店" />
         <div class="hero-mask" />
         <div class="hero-body">
-          <p class="hero-brand">🌙 山月茶咖</p>
+          <p class="hero-brand">山月茶咖</p>
           <h1 class="hero-name">{{ shop?.name || '山月茶咖 · 科创园区店' }}</h1>
           <div class="hero-rating">
             <template v-if="stats && stats.total > 0">
               <span class="hr-score">{{ stats.avgScore.toFixed(1) }}</span>
-              <span class="hr-stars">★★★★★</span>
+              <span class="hr-stars" aria-hidden="true">
+                <svg v-for="i in 5" :key="i" class="st on" viewBox="0 0 24 24" width="10" height="10" fill="currentColor"><path d="M12 2.5l2.7 5.8 6.3.7-4.7 4.3 1.3 6.2-5.6-3.2-5.6 3.2 1.3-6.2-4.7-4.3 6.3-.7L12 2.5z" /></svg>
+              </span>
               <span class="hr-meta">{{ stats.total }} 条评价 · 好评率 {{ stats.goodRate }}%</span>
             </template>
             <span v-else class="hr-meta">暂无评价，等你来评第一条</span>
@@ -76,9 +73,9 @@ function starsOf(score: number): string {
           甜度交给你来定。山月入杯，茶咖相宜。
         </p>
         <div class="story-tags">
-          <span class="st-item">☕ 每周小批烘焙</span>
-          <span class="st-item">🍵 茶底当日现萃</span>
-          <span class="st-item">🥛 鲜奶零植脂末</span>
+          <span class="st-item">每周小批烘焙</span>
+          <span class="st-item">茶底当日现萃</span>
+          <span class="st-item">鲜奶零植脂末</span>
         </div>
       </div>
 
@@ -88,15 +85,24 @@ function starsOf(score: number): string {
         <ul class="info-list">
           <li class="info-row">
             <span class="ir-label">营业时间</span>
-            <span class="ir-value">🕐 {{ shop?.openHours || '09:00-22:00' }}</span>
+            <span class="ir-value">
+              <svg class="ir-ico" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
+              {{ shop?.openHours || '09:00-22:00' }}
+            </span>
           </li>
           <li class="info-row">
             <span class="ir-label">门店地址</span>
-            <span class="ir-value">📍 杭州市西湖区科创园区 3 号楼 1 层（园区东门进来右转第二间）</span>
+            <span class="ir-value">
+              <svg class="ir-ico" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-5.3-7-11a7 7 0 0 1 14 0c0 5.7-7 11-7 11z" /><circle cx="12" cy="10" r="2.6" /></svg>
+              杭州市西湖区科创园区 3 号楼 1 层（园区东门进来右转第二间）
+            </span>
           </li>
           <li class="info-row">
             <span class="ir-label">联系电话</span>
-            <a class="ir-value ir-link" href="tel:0571-8888-6666">📞 0571-8888-6666</a>
+            <a class="ir-value ir-link" href="tel:0571-8888-6666">
+              <svg class="ir-ico" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l1.5 5-2.7 1.8a12 12 0 0 0 5.4 5.4L15 13.5l5 1.5v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z" /></svg>
+              0571-8888-6666
+            </a>
           </li>
           <li v-if="shop?.notice" class="info-row">
             <span class="ir-label">门店公告</span>
@@ -111,7 +117,9 @@ function starsOf(score: number): string {
         <div class="stats-body">
           <div class="stats-left">
             <p class="sa-score">{{ stats.avgScore.toFixed(1) }}</p>
-            <p class="sa-stars">{{ starsOf(Math.round(stats.avgScore)) }}</p>
+            <p class="sa-stars" :aria-label="`${stats.avgScore.toFixed(1)} 分`">
+              <svg v-for="i in 5" :key="i" class="st" :class="{ on: i <= Math.round(stats.avgScore) }" viewBox="0 0 24 24" width="11" height="11" fill="currentColor" aria-hidden="true"><path d="M12 2.5l2.7 5.8 6.3.7-4.7 4.3 1.3 6.2-5.6-3.2-5.6 3.2 1.3-6.2-4.7-4.3 6.3-.7L12 2.5z" /></svg>
+            </p>
             <p class="sa-count">{{ stats.total }} 条评价</p>
           </div>
           <div class="stats-right">
@@ -141,7 +149,9 @@ function starsOf(score: number): string {
           <div v-for="r in wallList" :key="r.id" class="wall-item">
             <div class="wi-head">
               <span class="wi-code">{{ r.pickUpCode }}</span>
-              <span class="wi-stars">{{ starsOf(r.score) }}</span>
+              <span class="wi-stars" :aria-label="`${r.score} 星`">
+                <svg v-for="i in 5" :key="i" class="st" :class="{ on: i <= r.score }" viewBox="0 0 24 24" width="11" height="11" fill="currentColor" aria-hidden="true"><path d="M12 2.5l2.7 5.8 6.3.7-4.7 4.3 1.3 6.2-5.6-3.2-5.6 3.2 1.3-6.2-4.7-4.3 6.3-.7L12 2.5z" /></svg>
+              </span>
             </div>
             <p v-if="r.content" class="wi-content">{{ r.content }}</p>
             <div v-if="r.tags.length" class="wi-tags">
@@ -162,7 +172,7 @@ function starsOf(score: number): string {
       </div>
 
       <p v-if="USE_MOCK" class="demo-note">
-        💡 评价为演示功能（mock 数据，存于本地浏览器）；演示评价挂在历史订单上
+        评价为演示功能（mock 数据，存于本地浏览器）；演示评价挂在历史订单上
       </p>
     </div>
   </div>
@@ -173,7 +183,7 @@ function starsOf(score: number): string {
   display: flex;
   flex-direction: column;
   min-height: 100dvh;
-  background: var(--cream);
+  background: var(--paper);
 }
 
 .page-body {
@@ -186,6 +196,7 @@ function starsOf(score: number): string {
   position: relative;
   overflow: hidden;
   border-radius: var(--radius-card);
+  border: 1px solid var(--card-line);
   box-shadow: var(--shadow-card);
 }
 
@@ -199,7 +210,7 @@ function starsOf(score: number): string {
 .hero-mask {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(43, 26, 16, 0.32) 0%, rgba(43, 26, 16, 0.78) 100%);
+  background: linear-gradient(180deg, rgba(36, 62, 40, 0.32) 0%, rgba(36, 62, 40, 0.78) 100%);
 }
 
 .hero-body {
@@ -218,9 +229,10 @@ function starsOf(score: number): string {
 
 .hero-name {
   margin-top: 3px;
+  font-family: var(--font-serif);
   font-size: 18px;
-  font-weight: 800;
-  letter-spacing: 0.5px;
+  font-weight: 700;
+  letter-spacing: 1px;
 }
 
 .hero-rating {
@@ -230,16 +242,22 @@ function starsOf(score: number): string {
   margin-top: 6px;
 }
 
+/* 评分：衬线数字 + SVG 星点（茶金） */
 .hr-score {
   font-size: 22px;
   font-weight: 800;
-  color: #f4c67c;
+  font-family: var(--font-serif);
+  font-variant-numeric: tabular-nums;
+  color: #e8c886;
 }
 
 .hr-stars {
-  font-size: 11px;
-  color: #f4c67c;
-  letter-spacing: 2px;
+  display: inline-flex;
+  gap: 1px;
+}
+
+.hr-stars .st {
+  color: #e8c886;
 }
 
 .hr-meta {
@@ -260,20 +278,20 @@ function starsOf(score: number): string {
   color: #eafff2;
   border-radius: 999px;
   border: 1px solid rgba(255, 255, 255, 0.25);
-  background: rgba(95, 141, 107, 0.55);
+  background: rgba(62, 122, 78, 0.55);
   backdrop-filter: blur(6px);
 }
 
 .hero-chip.closed {
   color: #f3e9e2;
-  background: rgba(140, 122, 107, 0.6);
+  background: rgba(43, 38, 32, 0.45);
 }
 
 .dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #5ed69b;
+  background: #8cd3a5;
 }
 
 .hero-chip.closed .dot {
@@ -285,6 +303,7 @@ function starsOf(score: number): string {
   margin-top: 12px;
   padding: 16px;
   background: var(--card);
+  border: 1px solid var(--card-line);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-card);
 }
@@ -294,8 +313,10 @@ function starsOf(score: number): string {
   align-items: center;
   gap: 8px;
   margin: 0;
+  font-family: var(--font-serif);
   font-size: 14px;
-  font-weight: 800;
+  font-weight: 700;
+  letter-spacing: 1px;
   color: var(--ink);
 }
 
@@ -304,7 +325,7 @@ function starsOf(score: number): string {
   width: 3px;
   height: 13px;
   border-radius: 2px;
-  background: linear-gradient(180deg, var(--amber-from), var(--amber-to));
+  background: linear-gradient(180deg, #dcb87e, var(--gold));
 }
 
 /* ---------- 品牌故事 ---------- */
@@ -322,14 +343,15 @@ function starsOf(score: number): string {
   margin-top: 12px;
 }
 
+/* 标签胶囊：pine-mist 底 + 墨绿字 */
 .st-item {
   padding: 5px 12px;
   font-size: 11px;
   font-weight: 600;
-  color: var(--caramel-deep);
+  color: var(--pine);
   border-radius: 999px;
-  background: #fdf6ec;
-  border: 1px solid #f2e4cc;
+  background: var(--pine-mist);
+  border: 1px solid rgba(47, 82, 51, 0.18);
 }
 
 /* ---------- 门店信息 ---------- */
@@ -345,7 +367,7 @@ function starsOf(score: number): string {
   padding: 9px 0;
   font-size: 12px;
   line-height: 1.6;
-  border-bottom: 1px dashed #f0e8dc;
+  border-bottom: 1px dashed var(--card-line);
 }
 
 .info-row:last-child {
@@ -359,12 +381,21 @@ function starsOf(score: number): string {
 }
 
 .ir-value {
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
   flex: 1;
   color: var(--ink);
 }
 
+.ir-ico {
+  flex-shrink: 0;
+  margin-top: 3px;
+  color: var(--gold);
+}
+
 .ir-link {
-  color: var(--caramel-deep);
+  color: var(--pine);
   font-weight: 600;
   text-decoration: none;
 }
@@ -386,14 +417,23 @@ function starsOf(score: number): string {
   font-size: 34px;
   font-weight: 800;
   line-height: 1;
-  color: var(--caramel-deep);
+  font-family: var(--font-serif);
+  font-variant-numeric: tabular-nums;
+  color: var(--pine);
 }
 
 .sa-stars {
+  display: inline-flex;
+  gap: 1px;
   margin-top: 6px;
-  font-size: 11px;
-  color: #e9a23b;
-  letter-spacing: 2px;
+}
+
+.sa-stars .st {
+  color: rgba(43, 38, 32, 0.15);
+}
+
+.sa-stars .st.on {
+  color: var(--gold);
 }
 
 .sa-count {
@@ -431,14 +471,14 @@ function starsOf(score: number): string {
   flex: 1;
   height: 6px;
   border-radius: 999px;
-  background: var(--cream-deep);
+  background: var(--paper-deep);
   overflow: hidden;
 }
 
 .dr-fill {
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, var(--amber-from), var(--amber-to));
+  background: linear-gradient(90deg, #dcb87e, var(--gold));
   transition: width 0.5s ease;
 }
 
@@ -453,24 +493,24 @@ function starsOf(score: number): string {
   gap: 8px;
   margin-top: 14px;
   padding-top: 12px;
-  border-top: 1px dashed #f0e8dc;
+  border-top: 1px dashed var(--card-line);
 }
 
 .tc-chip {
   padding: 5px 12px;
   font-size: 11px;
   font-weight: 600;
-  color: #a05e2b;
+  color: var(--pine);
   border-radius: 999px;
-  background: #fdf6ec;
-  border: 1px solid #f2e0c4;
+  background: var(--pine-mist);
+  border: 1px solid rgba(47, 82, 51, 0.18);
 }
 
 .tc-chip i {
   font-style: normal;
   font-weight: 800;
   margin-left: 2px;
-  color: #d9892b;
+  color: var(--terracotta);
 }
 
 /* ---------- 评价墙 ---------- */
@@ -486,7 +526,7 @@ function starsOf(score: number): string {
 
 .wall-item {
   padding: 12px 0;
-  border-bottom: 1px dashed #f0e8dc;
+  border-bottom: 1px dashed var(--card-line);
 }
 
 .wall-item:last-of-type {
@@ -504,15 +544,22 @@ function starsOf(score: number): string {
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 1px;
-  color: var(--caramel-deep);
+  color: var(--pine);
   border-radius: 6px;
-  background: #f9ecdd;
+  background: var(--pine-mist);
 }
 
 .wi-stars {
-  font-size: 11px;
-  color: #e9a23b;
-  letter-spacing: 1px;
+  display: inline-flex;
+  gap: 1px;
+}
+
+.wi-stars .st {
+  color: rgba(43, 38, 32, 0.15);
+}
+
+.wi-stars .st.on {
+  color: var(--gold);
 }
 
 .wi-content {
@@ -534,7 +581,7 @@ function starsOf(score: number): string {
   font-size: 10px;
   color: var(--ink-3);
   border-radius: 999px;
-  background: var(--cream-deep);
+  background: var(--paper-deep);
 }
 
 .wi-reply {
@@ -542,13 +589,14 @@ function starsOf(score: number): string {
   padding: 8px 10px;
   font-size: 11px;
   line-height: 1.6;
-  color: #8a7f6f;
+  color: var(--ink-2);
   border-radius: 8px;
-  background: #faf6ef;
+  background: var(--paper);
+  border-left: 2px solid rgba(200, 155, 90, 0.5);
 }
 
 .wi-reply b {
-  color: var(--caramel-deep);
+  color: var(--pine);
   font-weight: 700;
 }
 
@@ -564,10 +612,10 @@ function starsOf(score: number): string {
   margin-top: 6px;
   font-size: 12px;
   font-weight: 600;
-  color: var(--caramel-deep);
+  color: var(--pine);
   border-radius: 10px;
-  border: 1px dashed #e3cba8;
-  background: #fdf9f3;
+  border: 1px dashed rgba(47, 82, 51, 0.35);
+  background: var(--card);
 }
 
 .wall-empty {
@@ -595,7 +643,8 @@ function starsOf(score: number): string {
   font-weight: 700;
   color: #fff;
   border-radius: 999px;
-  background: linear-gradient(135deg, var(--amber-from), var(--amber-to));
+  background: linear-gradient(160deg, #3a6140, var(--pine) 55%, var(--pine-deep));
+  box-shadow: 0 3px 10px rgba(47, 82, 51, 0.26);
 }
 
 .demo-note {
