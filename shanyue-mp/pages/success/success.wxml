@@ -1,8 +1,8 @@
 <!-- pages/success/success.wxml —— 下单成功：自取取餐号 / 外送配送信息 + 模拟支付 -->
 <view class="page safe-bottom">
-  <!-- 成功横幅 -->
+  <!-- 成功横幅（茶小月捧茶庆祝） -->
   <view class="hero">
-    <view class="hero-icon" />
+    <image class="hero-img" src="/images/brand/chaxiaoyue-success.jpg" mode="aspectFill" />
     <view class="hero-title">下单成功</view>
     <view class="hero-sub">{{mode === 1 ? '请到店出示取餐号取餐' : '商家接单后开始配送'}}</view>
   </view>

@@ -11,6 +11,8 @@
     <view class="brand-name">山月茶咖</view>
     <view class="brand-en">SHANYUE TEA &amp; COFFEE</view>
     <view class="slogan">山月入杯，茶咖相宜</view>
+    <!-- 吉祥物：茶小月迎宾（IP 与 AI 客服同名同脸） -->
+    <image class="brand-mascot" src="/images/brand/chaxiaoyue-main.jpg" mode="aspectFill" />
   </view>
 
   <!-- 登录按钮区 -->

@@ -36,9 +36,9 @@ async function goHome() {
 <template>
   <div class="success-page">
     <div class="hero">
-      <div class="seal hero-seal" aria-hidden="true"><i>山</i><i>月</i></div>
+      <img class="hero-mascot" src="/brand/chaxiaoyue-success.jpg" alt="茶小月捧茶庆祝" />
       <h1>下单成功</h1>
-      <p class="hero-sub">店家已收到您的订单，正在准备</p>
+      <p class="hero-sub">茶小月已收到您的订单，正在准备</p>
     </div>
 
     <!-- 取餐号大卡 -->
@@ -101,16 +101,16 @@ async function goHome() {
 }
 
 /* 印章（品牌标识）：茶金描边 + 墨绿衬线「山月」 */
-.hero-seal {
-  width: 54px;
-  height: 54px;
+/* 茶小月庆祝像：金描边圆像（月圆茶满） */
+.hero-mascot {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  border: 2px solid var(--gold);
   background: var(--card);
-  box-shadow: 0 4px 14px rgba(43, 38, 32, 0.12);
-}
-
-.hero-seal i {
-  font-size: 17px;
-  line-height: 1.12;
+  box-shadow: 0 6px 18px rgba(47, 82, 51, 0.2);
+  object-fit: cover;
+  display: block;
 }
 
 .hero h1 {

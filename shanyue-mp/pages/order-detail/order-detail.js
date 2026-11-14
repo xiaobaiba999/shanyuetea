@@ -123,6 +123,7 @@ Page({
     const isPickup = !isDelivery;
     this.setData({
       order: o,
+      statusNum: status,
       statusText: F.statusText(o.status, o.deliveryMode),
       statusColor: F.statusColor(o.status),
       cancelled,

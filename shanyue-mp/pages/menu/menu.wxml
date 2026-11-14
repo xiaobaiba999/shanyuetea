@@ -104,12 +104,12 @@
     </scroll-view>
   </view>
 
-  <!-- 打烊遮罩（盖住菜单区，不挡 tab） -->
+  <!-- 打烊遮罩（盖住菜单区，不挡 tab；茶小月拱手致歉） -->
   <view wx:if="{{shopStatus === 0}}" class="closed-mask">
     <view class="closed-card">
-      <view class="closed-moon" />
+      <image class="closed-mascot" src="/images/brand/chaxiaoyue-soldout.jpg" mode="aspectFill" />
       <view class="closed-title">门店打烊中</view>
-      <view class="closed-sub">营业时间 09:00 - 22:00，欢迎明日再来</view>
+      <view class="closed-sub">茶小月今日茶尽 · 营业时间 09:00 - 22:00，明日请早</view>
     </view>
   </view>
 

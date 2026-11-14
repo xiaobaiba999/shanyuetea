@@ -8,9 +8,13 @@
       src="{{avatarUrl}}"
       mode="aspectFill"
     />
-    <view wx:else class="avatar default">
-      <text class="avatar-char">山</text>
-    </view>
+    <!-- 未登录/无头像时展示吉祥物茶小月 -->
+    <image
+      wx:else
+      class="avatar default"
+      src="/images/brand/chaxiaoyue-avatar.jpg"
+      mode="aspectFill"
+    />
     <view class="user-info">
       <view class="nick">{{nickName}}</view>
       <view class="uid">ID：{{userId}}</view>

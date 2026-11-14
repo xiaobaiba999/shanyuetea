@@ -20,6 +20,16 @@
 .hero.cancelled {
   background: linear-gradient(160deg, #8B9298, #6E757B);
 }
+/* 茶小月状态像：金描边圆像（掌炉慢煨 / 月圆茶满） */
+.hero-mascot {
+  width: 150rpx;
+  height: 150rpx;
+  border-radius: 50%;
+  border: 4rpx solid var(--gold);
+  background: #F6F3EC;
+  margin: 0 auto 16rpx;
+  display: block;
+}
 .hero-status {
   font-size: 40rpx;
   font-weight: 700;

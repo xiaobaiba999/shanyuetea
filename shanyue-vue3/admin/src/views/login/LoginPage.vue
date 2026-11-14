@@ -4,12 +4,13 @@
     <div class="blob blob-2" />
 
     <div class="login-card">
-      <!-- 品牌区 -->
+      <!-- 品牌区（吉祥物茶小月迎宾，IP 与 AI 客服同名同脸） -->
       <div class="brand">
         <div class="brand-seal">茶</div>
         <h1 class="brand-cn">山月茶咖</h1>
         <div class="brand-en">SHANYUE TEA &amp; COFFEE</div>
         <div class="brand-slogan">山月入杯，茶咖相宜</div>
+        <img class="brand-mascot" :src="mascotUrl" alt="吉祥物茶小月迎宾" />
       </div>
 
       <el-divider class="brand-divider" />
@@ -52,6 +53,7 @@ import 'element-plus/es/components/message/style/css'
 import { User, Lock } from '@element-plus/icons-vue'
 import { login } from '@/api/employee'
 import { useUserStore } from '@/stores/user'
+import mascotUrl from '@/assets/brand/chaxiaoyue-main.jpg'
 
 const router = useRouter()
 const route = useRoute()
@@ -185,6 +187,19 @@ async function onSubmit() {
   font-size: 12px;
   letter-spacing: 2px;
   color: #b3a08e;
+}
+
+/* 吉祥物茶小月：金描边圆像迎宾 */
+.brand-mascot {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  border: 2px solid #c89b5a;
+  background: #f6f3ec;
+  object-fit: cover;
+  display: block;
+  margin: 18px auto 0;
+  box-shadow: 0 8px 22px rgba(47, 82, 51, 0.18);
 }
 
 .brand-divider {

@@ -254,14 +254,15 @@
 .closed-card {
   text-align: center;
 }
-/* 纯 CSS 月牙（替代字符图标） */
-.closed-moon {
-  width: 76rpx;
-  height: 76rpx;
+/* 茶小月拱手致歉像：金描边圆像（今日茶尽） */
+.closed-mascot {
+  width: 140rpx;
+  height: 140rpx;
   border-radius: 50%;
-  box-shadow: inset 18rpx -12rpx 0 0 var(--gold);
-  transform: rotate(-30deg);
+  border: 4rpx solid var(--gold);
+  background: #F6F3EC;
   margin: 0 auto;
+  display: block;
 }
 .closed-title {
   font-size: 38rpx;

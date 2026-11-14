@@ -4,8 +4,14 @@
   <view wx:elif="{{!order}}" class="empty-tip">订单不存在或已被删除</view>
 
   <block wx:if="{{order}}">
-    <!-- 状态头卡（已取消转灰） -->
+    <!-- 状态头卡（已取消转灰；茶小月状态像：进行中掌炉慢煨 / 已完成月圆茶满） -->
     <view class="hero {{cancelled ? 'cancelled' : ''}}">
+      <image
+        wx:if="{{!cancelled}}"
+        class="hero-mascot"
+        src="{{statusNum >= 5 ? '/images/brand/chaxiaoyue-success.jpg' : '/images/brand/chaxiaoyue-brewing.jpg'}}"
+        mode="aspectFill"
+      />
       <view class="hero-status">{{statusText}}</view>
       <view class="hero-mode">{{modeText}}{{cancelled ? ' · ' + cancelReason : ''}}</view>
       <!-- 自取：取餐号大卡（等宽大字，到店出示） -->

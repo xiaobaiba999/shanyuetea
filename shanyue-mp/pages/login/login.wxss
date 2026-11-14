@@ -64,6 +64,16 @@
   color: #F0E4CE;
   letter-spacing: 6rpx;
 }
+/* 吉祥物茶小月：金描边圆像，墨绿底上迎宾 */
+.brand-mascot {
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 50%;
+  border: 4rpx solid var(--gold);
+  background: #F6F3EC;
+  margin-top: 40rpx;
+  box-shadow: 0 10rpx 30rpx rgba(0, 0, 0, 0.22);
+}
 
 /* 登录按钮区 */
 .login-area {

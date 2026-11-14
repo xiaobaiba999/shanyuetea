@@ -26,14 +26,7 @@
   flex: none;
 }
 .avatar.default {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.avatar-char {
-  font-size: 60rpx;
-  font-weight: 700;
-  color: var(--pine);
+  border: 4rpx solid var(--gold);
 }
 .user-info {
   margin-left: 26rpx;
