@@ -1,0 +1,132 @@
+/* pages/review-write/review-write.wxss —— 写评价页样式 */
+.page {
+  padding: 24rpx;
+  padding-bottom: 60rpx;
+  box-sizing: border-box;
+}
+.page .card {
+  margin-bottom: 24rpx;
+}
+
+/* ============================== 通用小节标题 ============================== */
+.sec-title {
+  font-size: 28rpx;
+  font-weight: 700;
+  margin-bottom: 14rpx;
+}
+
+/* ============================== 评价对象卡 ============================== */
+.obj-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-bottom: 10rpx;
+  border-bottom: 2rpx dashed #F0EFE9;
+}
+.obj-label {
+  font-size: 22rpx;
+  color: var(--ink-3);
+}
+.obj-time {
+  font-size: 22rpx;
+  color: var(--ink-3);
+  flex: none;
+}
+.goods-row {
+  display: flex;
+  align-items: center;
+  padding: 14rpx 0;
+  border-bottom: 2rpx dashed #F0EFE9;
+}
+.goods-row:last-child {
+  border-bottom: none;
+}
+.g-info {
+  flex: 1;
+  min-width: 0;
+}
+.g-name {
+  font-size: 28rpx;
+}
+.g-spec {
+  font-size: 22rpx;
+  color: var(--ink-3);
+  margin-top: 4rpx;
+}
+.g-qty {
+  width: 90rpx;
+  text-align: center;
+  color: var(--ink-3);
+  font-size: 26rpx;
+  flex: none;
+}
+
+/* ============================== 星级选择 ============================== */
+.stars-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 16rpx 0 6rpx;
+}
+.star {
+  font-size: 64rpx;
+  line-height: 1.2;
+  color: #D8D2C4;                 /* 未选：空心灰 */
+  padding: 0 14rpx;
+}
+.star.on {
+  color: var(--gold);             /* 选中：金心 */
+}
+.rating-text {
+  margin-top: 10rpx;
+  text-align: center;
+  font-size: 30rpx;
+  color: #A87B3F;
+  letter-spacing: 6rpx;
+}
+
+/* ============================== 印象标签多选 ============================== */
+.tag-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  padding-top: 4rpx;
+}
+.tag-chip {
+  padding: 12rpx 28rpx;
+  border-radius: 999rpx;
+  border: 1rpx solid var(--card-line);
+  background: #FFFFFF;
+  color: var(--ink-2);
+  font-size: 24rpx;
+  margin: 0 16rpx 16rpx 0;
+}
+.tag-chip.on {
+  background: var(--pine);       /* 选中：pine 底白字 */
+  border-color: var(--pine);
+  color: #FFFFFF;
+}
+
+/* ============================== 文字评价 ============================== */
+.ta {
+  width: 100%;
+  min-height: 220rpx;
+  font-size: 28rpx;
+  line-height: 1.6;
+  color: var(--ink);
+  box-sizing: border-box;
+}
+.ta-ph {
+  color: #B8B2A6;
+}
+.count-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  color: var(--ink-3);
+}
+
+/* ============================== 提交按钮 ============================== */
+.submit-btn {
+  margin-top: 32rpx;
+}

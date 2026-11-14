@@ -5,27 +5,34 @@
  *   GET /user/order/orderDetail/{id} 拉取 OrderVO（含 orderDetailList）；
  *   状态步骤条（6 状态映射视觉进度，已取消单独横幅）；
  *   自取 → 取餐号大卡（等宽大字）；外送 → 收货人/电话/地址卡；
- *   品项明细（specSelected JSON 快照解析展示）+ 金额明细 + 订单信息（单号可复制）；
- *   底部操作按钮按状态出没：去支付 / 催单 / 取消 / 再来一单。
+ *   品项明细（specSelected JSON 快照解析展示）+ 金额明细（【v2/F4】含优惠券抵扣行）+
+ *   订单信息（单号可复制）；底部操作按钮按状态出没：去支付 / 催单 / 取消 / 再来一单 /
+ *   【v2/F6】已完成可「评价得积分」；
+ *   【v2/F8】自取单「制作中」时监听取餐进度推送（WebSocket type=3），
+ *   推送到达 → 震动 + toast + 自动刷新状态（mock 模式 12 秒后模拟推送）。
  *
  * 涉及接口：
- *   GET  /user/order/orderDetail/{id}  → OrderVO
+ *   GET  /user/order/orderDetail/{id}  → OrderVO（含 couponName/couponDiscount 山月补全）
  *   PUT  /user/order/payment           → 支付第一步（生成支付参数）
  *   PUT  /user/order/paySuccess?orderNumber= → 支付第二步（模拟回调）
  *   GET  /user/order/reminder/{id}     → 催单（仅 2/3 状态）
  *   PUT  /user/order/cancel/{id}       → 取消（仅 1/2 状态）
  *   POST /user/order/repetition/{id}   → 再来一单（明细原样插回购物车）
+ *   WS   utils/pickup-ws.js            → 【v2/F8】取餐进度推送（mock 模拟/真实双模式）
  *
  * 新手要点：
  *   1. 苍穹口径：订单明细 OrderDetail.amount = 单价，行小计 = amount × number，
- *      Orders.amount = 总金额（已含配送费）——本页金额明细按此口径拆分
+ *      Orders.amount = 总金额（已含配送费与【v2/F4】券后抵扣）——本页金额明细按此口径拆分
  *   2. specSelected 是 String JSON 快照，用 format.js 的 parseSpecText 解析成「大杯·冰·半糖」
  *   3. 复制单号用 wx.setClipboardData（个人小程序最常用的「复制」能力）
  *   4. 再来一单成功后 switchTab 回菜单页，底部购物车条立即可见
+ *   5. 【v2/F8】onHide/onUnload 必须 close() 推送监听；真实后端连 ws://BASE_URL/ws/user_{userId}，
+ *      管理端改订单状态时广播 {type:3, orderId, status, content}，本页按 orderId 过滤
  */
 const F = require('../../utils/format');
 const auth = require('../../utils/auth');
 const { request } = require('../../utils/request');
+const pickupWs = require('../../utils/pickup-ws');
 
 Page({
   data: {
@@ -59,7 +66,14 @@ Page({
     canPay: false,
     canRemind: false,
     canCancel: false,
-    canRepeat: false
+    canRepeat: false,
+    /* 【v2/F6】已完成可评价 */
+    canReview: false,
+    /* 【v2/F4】优惠券抵扣回显 */
+    couponName: '',
+    couponDiscountText: '',
+    /* 【v2/F8】取餐推送监听中标记 */
+    pickupListening: false
   },
 
   onLoad(options) {
@@ -74,6 +88,16 @@ Page({
       }
       this.load();
     });
+  },
+
+  onHide() {
+    // 【v2/F8】离场必停：mock 计时器/真实 socket 都要关，避免后台空跑
+    pickupWs.close();
+    this.setData({ pickupListening: false });
+  },
+
+  onUnload() {
+    pickupWs.close();
   },
 
   /* ---------- 数据加载 ---------- */
@@ -146,7 +170,34 @@ Page({
       canPay: status === 1,
       canRemind: status === 2 || status === 3,
       canCancel: status === 1 || status === 2,
-      canRepeat: status === 5 || status === 6
+      canRepeat: status === 5 || status === 6,
+      // 【v2/F6】已完成订单可评价（是否已评由后端一单一评校验，重复提交会 toast 提示）
+      canReview: status === 5,
+      // 【v2/F4】优惠券抵扣回显（下单时用了券的订单）
+      couponName: o.couponName || '',
+      couponDiscountText: o.couponDiscount ? F.fmtMoney(o.couponDiscount) : ''
+    });
+
+    // 【v2/F8】自取单「制作中」→ 监听取餐进度推送（推送到达：震动 + toast + 刷新）
+    if (isPickup && status === 3) {
+      this.startPickupListen();
+    } else {
+      pickupWs.close();
+      this.setData({ pickupListening: false });
+    }
+  },
+
+  /** 【v2/F8】监听取餐推送：mock 模式 12 秒后模拟「茶好了」；真实模式连后端 WS */
+  startPickupListen() {
+    this.setData({ pickupListening: true });
+    pickupWs.listen({
+      orderId: Number(this.data.id),
+      onPush: () => {
+        this.setData({ pickupListening: false });
+        try { wx.vibrateShort({ type: 'medium' }); } catch (e) { /* 老基础库忽略 */ }
+        wx.showToast({ title: '茶好了，请取餐', icon: 'none', duration: 2000 });
+        this.load(); // 拉最新状态（3 制作中 → 4 待取餐）
+      }
     });
   },
 
@@ -232,5 +283,10 @@ Page({
       .finally(() => {
         this._repeating = false;
       });
+  },
+
+  /** 【v2/F6】去评价：已完成订单 → 写评价页（一单一评由后端校验） */
+  onGoReview() {
+    wx.navigateTo({ url: '/pages/review-write/review-write?orderId=' + this.data.id });
   }
 });

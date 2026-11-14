@@ -4,6 +4,9 @@
 
 **内置 USE_MOCK 演示模式**：不需要后端、不需要 AppID 也能先跑通完整点单流程；联调时改一个开关即可切到真实 Java 后端。
 
+> **【v2 功能包已落地】**（F3 积分商城与周边已按需求移除）：首页轮播横幅（F1）/ 会员等级（F2）/ 券包+下单选券（F4，对应 Redis SETNX+Lua 练习）/ 每日签到（F5，对应 BITMAP）/ 评价墙与写评价（F6）/ 茶小月 AI 点单聊天（F7，对应大模型接入）/ 取餐 WebSocket 推送（F8）/ 首页骨架屏（F9）。
+> 前后端契约与 Java 练习步骤见 **`shanyue-server-skeleton/docs/v2-features.md`**；mock 数据源在 `utils/mock-v2.js`（接口路径与 Java 接口桩一一对应）。
+
 ---
 
 ## 0. 项目里有什么
@@ -12,23 +15,31 @@
 shanyue-mp/
 ├── app.js / app.json / app.wxss      # 入口、页面注册（tab：点单/订单/我的）、全局品牌样式
 ├── project.config.json               # 工程配置（appid 已用测试号 touristappid）
-├── images/                           # tabBar 图标
+├── images/                           # tabBar 图标 + brand/ 茶小月品牌图
 ├── utils/
 │   ├── config.js                     # ★ 全局开关：USE_MOCK / BASE_URL（联调只改这一个文件）
 │   ├── request.js                    # 统一请求封装（自动带 token、解包 Result、401 跳登录）
-│   ├── mock.js                       # 内置演示数据（USE_MOCK=true 时替代后端）
+│   ├── mock.js                       # 内置演示数据（USE_MOCK=true 时替代后端；含下单用券事务钩子）
+│   ├── mock-v2.js                    # 【v2】功能包演示数据与接口路由（契约源）
+│   ├── pickup-ws.js                  # 【v2/F8】取餐进度推送（mock 模拟/真实 WebSocket 双模式）
 │   ├── auth.js                       # 登录态管理（wx.login → code 换 token）
 │   └── format.js                     # 金额/时间/状态文案格式化
 └── pages/
     ├── login/          # 微信一键登录
-    ├── menu/           # 点单主页（分类/规格弹层/购物车）
-    ├── submit/         # 确认订单（自取/外送）
+    ├── menu/           # 点单主页（【v2】轮播横幅/功能入口/骨架屏 + 分类/规格弹层/购物车）
+    ├── submit/         # 确认订单（自取/外送 + 【v2/F4】选券）
     ├── success/        # 下单成功（取餐号/模拟支付）
     ├── address-list/   # 收货地址列表
     ├── address-edit/   # 新增/编辑地址
     ├── order-list/     # 我的订单（状态筛选/分页/催单/取消/去支付）
-    ├── order-detail/   # 订单详情（步骤条/取餐号/明细/再来一单）
-    └── me/             # 我的（用户卡/积分/关于门店/退出登录）
+    ├── order-detail/   # 订单详情（步骤条/取餐号/【v2/F8】推送徽标/【v2/F6】评价入口）
+    ├── me/             # 我的（用户卡/【v2/F2】会员卡/积分/关于门店/退出登录）
+    ├── ai-order/       # 【v2/F7】茶小月 AI 点单聊天（推荐卡一键加购）
+    ├── checkin/        # 【v2/F5】每日签到日历
+    ├── coupons/        # 【v2/F4】券包（待领/可用/已用；秒杀券库存进度）
+    ├── level/          # 【v2/F2】会员等级（成长值进度/等级时间轴/权益）
+    ├── reviews/        # 【v2/F6】评价墙（标签筛选/分页加载）
+    └── review-write/   # 【v2/F6】写评价（星级/印象标签/得积分）
 ```
 
 ---

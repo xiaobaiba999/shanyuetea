@@ -14,6 +14,11 @@
       />
       <view class="hero-status">{{statusText}}</view>
       <view class="hero-mode">{{modeText}}{{cancelled ? ' · ' + cancelReason : ''}}</view>
+      <!-- 【v2/F8】取餐推送监听中：呼吸点徽标 -->
+      <view wx:if="{{pickupListening}}" class="hero-live">
+        <view class="live-dot"></view>
+        <text>出餐进度实时推送中</text>
+      </view>
       <!-- 自取：取餐号大卡（等宽大字，到店出示） -->
       <block wx:if="{{isPickup && !cancelled}}">
         <view class="hero-pickup-label">取餐号</view>
@@ -62,6 +67,11 @@
       <view class="sec-title">金额明细</view>
       <view class="amount-row"><text>商品小计</text><text>¥{{goodsTotalText}}</text></view>
       <view wx:if="{{!isPickup}}" class="amount-row"><text>配送费</text><text>¥{{deliveryFeeText}}</text></view>
+      <!-- 【v2/F4】优惠券抵扣行（下单时用了券的订单才有） -->
+      <view wx:if="{{couponName}}" class="amount-row discount">
+        <text>{{couponName}}</text>
+        <text>-¥{{couponDiscountText}}</text>
+      </view>
       <view class="amount-row total">
         <text>合计</text>
         <view class="price"><text class="yen">¥</text><text class="num">{{amountText}}</text></view>
@@ -89,9 +99,10 @@
     </view>
   </block>
 
-  <!-- 底部操作条（按状态出没） -->
-  <view wx:if="{{order && (canPay || canRemind || canCancel || canRepeat)}}" class="action-bar safe-bottom">
+  <!-- 底部操作条（按状态出没；【v2/F6】已完成可评价） -->
+  <view wx:if="{{order && (canPay || canRemind || canCancel || canRepeat || canReview)}}" class="action-bar safe-bottom">
     <view wx:if="{{canCancel}}" class="act-btn ghost" bindtap="onCancel">取消订单</view>
+    <view wx:if="{{canReview}}" class="act-btn ghost" bindtap="onGoReview">评价得积分</view>
     <view wx:if="{{canRemind}}" class="act-btn primary" bindtap="onRemind">催单</view>
     <view wx:if="{{canPay}}" class="act-btn pay" bindtap="onPay">去支付</view>
     <view wx:if="{{canRepeat}}" class="act-btn primary" bindtap="onRepeat">再来一单</view>

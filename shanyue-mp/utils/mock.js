@@ -27,6 +27,7 @@
  */
 const config = require('./config');
 const F = require('./format');
+const mockV2 = require('./mock-v2'); // v2 功能包（F1/F2/F4/F5/F6/F7）路由与种子，见文件头契约表
 
 const DB_KEY = 'SHANYUE_MOCK_DB_V1';
 
@@ -325,8 +326,10 @@ function loadDb() {
   }
   if (!cache || !cache.categories) {
     cache = seedDb();
-    saveDb();
   }
+  // v2 功能包数据懒迁移：老库自动补齐 db.v2 命名空间（不覆盖 v1 数据）
+  mockV2.ensureV2(cache);
+  saveDb();
   return cache;
 }
 function saveDb() {
@@ -379,6 +382,13 @@ function route(method, url, data, query) {
   const db = loadDb();
   const m = (method || 'GET').toUpperCase();
   const q = query || {};
+
+  /* ---------- v2 功能包（F1 横幅 / F2 会员 / F4 券包 / F5 签到 / F6 评价 / F7 AI） ----------
+     命中即处理；未命中（handled=false）落入下方原有路由。 */
+  const v2res = mockV2.handle(m, url, data, q, {
+    db, bizError, requireAuth, fmtDateTime, todayStr, saveDb
+  });
+  if (v2res && v2res.handled) return v2res.value;
 
   /* ---------- 登录（免登录态） ---------- */
   if (url === '/user/user/login' && m === 'POST') {
@@ -558,6 +568,18 @@ function route(method, url, data, query) {
       }))
     };
     order.orderDetailList.forEach((d) => { d.orderId = order.id; });
+
+    // ===== F4 用券（与真实后端「下单事务内用券」同口径）：=====
+    // 页面在 submit 体里带 userCouponId + couponBaseAmount（商品金额，不含配送费）；
+    // 这里校验门槛 → 算抵扣 → 置已使用，并把券名/抵扣额回写进订单快照。
+    if (data.userCouponId) {
+      const baseAmount = Number(data.couponBaseAmount !== undefined ? data.couponBaseAmount : data.amount);
+      const applied = mockV2.applyCoupon(db, data.userCouponId, baseAmount);
+      order.amount = fenRound(Math.max(0, order.amount - applied.discountAmount));
+      order.couponName = applied.name;
+      order.couponDiscount = applied.discountAmount;
+    }
+
     db.orders.unshift(order);
     // 下单成功清空购物车（苍穹行为）
     db.cart = [];

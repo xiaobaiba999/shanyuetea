@@ -8,7 +8,13 @@
     "pages/address-edit/address-edit",
     "pages/order-list/order-list",
     "pages/order-detail/order-detail",
-    "pages/me/me"
+    "pages/me/me",
+    "pages/ai-order/ai-order",
+    "pages/checkin/checkin",
+    "pages/coupons/coupons",
+    "pages/level/level",
+    "pages/reviews/reviews",
+    "pages/review-write/review-write"
   ],
   "window": {
     "navigationBarBackgroundColor": "#2F5233",

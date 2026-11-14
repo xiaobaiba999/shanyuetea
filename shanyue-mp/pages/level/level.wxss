@@ -1,0 +1,250 @@
+/* pages/level/level.wxss —— 会员等级页样式 */
+.page {
+  padding: 24rpx;
+  padding-bottom: 60rpx;
+  box-sizing: border-box;
+}
+.page .card {
+  margin-bottom: 24rpx;
+}
+
+/* ============================== 顶部等级英雄卡 ============================== */
+/* pine 深色渐变（配方同全局 .btn-primary），内高光 + 品牌投影 */
+.hero {
+  background: linear-gradient(160deg, #3A6140, var(--pine) 55%, var(--pine-deep));
+  border-radius: 24rpx;
+  padding: 40rpx 32rpx 34rpx;
+  margin-bottom: 24rpx;
+  color: #FFFFFF;
+  box-shadow: inset 0 2rpx 0 rgba(255, 255, 255, .12), 0 8rpx 24rpx rgba(47, 82, 51, .28);
+}
+.hero-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.hero-left {
+  flex: 1;
+  min-width: 0;
+}
+/* Lv 徽标：茶金细描边小胶囊 */
+.hero-lv {
+  display: inline-block;
+  font-size: 22rpx;
+  letter-spacing: 2rpx;
+  color: #F5E7C8;
+  border: 2rpx solid rgba(200, 155, 90, .75);
+  border-radius: 10rpx;
+  padding: 2rpx 14rpx;
+  margin-bottom: 14rpx;
+}
+/* 大衬线等级名（「青绿」二字） */
+.hero-name {
+  font-size: 96rpx;
+  font-weight: 700;
+  line-height: 1.15;
+  color: #F5E7C8;
+  letter-spacing: 6rpx;
+}
+.hero-title {
+  margin-top: 10rpx;
+  font-size: 24rpx;
+  opacity: .85;
+  letter-spacing: 4rpx;
+}
+.hero-right {
+  text-align: right;
+  padding-top: 8rpx;
+  flex: none;
+}
+.growth-label {
+  font-size: 22rpx;
+  opacity: .8;
+  letter-spacing: 4rpx;
+}
+/* 成长值衬线大数字 */
+.growth-num {
+  font-size: 72rpx;
+  font-weight: 800;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+/* 进度条：gold 填充 + 浅色轨道 */
+.hero-track {
+  margin-top: 34rpx;
+  height: 14rpx;
+  border-radius: 7rpx;
+  background: rgba(255, 255, 255, .22);
+  overflow: hidden;
+}
+.hero-fill {
+  height: 100%;
+  border-radius: 7rpx;
+  background: linear-gradient(90deg, #D9B27C, var(--gold));
+  box-shadow: 0 0 8rpx rgba(200, 155, 90, .5);
+}
+.hero-remain {
+  margin-top: 16rpx;
+  font-size: 24rpx;
+  opacity: .92;
+  letter-spacing: 1rpx;
+}
+
+/* ============================== 通用小节标题 ============================== */
+.sec-title {
+  font-size: 28rpx;
+  font-weight: 700;
+  margin-bottom: 14rpx;
+}
+
+/* ============================== 当前权益卡 ============================== */
+.priv-row {
+  display: flex;
+  align-items: flex-start;
+  padding: 12rpx 0;
+}
+.priv-dot {
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 50%;
+  background: var(--gold);
+  margin: 14rpx 16rpx 0 0;
+  flex: none;
+}
+.priv-text {
+  flex: 1;
+  font-size: 26rpx;
+  color: var(--ink-2);
+  line-height: 1.6;
+}
+
+/* ============================== 等级时间轴 ============================== */
+.tl-row {
+  display: flex;
+}
+/* 左侧轨道列：上连线 + 节点圆 + 下连线（首行无上线 / 末行无下线） */
+.tl-rail {
+  width: 56rpx;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.rail-seg {
+  width: 4rpx;
+  flex: 1;
+  min-height: 44rpx;
+  background: var(--card-line);
+}
+.rail-seg.done {
+  background: var(--pine);
+}
+.tl-node {
+  width: 28rpx;
+  height: 28rpx;
+  border-radius: 50%;
+  margin: 10rpx 0;
+  box-sizing: border-box;
+  flex: none;
+  background: var(--pine);            /* 已达：实心 pine */
+}
+.tl-node.todo {
+  background: #FFFFFF;                /* 未达：空心灰描边 */
+  border: 4rpx solid var(--card-line);
+}
+.tl-node.cur {
+  width: 40rpx;
+  height: 40rpx;
+  margin: 4rpx 0;
+  background: var(--gold);            /* 当前级：gold 实心放大 + 浅金光环 */
+  border: 4rpx solid #F5E7C8;
+  box-shadow: 0 0 0 10rpx rgba(200, 155, 90, .18);
+}
+/* 右侧信息块 */
+.tl-info {
+  flex: 1;
+  min-width: 0;
+  padding: 0 0 40rpx 18rpx;
+}
+.tl-row:last-child .tl-info {
+  padding-bottom: 6rpx;
+}
+.tl-name-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.tl-name {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: 2rpx;
+}
+.tl-title {
+  margin-left: 14rpx;
+  font-size: 24rpx;
+  color: var(--ink-2);
+  letter-spacing: 2rpx;
+}
+.tl-info.cur .tl-name {
+  color: var(--pine);
+}
+/* 「当前」小标：gold 底白字胶囊 */
+.tl-cur {
+  margin-left: 14rpx;
+  font-size: 20rpx;
+  color: #FFFFFF;
+  background: var(--gold);
+  border-radius: 999rpx;
+  padding: 2rpx 14rpx;
+}
+.tl-growth {
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  color: var(--ink-3);
+}
+.tl-priv {
+  margin-top: 6rpx;
+  font-size: 22rpx;
+  color: var(--ink-2);
+  line-height: 1.5;
+}
+/* 未达等级整块降灰 */
+.tl-info.future .tl-name {
+  color: var(--ink-3);
+}
+.tl-info.future .tl-title,
+.tl-info.future .tl-growth,
+.tl-info.future .tl-priv {
+  color: var(--ink-3);
+}
+
+/* ============================== 成长值规则卡 ============================== */
+.rule-row {
+  display: flex;
+  align-items: center;
+  padding: 14rpx 0;
+  border-bottom: 2rpx dashed #F0EFE9;
+}
+.rule-row:last-child {
+  border-bottom: none;
+}
+/* 圆徽记：pine-mist 底 + 衬线单字（单 / 签 / 评） */
+.rule-icon {
+  width: 60rpx;
+  height: 60rpx;
+  flex: none;
+  border-radius: 50%;
+  background: var(--pine-mist);
+  color: var(--pine);
+  font-size: 26rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 20rpx;
+}
+.rule-text {
+  flex: 1;
+  font-size: 26rpx;
+  color: var(--ink-2);
+}

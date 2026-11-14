@@ -1,0 +1,70 @@
+<!-- pages/review-write/review-write.wxml —— F6 写评价：评价对象卡 + 星级选择 + 标签多选 + 文字评价 + 提交 -->
+<view class="page safe-bottom">
+  <view wx:if="{{loading}}" class="empty-tip">加载中…</view>
+  <view wx:elif="{{!order}}" class="empty-tip">订单不存在或已被删除</view>
+
+  <block wx:if="{{order}}">
+    <!-- 评价对象卡：订单号时间 + 品项列表（名称 ×数量 + 规格快照解析） -->
+    <view class="card">
+      <view class="sec-title">评价对象</view>
+      <view class="obj-meta">
+        <text class="obj-label">订单号 {{order.number}}</text>
+        <text class="obj-time">{{timeText}}</text>
+      </view>
+      <view wx:for="{{details}}" wx:key="id" class="goods-row">
+        <view class="g-info">
+          <view class="g-name">{{item.name}}</view>
+          <view wx:if="{{item.specText}}" class="g-spec">{{item.specText}}</view>
+        </view>
+        <view class="g-qty">×{{item.number}}</view>
+      </view>
+    </view>
+
+    <!-- 星级选择：5 颗大星，点击设分；选中金心 ★ 未选空心 ☆ -->
+    <view class="card">
+      <view class="sec-title">整体评分</view>
+      <view class="stars-row">
+        <view
+          wx:for="{{stars}}"
+          wx:key="n"
+          class="star {{item.ch === '★' ? 'on' : ''}}"
+          data-star="{{item.n}}"
+          bindtap="onStarTap"
+        >{{item.ch}}</view>
+      </view>
+      <view class="rating-text font-serif">{{ratingText}}</view>
+    </view>
+
+    <!-- 印象标签多选（选中 pine 底白字） -->
+    <view class="card">
+      <view class="sec-title">印象标签 · 可多选</view>
+      <view class="tag-wrap">
+        <view
+          wx:for="{{tags}}"
+          wx:key="tag"
+          class="tag-chip {{item.on ? 'on' : ''}}"
+          data-index="{{index}}"
+          bindtap="onTagTap"
+          hover-class="btn-hover"
+        >{{item.tag}}</view>
+      </view>
+    </view>
+
+    <!-- 文字评价：textarea + 右下字数统计 -->
+    <view class="card">
+      <view class="sec-title">这一杯如何</view>
+      <textarea
+        class="ta"
+        value="{{content}}"
+        maxlength="120"
+        placeholder="说说这一杯的口感、香气、出餐速度…"
+        placeholder-class="ta-ph"
+        bindinput="onContentInput"
+      />
+      <view class="count-row">{{contentCount}}/120</view>
+    </view>
+
+    <!-- 提交（防重复提交锁，提交中置灰） -->
+    <view class="btn-primary submit-btn {{submitting ? 'disabled' : ''}}" bindtap="onSubmit">提交评价 · 得 10 积分</view>
+  </block>
+</view>

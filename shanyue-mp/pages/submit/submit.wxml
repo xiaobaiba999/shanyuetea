@@ -65,7 +65,53 @@
   <view class="card amount-card">
     <view class="amount-row"><text>商品合计</text><text>¥{{goodsTotalText}}</text></view>
     <view wx:if="{{mode === 2}}" class="amount-row"><text>配送费</text><text>¥{{deliveryFeeText}}</text></view>
+    <!-- 【v2/F4】优惠券行：点击弹选券层 -->
+    <view class="amount-row coupon-row" hover-class="btn-hover" bindtap="onToggleCouponPopup">
+      <text>优惠券</text>
+      <view class="coupon-value">
+        <text wx:if="{{selectedCoupon}}" class="coupon-discount">-¥{{discountText}}</text>
+        <text wx:else class="coupon-none">{{coupons.length ? coupons.length + ' 张可用' : '暂无可用'}}</text>
+        <text class="coupon-arrow">›</text>
+      </view>
+    </view>
+    <view wx:if="{{selectedCoupon}}" class="amount-row coupon-name-row">
+      <text class="coupon-name">已选：{{selectedCoupon.name}}</text>
+    </view>
     <view class="amount-row total"><text>合计</text><view class="price"><text class="yen">¥</text><text class="num">{{totalText}}</text></view></view>
+  </view>
+
+  <!-- 【v2/F4】选券弹层：可用列表 + 不使用 -->
+  <view wx:if="{{couponPopupVisible}}" class="popup-mask" bindtap="onToggleCouponPopup">
+    <view class="coupon-sheet safe-bottom" catchtap="noop">
+      <view class="sheet-head">
+        <text>选择优惠券</text>
+        <text class="sheet-close" bindtap="onToggleCouponPopup">×</text>
+      </view>
+      <scroll-view scroll-y class="coupon-scroll">
+        <view class="uc-row {{selectedCoupon ? '' : 'on'}}" hover-class="btn-hover" bindtap="onPickCoupon" data-index="-1">
+          <text>不使用优惠券</text>
+          <text wx:if="{{!selectedCoupon}}" class="uc-check">✓</text>
+        </view>
+        <view
+          wx:for="{{coupons}}"
+          wx:key="userCouponId"
+          class="uc-row {{selectedCoupon && selectedCoupon.userCouponId === item.userCouponId ? 'on' : ''}}"
+          hover-class="btn-hover"
+          bindtap="onPickCoupon"
+          data-index="{{index}}"
+        >
+          <view class="uc-info">
+            <view class="uc-name">{{item.name}}</view>
+            <view class="uc-sub">{{item.discountText}} · 有效期至 {{item.expireDate}}</view>
+          </view>
+          <view class="uc-right">
+            <text class="uc-discount">-¥{{item.discountAmountText}}</text>
+            <text wx:if="{{selectedCoupon && selectedCoupon.userCouponId === item.userCouponId}}" class="uc-check">✓</text>
+          </view>
+        </view>
+        <view wx:if="{{!coupons.length}}" class="empty-tip">本单暂无可用券（满额后或领券后可用）</view>
+      </scroll-view>
+    </view>
   </view>
 
   <!-- 底部提交条 -->

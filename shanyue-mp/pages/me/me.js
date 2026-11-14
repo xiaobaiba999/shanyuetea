@@ -3,12 +3,15 @@
  *
  * 本页职责：
  *   用户卡（avatarUrl 或默认头像 + nickName 或「山月茶咖用户」+ userId）；
+ *   会员等级卡（【v2/F2】Lv·等级名 + 成长值进度条，点击进会员等级页）；
  *   积分显示（优先 storage 缓存，再 GET /user/user/profile 拉取并回写缓存）；
- *   菜单列表：我的地址 / 我的订单 / 关于门店（弹层：营业时间 / 地址 / 电话）；
+ *   菜单列表：会员等级 / 每日签到 / 我的券包 / 评价墙（【v2】新增四入口）+
+ *   我的地址 / 我的订单 / 关于门店（弹层：营业时间 / 地址 / 电话）；
  *   USE_MOCK 模式额外提供「重置演示数据」；退出登录（确认弹窗 → 清 storage → 回登录页）。
  *
  * 涉及接口：
- *   GET /user/user/profile → { id, nickName, avatarUrl, phone, points }（山月补全契约）
+ *   GET /user/user/profile   → { id, nickName, avatarUrl, phone, points }（山月补全契约）
+ *   GET /user/member/level   → MemberLevelVO（【v2/F2】：等级/成长值/进度/下一级）
  *
  * 新手要点：
  *   1. 登录接口 UserLoginVO 不含积分，积分从 profile 接口拿；这里再缓存到 storage，
@@ -17,6 +20,7 @@
  *   3. 退出登录从 tab 页回登录页用 reLaunch —— 与 request.js 的 401 出口口径一致，
  *      redirectTo 从 tab 页跳非 tab 页会打乱返回栈
  *   4. 门店信息取 app.globalData.shop（与 submit 页「门店自取卡」同一份数据源，避免两处硬编码不一致）
+ *   5. 【v2/F2】成长值是后端聚合口径（下单×2/签到+5/评价+10），本页只拉视图不自己算
  */
 const config = require('../../utils/config');
 const auth = require('../../utils/auth');
@@ -34,7 +38,9 @@ Page({
     pointsText: '--',
     isMock: config.USE_MOCK,   // mock 模式才显示「重置演示数据」
     aboutVisible: false,
-    shop: {}
+    shop: {},
+    // 【v2/F2】会员等级卡展示模型
+    member: null
   },
 
   onShow() {
@@ -77,11 +83,44 @@ Page({
         this.setData(data);
       })
       .catch(() => { /* profile 拉取失败时保留缓存展示，不打断页面 */ });
+
+    // 【v2/F2】会员等级卡（拉取失败静默：卡片整体不展示，不打断页面）
+    request({ url: '/user/member/level' })
+      .then((m) => {
+        if (!m) return;
+        this.setData({
+          member: {
+            level: m.level,
+            levelName: m.levelName,
+            levelTitle: m.levelTitle,
+            progress: m.progress,
+            remainText: m.nextLevel ? ('距「' + m.nextLevel.name + '」还差 ' + m.remainGrowth + ' 成长值') : '已是最高等级 · 入盏知味'
+          }
+        });
+      })
+      .catch(() => { /* 等级拉取失败不阻断 */ });
   },
 
   noop() { /* 阻止冒泡占位（弹层内容区拦截冒泡，点击不关闭） */ },
 
   /* ---------- 菜单入口 ---------- */
+  /** 【v2/F2】会员等级卡点击 → 等级页 */
+  onGoLevel() {
+    wx.navigateTo({ url: '/pages/level/level' });
+  },
+
+  onGoCheckin() {
+    wx.navigateTo({ url: '/pages/checkin/checkin' });
+  },
+
+  onGoCoupons() {
+    wx.navigateTo({ url: '/pages/coupons/coupons' });
+  },
+
+  onGoReviews() {
+    wx.navigateTo({ url: '/pages/reviews/reviews' });
+  },
+
   onGoAddress() {
     wx.navigateTo({ url: '/pages/address-list/address-list' });
   },

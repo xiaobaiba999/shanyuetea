@@ -1,0 +1,113 @@
+<!-- pages/ai-order/ai-order.wxml —— 茶小月 AI 点单聊天页（F7）：人设卡 + 消息流 + 推荐卡 + 快捷提问 + 输入条 -->
+<view class="page">
+
+  <!-- 消息滚动区（顶部带茶小月品牌人设卡） -->
+  <scroll-view class="chat-scroll" scroll-y scroll-with-animation scroll-into-view="{{anchorId}}">
+    <view class="chat-inner">
+
+      <!-- 品牌人设卡：金描边头像 + 人设介绍 + 右侧「重新开始」 -->
+      <view class="brand-card card">
+        <image class="brand-avatar" src="/images/brand/chaxiaoyue-avatar.jpg" mode="aspectFill" />
+        <view class="brand-info">
+          <view class="brand-name font-serif">茶小月 · 智能点单官</view>
+          <view class="brand-intro">宋制茶童小月，侍茶山月间。您唤小月便是，口味、心情、预算皆可吩咐。</view>
+        </view>
+        <view class="brand-reset" hover-class="btn-hover" bindtap="onRestart">重新开始</view>
+      </view>
+
+      <!-- 消息流：AI 居左（带小头像）/ 用户居右 -->
+      <view
+        wx:for="{{messages}}"
+        wx:key="id"
+        id="{{item.id}}"
+        class="msg {{item.role === 'user' ? 'msg-user' : 'msg-ai'}}"
+      >
+        <image
+          wx:if="{{item.role === 'assistant'}}"
+          class="msg-avatar"
+          src="/images/brand/chaxiaoyue-avatar.jpg"
+          mode="aspectFill"
+        />
+
+        <!-- 文本气泡 -->
+        <view wx:if="{{item.type === 'text'}}" class="bubble {{item.role === 'user' ? 'bubble-user' : 'bubble-ai'}}">{{item.content}}</view>
+
+        <!-- 正在思考：三个点呼吸动画 -->
+        <view wx:elif="{{item.type === 'thinking'}}" class="bubble bubble-ai thinking">
+          <view class="dot d1"></view>
+          <view class="dot d2"></view>
+          <view class="dot d3"></view>
+        </view>
+
+        <!-- 推荐卡：衬线品名 + 价格 + 月售 + 荐语 + 建议规格 + 加购 -->
+        <view wx:elif="{{item.type === 'card'}}" class="reco-card card">
+          <view class="reco-top">
+            <view class="reco-thumb">
+              <text class="reco-thumb-char">{{item.card.thumbChar}}</text>
+              <!-- 图片叠在首字上层：加载成功盖住首字；失败 binderror 露出首字兜底 -->
+              <image
+                wx:if="{{item.card.imgUrl}}"
+                class="reco-thumb-img"
+                src="{{item.card.imgUrl}}"
+                mode="aspectFill"
+                binderror="onThumbError"
+                data-index="{{index}}"
+              />
+            </view>
+            <view class="reco-main">
+              <view class="reco-name font-serif">{{item.card.name}}</view>
+              <view class="reco-meta">
+                <text class="reco-price price-text">¥{{item.card.priceText}}</text>
+                <text class="reco-sales">{{item.card.monthSalesText}}</text>
+              </view>
+            </view>
+          </view>
+          <view class="reco-reason">{{item.card.reason}}</view>
+          <view class="reco-spec">{{item.card.specText}}</view>
+          <view
+            class="reco-btn {{item.card.added ? 'done' : ''}}"
+            hover-class="btn-hover"
+            catchtap="onCardAdd"
+            data-index="{{index}}"
+          >{{item.card.btnText}}</view>
+        </view>
+      </view>
+
+      <view class="chat-tail"></view>
+    </view>
+  </scroll-view>
+
+  <!-- 底部：快捷提问 chips + 输入条（fixed + safe-bottom 适配小黑条；adjust-position 默认防键盘遮挡） -->
+  <view class="dock safe-bottom">
+    <scroll-view wx:if="{{suggests.length}}" class="chip-row" scroll-x>
+      <view class="chip-inner">
+        <view
+          wx:for="{{suggests}}"
+          wx:key="*this"
+          class="chip"
+          hover-class="btn-hover"
+          bindtap="onChipTap"
+          data-text="{{item}}"
+        >{{item}}</view>
+      </view>
+    </scroll-view>
+
+    <view class="input-row">
+      <input
+        class="input"
+        value="{{draft}}"
+        placeholder="说说口味、心情或预算…"
+        placeholder-class="input-ph"
+        confirm-type="send"
+        cursor-spacing="20"
+        bindinput="onInput"
+        bindconfirm="onSend"
+      />
+      <view
+        class="send-btn {{draft && !sending ? '' : 'disabled'}}"
+        hover-class="btn-hover"
+        bindtap="onSend"
+      >发送</view>
+    </view>
+  </view>
+</view>

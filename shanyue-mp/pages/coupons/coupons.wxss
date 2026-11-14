@@ -1,0 +1,205 @@
+/* pages/coupons/coupons.wxss —— F4 券包：胶囊 tab + 票据式券卡 */
+.page {
+  padding: 24rpx;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 24rpx);
+  box-sizing: border-box;
+}
+
+/* —— 胶囊 tab —— */
+.tabs {
+  display: flex;
+  background: #FFFFFF;
+  border: 1rpx solid var(--card-line);
+  border-radius: 48rpx;
+  padding: 8rpx;
+  margin-bottom: 24rpx;
+  box-sizing: border-box;
+}
+.tab {
+  flex: 1;
+  text-align: center;
+  font-size: 26rpx;
+  color: var(--ink-2);
+  padding: 12rpx 0;
+  border-radius: 40rpx;
+  transition: background .15s ease;
+}
+.tab.on {
+  background: var(--pine);
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+/* —— 券卡（横向长卡：左票根 + 右信息） —— */
+.coupon-card {
+  display: flex;
+  padding: 0;                 /* 覆盖 .card 默认内边距，改由左右两区自理 */
+  overflow: hidden;
+  position: relative;
+  margin-bottom: 24rpx;
+}
+/* 已使用/过期：整卡降透明度 */
+.coupon-card.grayed {
+  opacity: .6;
+}
+
+/* 左侧票根竖条 */
+.coupon-left {
+  width: 180rpx;
+  flex: none;
+  background: var(--pine-mist);
+  border-right: 2rpx dashed #CFC8B6;   /* 票根右缘虚线分隔 */
+  padding: 20rpx 10rpx;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+}
+.coupon-card.grayed .coupon-left {
+  background: var(--paper-deep);
+}
+.cl-threshold {
+  font-size: 18rpx;
+  color: var(--ink-3);
+  letter-spacing: 1rpx;
+}
+.cl-main {
+  display: flex;
+  align-items: baseline;
+  color: var(--terracotta);
+  line-height: 1;
+}
+.cl-currency {
+  font-size: 26rpx;
+  margin-right: 2rpx;
+}
+.cl-num {
+  font-size: 56rpx;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.cl-unit {
+  font-size: 26rpx;
+  margin-left: 2rpx;
+}
+.cl-valid {
+  font-size: 18rpx;
+  color: var(--ink-3);
+}
+/* 打孔凹口：一枚与页面同色的小圆盖在虚线分隔上，模拟票据打孔 */
+.punch {
+  position: absolute;
+  right: -15rpx;
+  top: 50%;
+  width: 30rpx;
+  height: 30rpx;
+  border-radius: 50%;
+  background: var(--paper);
+  transform: translateY(-50%);
+}
+
+/* 右侧信息区 */
+.coupon-right {
+  flex: 1;
+  min-width: 0;
+  padding: 22rpx 24rpx;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+.cr-head {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+.cr-name {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cr-seckill-tag {
+  flex: none;
+  margin-left: 12rpx;
+  font-size: 18rpx;
+  color: var(--terracotta);
+  border: 2rpx solid var(--terracotta);
+  border-radius: 8rpx;
+  padding: 2rpx 8rpx;
+  letter-spacing: 2rpx;
+}
+.cr-condition {
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  color: var(--ink-2);
+}
+.cr-expire {
+  margin-top: 4rpx;
+  font-size: 20rpx;
+  color: var(--ink-3);
+}
+
+/* 秒杀库存进度条（terracotta） */
+.stock-bar {
+  margin-top: 14rpx;
+  height: 10rpx;
+  border-radius: 5rpx;
+  background: #F1EBDF;
+  overflow: hidden;
+}
+.stock-fill {
+  height: 100%;
+  border-radius: 5rpx;
+  background: var(--terracotta);
+}
+.stock-text {
+  margin-top: 6rpx;
+  font-size: 18rpx;
+  color: var(--terracotta);
+}
+
+/* 操作区按钮（小号尺寸，盖过全局 .btn-ghost / .btn-primary 的默认大小） */
+.cr-actions {
+  margin-top: 16rpx;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+.coupon-btn {
+  width: 160rpx;
+  padding: 12rpx 0;
+  font-size: 26rpx;
+  border-radius: 40rpx;
+}
+/* 秒杀「抢券」：陶红描边变体（盖过 .btn-ghost 的墨绿描边与悬停底色） */
+.coupon-btn.seckill-btn {
+  border-color: var(--terracotta);
+  color: var(--terracotta);
+}
+.coupon-btn.seckill-btn.btn-hover {
+  background: #F9EDE6;
+}
+/* 已使用/过期灰字 */
+.used-label {
+  font-size: 24rpx;
+  color: var(--ink-3);
+  letter-spacing: 4rpx;
+}
+
+/* 已使用/过期印章：右上角旋转陶红描边字 */
+.stamp {
+  position: absolute;
+  top: 14rpx;
+  right: 26rpx;
+  transform: rotate(-12deg);
+  font-size: 34rpx;
+  font-weight: 700;
+  letter-spacing: 6rpx;
+  color: transparent;
+  -webkit-text-stroke: 2rpx var(--terracotta);
+  opacity: .8;
+}

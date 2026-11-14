@@ -1,0 +1,327 @@
+/* pages/ai-order/ai-order.wxss —— 茶小月 AI 点单聊天页（宣纸 / 墨绿 / 茶金 体系） */
+
+.page {
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+  /* 透明以透出 page 级宣纸斜纹底 */
+  background: transparent;
+}
+
+/* ============================== 消息滚动区 ============================== */
+.chat-scroll {
+  height: 100%;
+}
+.chat-inner {
+  padding: 24rpx 24rpx 0;
+  /* 底部给 fixed 输入条（chips + 输入行 + 安全区）让位：最后一条消息不被遮住 */
+  padding-bottom: calc(228rpx + env(safe-area-inset-bottom));
+}
+.chat-tail {
+  height: 8rpx;
+}
+
+/* —— 品牌人设卡 —— */
+.brand-card {
+  display: flex;
+  align-items: center;
+  margin-bottom: 28rpx;
+}
+.brand-avatar {
+  width: 112rpx;
+  height: 112rpx;
+  border-radius: 50%;
+  border: 3rpx solid var(--gold);
+  background: var(--paper);
+  flex: none;
+  box-sizing: border-box;
+}
+.brand-info {
+  flex: 1;
+  min-width: 0;
+  margin-left: 20rpx;
+}
+.brand-name {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: 2rpx;
+}
+.brand-intro {
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  line-height: 1.7;
+  color: var(--ink-3);
+}
+.brand-reset {
+  flex: none;
+  align-self: flex-start;
+  margin-left: 16rpx;
+  font-size: 22rpx;
+  color: var(--pine);
+  border: 1rpx solid rgba(47, 82, 51, .35);
+  border-radius: 999rpx;
+  padding: 8rpx 20rpx;
+  box-sizing: border-box;
+  transition: background .15s ease;
+}
+.brand-reset.btn-hover,
+.brand-reset:active {
+  background: var(--pine-mist);
+}
+
+/* —— 消息行：AI 居左（带小头像）/ 用户居右 —— */
+.msg {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 24rpx;
+}
+.msg-user {
+  justify-content: flex-end;
+}
+.msg-ai {
+  justify-content: flex-start;
+}
+.msg-avatar {
+  width: 48rpx;
+  height: 48rpx;
+  border-radius: 50%;
+  border: 2rpx solid var(--gold);
+  background: var(--paper);
+  flex: none;
+  margin-right: 16rpx;
+  margin-top: 6rpx;
+  box-sizing: border-box;
+}
+
+/* —— 气泡：AI 白底细描边 / 用户墨绿渐变白字 —— */
+.bubble {
+  max-width: 480rpx;
+  padding: 20rpx 24rpx;
+  font-size: 28rpx;
+  line-height: 1.65;
+  word-break: break-all;
+  box-sizing: border-box;
+}
+.bubble-ai {
+  background: var(--card);
+  border: 1rpx solid var(--card-line);
+  border-radius: 8rpx 24rpx 24rpx 24rpx;
+  color: var(--ink);
+  box-shadow: 0 2rpx 6rpx rgba(43, 38, 32, .04);
+}
+.bubble-user {
+  background: linear-gradient(160deg, #3A6140, var(--pine) 60%, var(--pine-deep));
+  color: #FFFFFF;
+  border-radius: 24rpx 8rpx 24rpx 24rpx;
+  box-shadow: 0 4rpx 14rpx rgba(47, 82, 51, .22);
+}
+
+/* —— 正在思考：三个点呼吸动画 —— */
+.thinking {
+  width: 150rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 26rpx 0;
+}
+.dot {
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 50%;
+  background: var(--ink-3);
+  margin: 0 8rpx;
+  animation: dot-breath 1.2s ease-in-out infinite;
+}
+.dot.d2 {
+  animation-delay: .2s;
+}
+.dot.d3 {
+  animation-delay: .4s;
+}
+@keyframes dot-breath {
+  0%, 80%, 100% { opacity: .2; transform: translateY(0); }
+  40% { opacity: 1; transform: translateY(-8rpx); }
+}
+
+/* —— 推荐卡 —— */
+.reco-card {
+  width: 620rpx;
+  flex: none;
+  margin-top: 4rpx;
+}
+.reco-top {
+  display: flex;
+  align-items: flex-start;
+}
+.reco-thumb {
+  position: relative;
+  width: 140rpx;
+  height: 140rpx;
+  border-radius: 16rpx;
+  background: linear-gradient(135deg, var(--pine-mist), #D7E3D7);
+  border: 1rpx solid rgba(47, 82, 51, .08);
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  overflow: hidden;
+}
+.reco-thumb-char {
+  font-size: 56rpx;
+  font-weight: 700;
+  color: var(--pine);
+  opacity: 0.55;
+  font-family: 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', 'STSong', 'SimSun', serif;
+}
+.reco-thumb-img {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+}
+.reco-main {
+  flex: 1;
+  min-width: 0;
+  margin-left: 20rpx;
+}
+.reco-name {
+  font-size: 34rpx;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.35;
+}
+.reco-meta {
+  margin-top: 10rpx;
+  display: flex;
+  align-items: baseline;
+}
+.reco-price {
+  font-size: 40rpx;
+  font-weight: 700;
+}
+.reco-sales {
+  margin-left: 16rpx;
+  font-size: 22rpx;
+  color: var(--ink-3);
+}
+.reco-reason {
+  margin-top: 18rpx;
+  font-size: 26rpx;
+  color: var(--ink-2);
+  line-height: 1.65;
+  padding-left: 16rpx;
+  border-left: 4rpx solid var(--gold);
+}
+.reco-spec {
+  margin-top: 10rpx;
+  font-size: 22rpx;
+  color: var(--ink-3);
+}
+/* 加购按钮：主按钮光泽款；加过转 pine-mist 禁用态 */
+.reco-btn {
+  margin-top: 20rpx;
+  background: linear-gradient(160deg, #3A6140, var(--pine) 55%, var(--pine-deep));
+  color: #FFFFFF;
+  border-radius: 44rpx;
+  text-align: center;
+  padding: 18rpx 0;
+  font-size: 28rpx;
+  box-shadow: inset 0 2rpx 0 rgba(255, 255, 255, .12), 0 6rpx 20rpx rgba(47, 82, 51, .28);
+  transition: transform .15s ease, box-shadow .15s ease, background .2s ease;
+}
+.reco-btn.btn-hover {
+  transform: scale(.965);
+  box-shadow: inset 0 2rpx 0 rgba(255, 255, 255, .12), 0 2rpx 8rpx rgba(47, 82, 51, .22);
+}
+.reco-btn.done {
+  background: var(--pine-mist);
+  color: var(--pine);
+  box-shadow: none;
+}
+
+/* ============================== 底部：快捷提问 + 输入条 ============================== */
+.dock {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 30;
+  background: var(--card);
+  border-top: 1rpx solid var(--card-line);
+  box-shadow: 0 -8rpx 24rpx rgba(43, 38, 32, .06);
+}
+
+/* 快捷提问胶囊：横向滚动一行 */
+.chip-row {
+  white-space: nowrap;
+  padding: 16rpx 24rpx 0;
+}
+.chip-inner {
+  display: inline-block;
+  white-space: nowrap;
+}
+.chip {
+  display: inline-block;
+  font-size: 24rpx;
+  color: var(--pine);
+  background: var(--pine-mist);
+  border: 1rpx solid rgba(47, 82, 51, .18);
+  border-radius: 999rpx;
+  padding: 10rpx 26rpx;
+  margin-right: 16rpx;
+  box-sizing: border-box;
+}
+
+/* 输入行：宣纸底输入框 + 发送按钮 */
+.input-row {
+  display: flex;
+  align-items: center;
+  padding: 16rpx 24rpx 8rpx;
+}
+.input {
+  flex: 1;
+  min-width: 0;
+  height: 76rpx;
+  background: var(--paper);
+  border: 1rpx solid var(--card-line);
+  border-radius: 38rpx;
+  padding: 0 28rpx;
+  font-size: 28rpx;
+  color: var(--ink);
+  box-sizing: border-box;
+}
+.input-ph {
+  color: var(--ink-3);
+}
+.send-btn {
+  flex: none;
+  width: 140rpx;
+  height: 76rpx;
+  margin-left: 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 38rpx;
+  background: linear-gradient(160deg, #3A6140, var(--pine) 55%, var(--pine-deep));
+  color: #FFFFFF;
+  font-size: 28rpx;
+  box-shadow: inset 0 2rpx 0 rgba(255, 255, 255, .12), 0 6rpx 20rpx rgba(47, 82, 51, .28);
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.send-btn.btn-hover {
+  transform: scale(.965);
+  box-shadow: inset 0 2rpx 0 rgba(255, 255, 255, .12), 0 2rpx 8rpx rgba(47, 82, 51, .22);
+}
+.send-btn.disabled {
+  background: var(--card-line);
+  color: var(--ink-3);
+  box-shadow: none;
+}
+.send-btn.disabled.btn-hover {
+  transform: none;
+  opacity: 1;
+  box-shadow: none;
+}

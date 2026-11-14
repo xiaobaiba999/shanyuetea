@@ -1,0 +1,76 @@
+<!-- pages/coupons/coupons.wxml —— F4 券包：胶囊 tab + 票据式券卡（打孔票根 + 秒杀库存 + 状态印章） -->
+<view class="page safe-bottom">
+  <!-- 胶囊 tab（可领取 / 可使用 / 已使用·过期） -->
+  <view class="tabs">
+    <view
+      wx:for="{{tabs}}"
+      wx:key="key"
+      class="tab {{tabIndex === index ? 'on' : ''}}"
+      bindtap="onTabTap"
+      data-index="{{index}}"
+    >{{item.label}}</view>
+  </view>
+
+  <view wx:if="{{loading}}" class="empty-tip">加载中…</view>
+
+  <!-- 空态 -->
+  <view wx:if="{{!loading && !list.length}}" class="empty-tip">{{emptyText}}</view>
+
+  <!-- 券卡列表 -->
+  <view
+    wx:for="{{list}}"
+    wx:key="id"
+    class="card coupon-card {{item.used ? 'grayed' : ''}}"
+  >
+    <!-- 左侧票根：门槛小字 + 衬线大字（满减 ¥N / 折扣 N折）+ 有效期 + 打孔凹口 -->
+    <view class="coupon-left">
+      <view class="cl-threshold">{{item.thresholdText}}</view>
+      <view class="cl-main font-serif">
+        <text wx:if="{{item.mainPrefix}}" class="cl-currency">{{item.mainPrefix}}</text>
+        <text class="cl-num">{{item.mainNum}}</text>
+        <text wx:if="{{item.mainSuffix}}" class="cl-unit">{{item.mainSuffix}}</text>
+      </view>
+      <view class="cl-valid">{{item.validShort}}</view>
+      <view class="punch"></view>
+    </view>
+
+    <!-- 右侧信息区 -->
+    <view class="coupon-right">
+      <view class="cr-head">
+        <text class="cr-name font-serif">{{item.name}}</text>
+        <text wx:if="{{item.seckill && !item.used}}" class="cr-seckill-tag">限时秒杀</text>
+      </view>
+      <view class="cr-condition">{{item.conditionText}}</view>
+      <view class="cr-expire">{{item.expireText}}</view>
+
+      <!-- 秒杀库存进度条（可领取态展示） -->
+      <block wx:if="{{item.seckill && item.action === 'receive'}}">
+        <view class="stock-bar">
+          <view class="stock-fill" style="width: {{item.stockPercent}}%"></view>
+        </view>
+        <view class="stock-text">{{item.stockText}}</view>
+      </block>
+
+      <!-- 操作区：领取/抢券 | 去使用 | 已使用/已过期灰字 -->
+      <view class="cr-actions">
+        <view
+          wx:if="{{item.action === 'receive'}}"
+          class="btn-ghost coupon-btn {{item.seckill ? 'seckill-btn' : ''}}"
+          hover-class="btn-hover"
+          catchtap="onReceive"
+          data-id="{{item.id}}"
+        >{{item.receiveText}}</view>
+        <view
+          wx:elif="{{item.action === 'use'}}"
+          class="btn-primary coupon-btn use-btn"
+          hover-class="btn-hover"
+          catchtap="onUse"
+        >去使用</view>
+        <view wx:else class="used-label">{{item.stampText}}</view>
+      </view>
+    </view>
+
+    <!-- 已使用/过期：右上角 -12deg 陶红描边印章 -->
+    <view wx:if="{{item.used}}" class="stamp font-serif">{{item.stampText}}</view>
+  </view>
+</view>

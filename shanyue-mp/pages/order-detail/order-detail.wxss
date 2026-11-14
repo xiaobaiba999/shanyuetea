@@ -276,3 +276,40 @@
   border: 2rpx solid #C9D2CA;
   color: var(--ink-2);
 }
+
+/* ===================== 【v2】取餐推送徽标 / 券抵扣行 ===================== */
+/* F8：实时推送监听中徽标（呼吸点 + 半透明胶囊） */
+.hero-live {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 14rpx;
+  padding: 6rpx 20rpx;
+  border-radius: 24rpx;
+  background: rgba(200, 155, 90, .14);
+  border: 1rpx solid rgba(200, 155, 90, .38);
+  color: var(--gold);
+  font-size: 22rpx;
+  letter-spacing: 2rpx;
+}
+.live-dot {
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 50%;
+  background: var(--gold);
+  margin-right: 10rpx;
+  animation: liveBreath 1.2s ease-in-out infinite;
+}
+@keyframes liveBreath {
+  0%   { opacity: .35; transform: scale(.8); }
+  50%  { opacity: 1;   transform: scale(1.15); }
+  100% { opacity: .35; transform: scale(.8); }
+}
+
+/* F4：优惠券抵扣行（暖陶色负数） */
+.amount-row.discount {
+  color: var(--terracotta);
+}
+.amount-row.discount text {
+  color: var(--terracotta);
+  font-weight: 600;
+}

@@ -12,7 +12,9 @@
  */
 const config = {
   BASE_URL: 'http://localhost:8080',
-  USE_MOCK: false, // 首次体验请先改为 true 看完整演示流程，联调时改回 false
+  // USE_MOCK = true  ：内置演示数据（含 v2 功能包 F1~F9，无需后端即可完整演示）
+  // USE_MOCK = false ：走真实 Java 后端（v2 接口桩已返回与 mock 同构的样例数据，可渐进替换）
+  USE_MOCK: true,
   DELIVERY_FEE: 5,
   // 配送模式编码（契约：1 门店自取 | 2 外送）
   MODE_PICKUP: 1,

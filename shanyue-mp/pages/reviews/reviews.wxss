@@ -1,0 +1,189 @@
+/* pages/reviews/reviews.wxss —— 评价墙页样式 */
+.page {
+  padding: 24rpx;
+  padding-bottom: 40rpx;
+  box-sizing: border-box;
+}
+.page .card {
+  margin-bottom: 24rpx;
+}
+
+/* ============================== 头部统计卡 ============================== */
+.stat-card {
+  display: flex;
+  align-items: center;
+  padding: 30rpx 24rpx;
+}
+.stat-block {
+  flex: 1;
+  text-align: center;
+}
+/* 累计评价条数：衬线大数字 */
+.stat-num {
+  font-size: 60rpx;
+  font-weight: 700;
+  color: var(--pine);
+  line-height: 1.25;
+  font-variant-numeric: tabular-nums;
+}
+/* 平均星级：茶金星串 */
+.stat-stars {
+  font-size: 36rpx;
+  color: var(--gold);
+  letter-spacing: 4rpx;
+  line-height: 1.6;
+}
+.stat-label {
+  margin-top: 6rpx;
+  font-size: 22rpx;
+  color: var(--ink-3);
+  letter-spacing: 2rpx;
+}
+.stat-divider {
+  width: 2rpx;
+  height: 72rpx;
+  background: var(--card-line);
+  flex: none;
+}
+
+/* ============================== 标签筛选行 ============================== */
+.chips-scroll {
+  white-space: nowrap;
+  margin-bottom: 24rpx;
+}
+.chips-row {
+  display: inline-flex;
+  align-items: center;
+  padding: 4rpx 2rpx;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  padding: 12rpx 28rpx;
+  margin-right: 16rpx;
+  border-radius: 32rpx;
+  font-size: 24rpx;
+  color: var(--ink-2);
+  background: #FFFFFF;
+  border: 1rpx solid var(--card-line);
+}
+.chip.on {
+  background: var(--pine);            /* 选中：pine 底白字 */
+  border-color: var(--pine);
+  color: #FFFFFF;
+}
+.chip-cnt {
+  margin-left: 8rpx;
+  font-size: 20rpx;
+  color: var(--ink-3);
+}
+.chip.on .chip-cnt {
+  color: rgba(255, 255, 255, .85);
+}
+
+/* ============================== 评价卡 ============================== */
+.rv-card {
+  padding: 28rpx 24rpx;
+}
+.rv-head {
+  display: flex;
+  align-items: flex-start;
+}
+.rv-avatar {
+  width: 84rpx;
+  height: 84rpx;
+  border-radius: 50%;
+  flex: none;
+  border: 2rpx solid var(--card-line);
+  background: var(--paper);
+}
+.rv-main {
+  flex: 1;
+  min-width: 0;
+  margin-left: 20rpx;
+}
+.rv-name-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.rv-nick {
+  font-size: 28rpx;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* 饮品名小胶囊（茶金浅底细描边） */
+.rv-drink {
+  flex: none;
+  max-width: 220rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 20rpx;
+  color: #A87B3F;
+  background: rgba(200, 155, 90, .12);
+  border: 1rpx solid rgba(200, 155, 90, .35);
+  border-radius: 999rpx;
+  padding: 4rpx 16rpx;
+}
+.rv-meta-row {
+  margin-top: 8rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.rv-stars {
+  font-size: 24rpx;
+  color: var(--gold);
+  letter-spacing: 3rpx;
+}
+.rv-time {
+  font-size: 22rpx;
+  color: var(--ink-3);
+}
+.rv-content {
+  margin-top: 18rpx;
+  font-size: 28rpx;
+  line-height: 1.65;
+  color: var(--ink);
+  word-break: break-all;
+}
+/* 标签小 chips（松雾底墨绿字） */
+.rv-tags {
+  margin-top: 18rpx;
+  display: flex;
+  flex-wrap: wrap;
+}
+.rv-tag {
+  font-size: 22rpx;
+  color: var(--pine);
+  background: var(--pine-mist);
+  border-radius: 8rpx;
+  padding: 6rpx 16rpx;
+  margin: 0 12rpx 12rpx 0;
+}
+/* 底部：点赞数（暖陶 ♥） */
+.rv-foot {
+  margin-top: 16rpx;
+  padding-top: 16rpx;
+  border-top: 2rpx dashed #F0EFE9;
+  display: flex;
+  align-items: center;
+}
+.rv-like {
+  font-size: 24rpx;
+  color: var(--terracotta);
+  letter-spacing: 2rpx;
+}
+
+/* ============================== 到底 / 空态 ============================== */
+.end-tip {
+  text-align: center;
+  color: var(--ink-3);
+  font-size: 24rpx;
+  padding: 20rpx 0 8rpx;
+  letter-spacing: 2rpx;
+}

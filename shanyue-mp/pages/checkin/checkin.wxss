@@ -1,0 +1,166 @@
+/* pages/checkin/checkin.wxss —— F5 每日签到：统计条 + 日历 + 签到按钮 + 规则卡 */
+.page {
+  padding: 24rpx;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 24rpx);
+  box-sizing: border-box;
+}
+
+/* —— 统计条（三格卡片 + 竖分隔线） —— */
+.stat-bar {
+  display: flex;
+  align-items: center;
+  margin-bottom: 24rpx;
+}
+.stat {
+  flex: 1;
+  text-align: center;
+}
+.stat-num {
+  font-size: 56rpx;
+  font-weight: 700;
+  color: var(--pine);
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+.stat-num.points {
+  color: var(--gold);
+}
+.stat-label {
+  margin-top: 4rpx;
+  font-size: 22rpx;
+  color: var(--ink-3);
+  letter-spacing: 2rpx;
+}
+.stat-divider {
+  width: 2rpx;
+  height: 64rpx;
+  background: var(--card-line);
+}
+
+/* —— 签到日历 —— */
+.cal-card {
+  margin-bottom: 24rpx;
+}
+.cal-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 20rpx;
+}
+.cal-month {
+  font-size: 34rpx;
+  font-weight: 700;
+}
+.cal-signed {
+  font-size: 22rpx;
+  color: var(--ink-3);
+}
+.week-row {
+  display: flex;
+  margin-bottom: 6rpx;
+}
+.week-label {
+  flex: 1;
+  text-align: center;
+  font-size: 22rpx;
+  color: var(--ink-3);
+}
+.cal-grid {
+  display: flex;
+  flex-wrap: wrap;
+}
+.cell {
+  position: relative;
+  width: 14.2857%;
+  height: 100rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.cell-day {
+  font-size: 28rpx;
+  color: var(--ink-2);
+  line-height: 1.4;
+}
+
+/* 已签到日：数字转墨绿加粗 */
+.cell.signed .cell-day {
+  color: var(--pine);
+  font-weight: 700;
+}
+/* 小金印：金描边圆 + 中心内点 */
+.seal-mark {
+  margin-top: 6rpx;
+  width: 22rpx;
+  height: 22rpx;
+  border-radius: 50%;
+  border: 2rpx solid var(--gold);
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.seal-mark::after {
+  content: '';
+  width: 8rpx;
+  height: 8rpx;
+  border-radius: 50%;
+  background: var(--gold);
+}
+
+/* 今天：墨绿描边加粗块（数字坐进圆角描边格） */
+.cell.today .cell-day {
+  width: 64rpx;
+  height: 64rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3rpx solid var(--pine);
+  border-radius: 16rpx;
+  box-sizing: border-box;
+  font-size: 30rpx;
+  font-weight: 700;
+  color: var(--pine);
+}
+/* 「今」角标 */
+.today-tag {
+  position: absolute;
+  top: 2rpx;
+  right: 6rpx;
+  font-size: 16rpx;
+  line-height: 1;
+  color: #FFFFFF;
+  background: var(--pine);
+  border-radius: 6rpx;
+  padding: 3rpx 6rpx;
+}
+
+/* 未来日：置灰 */
+.cell.future .cell-day {
+  color: var(--ink-3);
+  opacity: .45;
+}
+
+/* —— 签到大按钮 —— */
+.sign-btn {
+  margin: 0 8rpx 24rpx;
+  letter-spacing: 2rpx;
+}
+
+/* —— 规则说明卡 —— */
+.rule-card {
+  margin-bottom: 24rpx;
+}
+.rule-title {
+  font-size: 26rpx;
+  font-weight: 700;
+  color: var(--ink-2);
+  letter-spacing: 2rpx;
+  margin-bottom: 10rpx;
+}
+.rule-text {
+  font-size: 22rpx;
+  color: var(--ink-3);
+  line-height: 1.9;
+}

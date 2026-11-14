@@ -1,0 +1,68 @@
+<!-- pages/level/level.wxml —— F2 会员等级：等级英雄卡 + 当前权益 + 等级时间轴 + 成长值规则 -->
+<view class="page safe-bottom">
+  <view wx:if="{{loading}}" class="empty-tip">加载中…</view>
+  <view wx:elif="{{!levelName}}" class="empty-tip">等级信息加载失败，请返回重试</view>
+
+  <block wx:if="{{levelName}}">
+    <!-- 顶部等级英雄卡：pine 深色渐变（同 .btn-primary 配方），左等级名右成长值，gold 进度条 -->
+    <view class="hero">
+      <view class="hero-top">
+        <view class="hero-left">
+          <view class="hero-lv">{{levelBadge}}</view>
+          <view class="hero-name font-serif">{{levelName}}</view>
+          <view class="hero-title">{{levelTitle}}</view>
+        </view>
+        <view class="hero-right">
+          <view class="growth-label">成长值</view>
+          <view class="growth-num font-serif">{{growth}}</view>
+        </view>
+      </view>
+      <!-- 进度条：gold 填充 + 浅色轨道（宽度由 progress 百分比绑定） -->
+      <view class="hero-track">
+        <view class="hero-fill" style="width: {{progress}}%"></view>
+      </view>
+      <view class="hero-remain">{{remainText}}</view>
+    </view>
+
+    <!-- 当前等级权益卡（前置小金点逐条） -->
+    <view class="card">
+      <view class="sec-title">当前权益 · {{levelName}}{{levelTitle}}</view>
+      <view wx:for="{{privileges}}" wx:key="*this" class="priv-row">
+        <view class="priv-dot" />
+        <view class="priv-text">{{item}}</view>
+      </view>
+    </view>
+
+    <!-- 等级时间轴：纵向 5 级，左侧竖线 + 节点圆；已达实心 / 当前 gold / 未达空心 -->
+    <view class="card">
+      <view class="sec-title">等级之路</view>
+      <view class="tl">
+        <view wx:for="{{timeline}}" wx:key="level" class="tl-row">
+          <view class="tl-rail">
+            <view wx:if="{{index > 0}}" class="rail-seg {{item.linkUpDone ? 'done' : ''}}" />
+            <view class="tl-node {{item.nodeClass}}" />
+            <view wx:if="{{index < timeline.length - 1}}" class="rail-seg {{item.linkDownDone ? 'done' : ''}}" />
+          </view>
+          <view class="tl-info {{item.current ? 'cur' : ''}} {{item.future ? 'future' : ''}}">
+            <view class="tl-name-row">
+              <text class="tl-name font-serif">{{item.name}}</text>
+              <text class="tl-title">{{item.title}}</text>
+              <text wx:if="{{item.current}}" class="tl-cur">当前</text>
+            </view>
+            <view class="tl-growth">Lv{{item.level}} · {{item.growthText}}</view>
+            <view wx:for="{{item.privileges}}" wx:for-item="p" wx:key="*this" class="tl-priv">{{p}}</view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 成长值规则卡：下单 / 签到 / 评价三行 -->
+    <view class="card">
+      <view class="sec-title">成长值怎么来</view>
+      <view wx:for="{{growthRules}}" wx:key="text" class="rule-row">
+        <view class="rule-icon font-serif">{{item.iconChar}}</view>
+        <view class="rule-text">{{item.text}}</view>
+      </view>
+    </view>
+  </block>
+</view>

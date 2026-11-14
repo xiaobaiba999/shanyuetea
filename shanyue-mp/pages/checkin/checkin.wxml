@@ -1,0 +1,68 @@
+<!-- pages/checkin/checkin.wxml —— F5 每日签到：统计条 + 当月签到日历 + 签到大按钮 + 规则说明 -->
+<view class="page safe-bottom">
+  <view wx:if="{{loading}}" class="empty-tip">加载中…</view>
+
+  <block wx:else>
+    <!-- 统计条：连签 / 累计 / 积分（衬线大数字） -->
+    <view class="card stat-bar">
+      <view class="stat">
+        <view class="stat-num font-serif">{{streak}}</view>
+        <view class="stat-label">连续签到天数</view>
+      </view>
+      <view class="stat-divider"></view>
+      <view class="stat">
+        <view class="stat-num font-serif">{{totalDays}}</view>
+        <view class="stat-label">累计签到天数</view>
+      </view>
+      <view class="stat-divider"></view>
+      <view class="stat">
+        <view class="stat-num font-serif points">{{points}}</view>
+        <view class="stat-label">当前积分</view>
+      </view>
+    </view>
+
+    <!-- 签到日历（当前月） -->
+    <view class="card cal-card">
+      <view class="cal-head">
+        <text class="cal-month font-serif">{{monthText}}</text>
+        <text class="cal-signed">本月已签 {{monthSignedCount}} 天</text>
+      </view>
+
+      <!-- 周表头 -->
+      <view class="week-row">
+        <view wx:for="{{weekLabels}}" wx:key="*this" class="week-label">{{item}}</view>
+      </view>
+
+      <!-- 日历格子（含前置补位空格） -->
+      <view class="cal-grid">
+        <view
+          wx:for="{{cells}}"
+          wx:key="key"
+          class="cell {{item.signed ? 'signed' : ''}} {{item.isToday ? 'today' : ''}} {{item.future ? 'future' : ''}}"
+          bindtap="onCellTap"
+          data-flag="{{item.tapFlag}}"
+        >
+          <view class="cell-day">{{item.day}}</view>
+          <!-- 已签到：格子内一枚小金印（金描边圆 + 内点） -->
+          <view wx:if="{{item.signed}}" class="seal-mark"></view>
+          <!-- 今天：「今」角标（描边加粗块见样式） -->
+          <view wx:if="{{item.isToday}}" class="today-tag">今</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 签到大按钮（todaySigned 时为禁用态文案） -->
+    <view
+      class="btn-primary sign-btn {{todaySigned ? 'disabled' : ''}}"
+      hover-class="btn-hover"
+      bindtap="onSign"
+    >{{signBtnText}}</view>
+
+    <!-- 规则说明卡 -->
+    <view class="card rule-card">
+      <view class="rule-title">签到规则</view>
+      <view class="rule-text">每日签到 +5 山月积分；连签 7 天额外 +50 积分（演示口径）。</view>
+      <view class="rule-text">签到状态后端用 Redis BITMAP 存储，见 Java 接口桩注释。</view>
+    </view>
+  </block>
+</view>
