@@ -27,13 +27,14 @@ import java.util.Set;
 
 /**
  * 【管理端：饮品（菜品）管理】（对照课程 DishController，接口语义 1:1，规格树版本）
- * ┌ POST   /admin/dish                新增饮品（含规格树 specGroups → DishService.saveWithSpec）
- * ├ GET    /admin/dish/page           分页查询（name/categoryId/status 过滤，联表带 categoryName）
- * ├ DELETE /admin/dish?ids=1,2        批量删除（起售中/被套餐引用会被 Service 拒绝）
- * ├ GET    /admin/dish/{id}           按 id 查询（编辑回显，含规格树 → getByIdWithSpec）
- * ├ PUT    /admin/dish                修改饮品（规格树先删后插 → updateWithSpec）
- * ├ GET    /admin/dish/list           按分类查启售饮品（套餐编辑的下拉选择）
- * └ POST   /admin/dish/status/{status}?id=  起售/停售
+ * ⚠ 路径口径：表名与 URL 统一用 drink（与三端前端、api-docs v1.6 一致）；类名保持苍穹原名 Dish*，方便对照课程。
+ * ┌ POST   /admin/drink                新增饮品（含规格树 specGroups → DishService.saveWithSpec）
+ * ├ GET    /admin/drink/page           分页查询（name/categoryId/status 过滤，联表带 categoryName）
+ * ├ DELETE /admin/drink?ids=1,2        批量删除（起售中/被套餐引用会被 Service 拒绝）
+ * ├ GET    /admin/drink/{id}           按 id 查询（编辑回显，含规格树 → getByIdWithSpec）
+ * ├ PUT    /admin/drink                修改饮品（规格树先删后插 → updateWithSpec）
+ * ├ GET    /admin/drink/list           按分类查启售饮品（套餐编辑的下拉选择）
+ * └ POST   /admin/drink/status/{status}?id=  起售/停售
  *
  * 【本类知识点：缓存一致性 —— 管理端改了数据，必须"顺手"清 C 端缓存】
  * C 端菜单接口会用 Redis 缓存 "dish_分类id" 的查询结果（课程方案）。管理端一旦
@@ -43,7 +44,7 @@ import java.util.Set;
  * （山月 C 端 list 因含实时月售统计暂未启用缓存，但清缓存逻辑保留：启用缓存后无需再改。）
  */
 @RestController
-@RequestMapping("/admin/dish")
+@RequestMapping("/admin/drink")
 @Tag(name = "饮品接口")
 @Slf4j
 public class DishController {

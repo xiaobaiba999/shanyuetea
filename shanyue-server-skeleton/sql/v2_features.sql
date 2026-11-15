@@ -13,7 +13,7 @@
 --   * 每张表头标注对应功能包编号（F1/F2/F4/F5/F6），与 docs/v2-features.md 的
 --     总览表、Java 控制器（controller/user 下 *Controller.java 的 TODO）三方对齐；
 --   * 种子数据与前端 utils/mock-v2.js 一一对应（横幅 3 条、券 4 张、用户券 2 张、
---     他人评价 8 条、签到 5 天），桩换成真实现后前端无感切换；
+--     他人评价 10 条、签到 5 天），桩换成真实现后前端无感切换；
 --   * ⚠ 饮品 id 口径提醒：mock-v2.js 的演示菜单用 101~108 号段（小程序侧演示库），
 --     而 data.sql 的 drink 表用 1~8 号段。review 种子的 drink_id 按 mock 原样写 101~107，
 --     评价墙"按饮品筛选"（GET /user/review/wall?drinkId=）在联调时传的是 drink 表真实
@@ -111,16 +111,21 @@ INSERT INTO user_coupon (id, user_id, coupon_id, status, receive_time, used_time
 (92, 1, 4, 2, DATE_ADD(NOW(), INTERVAL -12 DAY), DATE_ADD(NOW(), INTERVAL -9 DAY), DATE_ADD(CURDATE(), INTERVAL 18 DAY));
 
 -- ---------------------------------------------------------------------
--- 4. 订单评价表【F6】（对应 controller/user/ReviewController.java 的 TODO）
+-- 4. 订单评价表【F6】（对应 controller/user/ReviewController.java 与
+--    controller/admin/ReviewController.java 的 TODO）
 --    一单一评双保险：Service 业务校验 + uk_review_order_id 唯一索引兜底
 --    （order_id 允许 NULL：他人氛围种子不挂订单；MySQL 唯一索引对多个 NULL 不冲突）
+--    reply / visible 两列是 B 端管理页的状态位（回复、隐藏/恢复）；隐藏后 C 端
+--    评价墙与统计都当它不存在（软删除留痕，可恢复）
+--    reply / visible 两列是 B 端管理页的状态位（回复、隐藏/恢复）；隐藏后 C 端
+--    评价墙与统计都当它不存在（软删除留痕，可恢复）
 --    tags 存法采用方案 1（JSON 字符串，毕设推荐）；方案 2 拆 review_tag 关联表见
 --    docs/v2-features.md 的 F6 章节（MyBatis collection 一对多映射练习）
 -- ---------------------------------------------------------------------
 DROP TABLE IF EXISTS review;
 CREATE TABLE review (
     id          BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键',
-    user_id     BIGINT       NOT NULL                COMMENT '评价人 id（氛围种子的 21~28 为虚拟用户，不在 user 表）',
+    user_id     BIGINT       NOT NULL                COMMENT '评价人 id（氛围种子的 21~30 为虚拟用户，不在 user 表）',
     nick_name   VARCHAR(64)           DEFAULT NULL   COMMENT '评价人昵称（冗余快照：评价墙展示不联 user 表）',
     avatar_url  VARCHAR(500)          DEFAULT NULL   COMMENT '评价人头像 URL（冗余快照）',
     order_id    BIGINT                DEFAULT NULL   COMMENT '关联订单 id（本人评价必填且唯一，一单一评）',
@@ -131,6 +136,8 @@ CREATE TABLE review (
     tags        VARCHAR(500)          DEFAULT NULL   COMMENT '评价标签 JSON 数组字符串，如：["椰香浓","出餐快"]（最多 6 个）',
     images      VARCHAR(1000)         DEFAULT NULL   COMMENT '评价图 URL JSON 数组字符串（本演示恒为空数组）',
     like_count  INT          NOT NULL DEFAULT 0      COMMENT '点赞数',
+    reply       VARCHAR(200)          DEFAULT NULL   COMMENT '商家回复（B 端一评一回复，可修改，≤50 字；C 端评价墙展示在评价下方）',
+    visible     TINYINT(1)   NOT NULL DEFAULT 1      COMMENT '是否展示 1 展示 0 已隐藏（B 端隐藏不当言论；隐藏后不参与 C 端展示与统计）',
     create_time DATETIME               DEFAULT NULL   COMMENT '评价时间（评价墙按它倒序）',
     PRIMARY KEY (id),
     UNIQUE KEY uk_review_order_id (order_id),
@@ -138,17 +145,20 @@ CREATE TABLE review (
     KEY idx_review_create_time (create_time)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '订单评价表（F6）';
 
--- 他人评价种子 8 条（内容/标签/点赞数与 mock-v2.js SEED_REVIEWS 一字不差；
--- create_time 按执行日相对生成：1/2/3/4/6/8/10/12 天前，保证评价墙永远"新鲜"）
-INSERT INTO review (id, user_id, nick_name, avatar_url, order_id, drink_id, drink_name, rating, content, tags, images, like_count, create_time) VALUES
-(101, 21, '月下独酌', '', NULL, 101, '生椰拿铁',     5, '椰香很正，不齁甜，下午的续命全靠它。',        '["椰香浓","出餐快"]',           '[]', 23, DATE_ADD(NOW(), INTERVAL -1 DAY)),
-(102, 22, '山间客',   '', NULL, 106, '黑糖波波奶茶', 5, '波波弹牙，黑糖挂壁看着就治愈，大杯满足。',    '["分量足","会回购"]',           '[]', 18, DATE_ADD(NOW(), INTERVAL -2 DAY)),
-(103, 23, '白鹭未眠', '', NULL, 102, '桂花冰酿拿铁', 4, '桂花香是真实桂花的那种香，就是杯子小了点。',  '["香气足"]',                     '[]',  9, DATE_ADD(NOW(), INTERVAL -3 DAY)),
-(104, 24, '南山南',   '', NULL, 104, '美式咖啡',     5, '双份浓缩够劲，加班救星，性价比无敌。',        '["提神醒脑","性价比"]',         '[]', 31, DATE_ADD(NOW(), INTERVAL -4 DAY)),
-(105, 25, '青梅煮酒', '', NULL, 107, '茉莉奶绿',     4, '茶底清清爽爽，饭后喝刚好，回甘明显。',        '["回甘明显","清爽解腻"]',       '[]', 12, DATE_ADD(NOW(), INTERVAL -6 DAY)),
-(106, 26, '拾月',     '', NULL, 103, '焦糖玛奇朵',   5, '层次做得很好，甜度选半糖刚刚好，颜值也在线。', '["颜值高","甜度刚好"]',         '[]', 15, DATE_ADD(NOW(), INTERVAL -8 DAY)),
-(107, 27, '迟迟',     '', NULL, 105, '澳白',         5, '奶泡绵密入口很顺，热饮出品稳定。',            '["口感顺滑"]',                   '[]',  7, DATE_ADD(NOW(), INTERVAL -10 DAY)),
-(108, 28, '雾岛',     '', NULL, 101, '生椰拿铁',     4, '冰的更好喝，建议选去冰再少一档糖。',          '["椰香浓"]',                     '[]',  5, DATE_ADD(NOW(), INTERVAL -12 DAY));
+-- 他人评价种子 10 条（前 8 条内容/标签/点赞数与 mock-v2.js SEED_REVIEWS 一字不差；
+-- create_time 按执行日相对生成，保证评价墙永远"新鲜"）；后 2 条是 B 端管理演示行：
+-- 109 = 3 星未回复 → 管理页「待回复」样例；110 = 2 星已隐藏 visible=0 → C 端真实现 WHERE visible=1 时不展示）
+INSERT INTO review (id, user_id, nick_name, avatar_url, order_id, drink_id, drink_name, rating, content, tags, images, like_count, reply, visible, create_time) VALUES
+(101, 21, '月下独酌', '', NULL, 101, '生椰拿铁',     5, '椰香很正，不齁甜，下午的续命全靠它。',        '["椰香浓","出餐快"]',           '[]', 23, '谢谢喜爱～欢迎常来 🌼', 1, DATE_ADD(NOW(), INTERVAL -1 DAY)),
+(102, 22, '山间客',   '', NULL, 106, '黑糖波波奶茶', 5, '波波弹牙，黑糖挂壁看着就治愈，大杯满足。',    '["分量足","会回购"]',           '[]', 18, '', 1, DATE_ADD(NOW(), INTERVAL -2 DAY)),
+(103, 23, '白鹭未眠', '', NULL, 102, '桂花冰酿拿铁', 4, '桂花香是真实桂花的那种香，就是杯子小了点。',  '["香气足"]',                     '[]',  9, '', 1, DATE_ADD(NOW(), INTERVAL -3 DAY)),
+(104, 24, '南山南',   '', NULL, 104, '美式咖啡',     5, '双份浓缩够劲，加班救星，性价比无敌。',        '["提神醒脑","性价比"]',         '[]', 31, '', 1, DATE_ADD(NOW(), INTERVAL -4 DAY)),
+(105, 25, '青梅煮酒', '', NULL, 107, '茉莉奶绿',     4, '茶底清清爽爽，饭后喝刚好，回甘明显。',        '["回甘明显","清爽解腻"]',       '[]', 12, '', 1, DATE_ADD(NOW(), INTERVAL -6 DAY)),
+(106, 26, '拾月',     '', NULL, 103, '焦糖玛奇朵',   5, '层次做得很好，甜度选半糖刚刚好，颜值也在线。', '["颜值高","甜度刚好"]',         '[]', 15, '哈哈欢迎常来打卡 ✨', 1, DATE_ADD(NOW(), INTERVAL -8 DAY)),
+(107, 27, '迟迟',     '', NULL, 105, '澳白',         5, '奶泡绵密入口很顺，热饮出品稳定。',            '["口感顺滑"]',                   '[]',  7, '', 1, DATE_ADD(NOW(), INTERVAL -10 DAY)),
+(108, 28, '雾岛',     '', NULL, 101, '生椰拿铁',     4, '冰的更好喝，建议选去冰再少一档糖。',          '["椰香浓"]',                     '[]',  5, '', 1, DATE_ADD(NOW(), INTERVAL -12 DAY)),
+(109, 29, '南风知我意', '', NULL, 104, '美式咖啡',   3, '工作日下午人也这么多，等了小二十分钟才出餐，建议错峰。', '["等太久"]', '[]', 3, '', 1, DATE_ADD(NOW(), INTERVAL -5 DAY)),
+(110, 30, '匿名茶客', '', NULL, 106, '黑糖波波奶茶', 2, '餐车脏了都没擦……失望。',                    '["包装瑕疵"]', '[]', 0, '', 0, DATE_ADD(NOW(), INTERVAL -7 DAY));
 
 -- ---------------------------------------------------------------------
 -- 5. 签到流水表【F5】（兜底对账用；生产主存储是 Redis BITMAP，见下）

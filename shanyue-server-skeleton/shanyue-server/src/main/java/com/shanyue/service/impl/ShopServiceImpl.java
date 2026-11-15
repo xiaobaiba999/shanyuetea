@@ -30,6 +30,9 @@ public class ShopServiceImpl implements ShopService {
     /** 营业状态的 Redis key（层级命名规范，见类注释） */
     public static final String KEY = "shanyue:shop:status";
 
+    /** 店铺公告的 Redis key（与状态同款命名规范：模块:对象:属性） */
+    public static final String NOTICE_KEY = "shanyue:shop:notice";
+
     @Autowired
     private RedisTemplate redisTemplate;
 
@@ -57,5 +60,30 @@ public class ShopServiceImpl implements ShopService {
         // SET 操作：value 是 Integer，存进去以后 C 端getStatus 取回同一个对象
         redisTemplate.opsForValue().set(KEY, status);
         // （引用备注：常量类 ShopStatusConstant.KEY="SHOP_STATUS" 是课程原名，保留仅作对照）
+    }
+
+    /**
+     * 查询店铺公告（从未设置过 → 空串，前端展示「暂无公告」）
+     *
+     * 公告与状态一样是「高频读、极少写、丢了可重建」的轻数据，同款 Redis 方案；
+     * 丢了也不影响任何交易链路 —— 这也是敢放 Redis 的判断依据（答辩讲点）。
+     * 若将来 C 端（小程序门店条）要展示公告：加 GET /user/shop/notice 并在
+     * WebMvcConfiguration 的放行清单补一行即可（免登录的公开数据）。
+     */
+    @Override
+    public String getNotice() {
+        String notice = (String) redisTemplate.opsForValue().get(NOTICE_KEY);
+        return notice == null ? "" : notice;
+    }
+
+    /**
+     * 修改店铺公告（管理端「店铺设置」页「保存公告」按钮）
+     *
+     * @param notice 公告文本（长度校验在 Controller 层）
+     */
+    @Override
+    public void setNotice(String notice) {
+        log.info("修改店铺公告：{}", notice);
+        redisTemplate.opsForValue().set(NOTICE_KEY, notice);
     }
 }

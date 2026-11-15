@@ -15,7 +15,8 @@ import java.util.List;
 
 /**
  * 【C 端：饮品菜单】（对照课程 DishController，山月带月售版）
- * └ GET /user/dish/list?categoryId=xx  按分类查询启售饮品（含规格树 + 月售）
+ * ⚠ 路径口径：URL 用 /user/drink（与三端前端、api-docs v1.6 一致）；类名保持苍穹原名，方便对照课程。
+ * └ GET /user/drink/list?categoryId=xx  按分类查询启售饮品（含规格树 + 月售）
  *
  * 【本类知识点：为什么这个 list 没有像课程那样加 Redis 缓存？（对照学习）】
  * 课程方案：GET /user/dish/list 先查 redis key "dish_分类id"，命中直接返回，
@@ -27,7 +28,7 @@ import java.util.List;
  * 然后放开下面的注释即可 —— 两种方案的取舍见 DishServiceImpl 类注释。
  */
 @RestController("userDishController")
-@RequestMapping("/user/dish")
+@RequestMapping("/user/drink")
 @Tag(name = "C端-饮品接口")
 @Slf4j
 public class DishController {

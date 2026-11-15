@@ -116,3 +116,23 @@ src/
 - 「购物车内 +1」通过 specKey 反查规格后复用 `addToCart` 实现（真实/模拟后端行为一致）；
 - 「删除单行」等价于连续 `sub` 至删行（C端接口未提供删行端点，与苍穹外卖保持一致）；
 - 构建未跑 `vue-tsc`（按任务要求 `build` 直接 `vite build`），但代码保持基本类型正确。
+
+## 与 v2 后端的已知差异（2026-11-15 三端契约体检结论）
+
+> 结论先行：**h5 默认 mock 自演示，开箱即用不受以下差异影响**；真实联调（`VITE_USE_MOCK=false`）
+> 属于留给你的练习项。小程序端（shanyue-mp）与管理端（shanyue-vue3/admin）已与后端全量对齐，
+> 那两端的联调不受影响。
+
+与仓库 `shanyue-server-skeleton`（v2）逐项核对后的差异清单：
+
+| # | h5 调用 | 后端现状 | 差异性质 | 练习建议 |
+| --- | --- | --- | --- | --- |
+| 1 | `GET /user/shop/status` 期望 `ShopVO{name,status,notice,openHours}` | 返回裸 `Integer`（1/0） | 响应结构 | C 端门店信息接口加一个聚合 VO（或 h5 改用两个字段拼装） |
+| 2 | `GET /user/coupon/templates`、`GET /user/member/summary`、`GET /user/point/*` | v2 桩实现的是小程序契约（`/user/coupon/list`、`/user/member/level`、`/user/checkin/*`）；`/user/point/*` 为已移除的 F3 积分商城，后端永不实现 | 两代契约 | h5 真实联调时把 api 层改调 v2 契约（或后端补兼容别名）；points 页面在真实模式下应隐藏 |
+| 2b | `POST /user/review`、`GET /user/review/order/{id}`、`GET /user/review/stats`、`GET /user/review/mine` | v2 桩实现的是小程序评价墙契约（`/user/review/wall`、`/tags`、`/submit`） | 两代契约 | 同上：h5 真实联调时改调 v2 契约，或后端补这组别名 |
+| 3 | `GET /user/order/byPickUpCode/{code}` | 无此接口（订单查询走 `/user/order/historyOrders`、`/user/order/orderDetail/{id}`） | 缺接口 | 后端补一个按取餐码查询接口（其实就是 historyOrders 的 WHERE 换成 pickup_code，很好的练手题） |
+| 4 | `PUT /user/order/reminder/{id}` | 后端是 `@PostMapping` | HTTP 方法 | 二选一改齐即可 |
+| 5 | 匿名下单（无 token） | v2 C 端走微信登录 + JWT 拦截器 | 认证模式 | 联调时在 WebMvcConfiguration 放行清单补 h5 用到的只读/下单接口，或 h5 接入登录流程 |
+| 6 | 价格单位「分」 | 后端 BigDecimal（元） | 单位口径 | 统一成任一侧（建议后端保持元、h5 utils/format 换算） |
+
+（管理端与小程序端体检结论：全量对齐，无缺接口。）

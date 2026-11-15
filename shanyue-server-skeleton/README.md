@@ -1,8 +1,10 @@
 # 山月茶咖 · 后端基础框架（shanyue-server-skeleton）
 
-> 苍穹外卖（sky-take-out）改造版「山月茶咖」的 Java 后端骨架。
-> **common / pojo 层与配置已就绪；拦截器 / Controller / Service / Mapper 等业务代码随阶段任务逐步补全**
-> （动手区照交付包 `shanyue-vue3/docs/dev-guide.md` 阶段任务写类即可，编译报"找不到 Xxx"就是下一个要写的类）。
+> 苍穹外卖（sky-take-out）改造版「山月茶咖」的 Java 后端。
+> **代码形态分两类**：① 主链路（员工/分类/饮品/套餐/订单/报表…）为「苍穹对照完整实现」，
+> 类名保持苍穹原名（Dish* 等）方便逐行对照课程，表名与接口路径统一为 drink 口径，可直接编译启动；
+> ② v2 功能包（F1 横幅 / F2 会员 / F4 券包 / F5 签到 / F6 评价 / F7 AI 点单）为「接口桩」——
+> 返回与种子一致的演示数据，类内 TODO 注释含替换为真实现的步骤与黑马章节映射（练手区）。
 > 前端工程（shanyue-vue3 管理端 + h5）与接口文档见交付包，联调只需把 baseUrl 指向本服务。
 
 ---
@@ -36,7 +38,9 @@ CREATE DATABASE shanyue CHARACTER SET utf8mb4;
 ## 四、执行 SQL（顺序不能反）
 
 1. 先执行 `sql/schema.sql` —— 建 13 张表（员工/分类/饮品/规格组/规格选项/口味/套餐/套餐饮品/用户/地址簿/购物车/订单/订单明细）；
-2. 再执行 `sql/data.sql` —— 写入种子数据：管理员 **admin / 123456**、4 个分类、8 款饮品、11 组规格、2 个套餐、演示用户 1 名（占位 openid，仅防空表；真实登录由「扫码 → code 换 openid → 自动注册」产生新行）。
+2. 再执行 `sql/data.sql` —— 写入种子数据：管理员 **admin / 123456**、4 个分类、8 款饮品、11 组规格、2 个套餐、演示用户 1 名（占位 openid，仅防空表；真实登录由「扫码 → code 换 openid → 自动注册」产生新行）；
+3. 可选执行 `sql/v2_features.sql` —— v2 功能包建表与种子（banner / coupon / user_coupon / review / checkin_log 五张新表 + user 表加 growth/points 字段；
+   每张表头标注对应功能包编号，与控制器桩的 TODO 三方对齐）。不执行也能跑主链路，但 v2 功能联调前必须执行。
 
 命令行方式：
 
@@ -80,16 +84,13 @@ spring:
 接口文档：http://localhost:8080/swagger-ui/index.html
 ```
 
-> ⚠️ **若此时编译报"找不到符号 JwtTokenAdminInterceptor / JwtTokenUserInterceptor"？这是正常的！**
-> `config/WebMvcConfiguration` 已经把双端 JWT 拦截器"预留接线"好（import、字段、注册代码都写好了），
-> 对应的类在 `com.shanyue.interceptor` 包 —— 属于**阶段二（登录认证）的动手任务**：写好后工程即可编译启动，
-> 包名类名照 WebMvcConfiguration 里的 import 写，代码参考 dev-guide（shanyue-vue3/docs/）阶段二。
-> 如果只想先验证骨架能启动：临时注释掉 `addInterceptors()` 里的两行 `registry.addInterceptor(...)` 及对应 `@Autowired` 字段与 import 即可（写拦截器时再恢复）。
-> 同理，Controller / Service / Mapper 业务代码也是随阶段任务逐个补全的：编译报"找不到 XxxController/XxxService"就是下一个要写的类。
+> 说明：本工程已含双端 JWT 拦截器与全量主链路业务代码，可直接编译启动（无需先写任何类）。
+> 若你正跟着《后端手把手教程》逐章自写：可对照本工程逐行校对；v2 功能包（带 TODO 注释的桩）
+> 是留给你替换为真实现的练手区，桩阶段返回种子数据，前后端可先行联调跑通全流程。
 
 ## 七、验证（写完登录模块后自测）
 
-**前置条件**：已按阶段任务写出 `EmployeeController/EmployeeService/EmployeeMapper` 与 `UserController/UserService/UserMapper`（骨架不包含业务实现代码）。
+**前置条件**：无需前置 —— 主链路业务代码已含苍穹对照完整实现，可直接启动自测。
 
 ```bash
 # 1. 管理端登录（种子账号 admin/123456，密码错误会返回 code=0）
@@ -128,11 +129,12 @@ curl -X POST http://localhost:8080/user/user/login \
 | **shanyue-server** | `config` | WebMvcConfiguration（拦截器接线+本地资源映射）/ Jackson 日期格式 / RedisTemplate 序列化 / WebSocket / RestTemplate | ✅ |
 | | `annotation` + `aspect` | @AutoFill + AutoFillAspect 公共字段自动填充 | ✅ |
 | | `websocket` | WebSocketServer（/ws/{sid}，来单/催单推送 TODO） | ✅ |
-| | `interceptor` | **JwtTokenAdminInterceptor / JwtTokenUserInterceptor —— 阶段二动手写**（WebMvcConfiguration 已预留接线） | ✍️ 动手区 |
-| | `controller/admin` `controller/user` | 管理端 9 组、C 端 8 组接口 —— **随阶段任务动手写** | ✍️ 动手区 |
-| | `service` `service/impl` | 业务逻辑（登录/菜品/购物车/订单六步法…）—— **随阶段任务动手写** | ✍️ 动手区 |
-| | `mapper`（java） | Mapper 接口（注解 SQL + XML 混用，已有部分样板） | ✍️ 动手区 |
-| | `resources/mapper` | MyBatis XML（已放 CategoryMapper.xml 动态 SQL 样板） | ✅ 起步 |
+| | `interceptor` | 双端 JWT 拦截器（WebMvcConfiguration 已接线，登录态校验） | ✅ |
+| | `controller/admin` | 管理端 11 组（员工/分类/饮品/套餐/订单/报表/工作台/店铺/公共 + v2 桩：券模板/评价管理） | ✅（v2 桩见 TODO） |
+| | `controller/user` | C 端 14 组（登录/店铺/菜单/购物车/地址簿/订单/套餐 + v2 桩：横幅/签到/券包/会员/评价墙/AI 点单） | ✅（v2 桩见 TODO） |
+| | `service` `service/impl` | 主链路业务逻辑（登录/饮品规格树/购物车/订单六步法…苍穹对照完整实现） | ✅ |
+| | `mapper`（java） | Mapper 接口（注解 SQL + XML 混用） | ✅ |
+| | `resources/mapper` | MyBatis XML（含动态 SQL 样板） | ✅ |
 | | `resources/application*.yml` | 主配置 + dev 环境配置（每项带中文注释） | ✅ |
 | **sql** | schema.sql / data.sql | 建表 + 种子数据 | ✅ |
 
@@ -170,7 +172,8 @@ curl -X POST http://localhost:8080/user/user/login \
 ## 附：与课程工程的对应关系
 
 - 包名规则：`com.sky.* → com.shanyue.*`，类名保持苍穹原名，方便逐行对照课程视频/讲义；
-- 表名基本沿用课程（employee/setmeal/orders...），唯一改名：drink 表 → drink（v1.1，茶饮项目更贴切，类名 Drink 与接口路径均不变）；山月新增 `spec_group / spec_option` 两张规格表替代 drink_flavor 的玩法（drink_flavor 保留用于对照）；
+- 表名基本沿用课程（employee/setmeal/orders...），唯一改名：dish 表 → drink（茶饮项目更贴切）；
+  类名保持苍穹原名（Dish* 等）；接口路径自 v2 起统一为 /admin/drink、/user/drink（与三端前端、api-docs v1.6 契约一致）；山月新增 `spec_group / spec_option` 两张规格表替代 drink_flavor 的玩法（drink_flavor 保留用于对照）；
 - 订单 v2.0 双模式：`orders.delivery_mode`（1 自取 / 2 外送）+ `pickup_number`（Redis 按天自增 A01）+ `delivery_fee`；
 - 阿里云 OSS 改为本地磁盘存储（`shanyue.local-storage.path` + `/upload/**` 静态映射），省 AK/SK 配置；
 - 接口文档：springdoc（swagger-ui），启动后访问 `/swagger-ui/index.html`，右上角可切换"管理端接口 / 用户端接口"分组。
