@@ -2,18 +2,18 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <!--
-  【本文件知识点：饮品 Mapper 的 XML（对照课程 DishMapper.xml 改包名而来，全部 9 条 SQL 在此）】
-  1. 联表查询（pageQuery）的 resultType 是 VO（com.shanyue.vo.DishVO）——
+  【本文件知识点：饮品 Mapper 的 XML（山月 v1.2 起统一 Drink 命名，全部 9 条 SQL 在此）】
+  1. 联表查询（pageQuery）的 resultType 是 VO（com.shanyue.vo.DrinkVO）——
      VO 不在 type-aliases-package 扫描范围（那个只扫 entity 包），所以要写全限定名（课程同款）。
   2. 实体表有驼峰映射开关（map-underscore-to-camel-case），select d.* 出来的
-     category_id 列会自动装进 DishVO.categoryId；联表起的别名 categoryName 驼峰一致直接映射。
+     category_id 列会自动装进 DrinkVO.categoryId；联表起的别名 categoryName 驼峰一致直接映射。
   3. <set>/<if> 动态更新、<foreach> 批量删除的套路与课程完全一致。
   4. insert 的 useGeneratedKeys：自增 id 回填 drink.id，saveWithSpec 插完饮品立刻拿 id 插规格组。
 -->
-<mapper namespace="com.shanyue.mapper.DishMapper">
+<mapper namespace="com.shanyue.mapper.DrinkMapper">
 
     <!-- 查询分类下是否有饮品（删除分类前的校验；count(*) 返回数字） -->
-    <select id="countDish" resultType="java.lang.Integer">
+    <select id="countDrink" resultType="java.lang.Integer">
         select count(*) from drink where category_id = #{categoryId}
     </select>
 
@@ -29,7 +29,7 @@
 
     <!-- 分页查询饮品（管理端列表，配合 PageHelper.startPage 使用）：
          left join category 联出分类名；name/categoryId/status 三个条件动态拼 -->
-    <select id="pageQuery" resultType="com.shanyue.vo.DishVO">
+    <select id="pageQuery" resultType="com.shanyue.vo.DrinkVO">
         select d.*, c.name as categoryName from drink d left join category c on d.category_id = c.id
         <where>
             <if test="name != null and name != ''">
@@ -54,13 +54,13 @@
     </delete>
 
     <!-- 根据 id 查询饮品（编辑页回显） -->
-    <select id="getById" resultType="com.shanyue.entity.Dish">
+    <select id="getById" resultType="com.shanyue.entity.Drink">
         select * from drink where id = #{id}
     </select>
 
     <!-- 更新饮品（动态 set：资料修改与起售停售共用这一个方法；
          <set> 自动去掉末尾多余的逗号） -->
-    <update id="update" parameterType="com.shanyue.entity.Dish">
+    <update id="update" parameterType="com.shanyue.entity.Drink">
         update drink
         <set>
             <if test="name != null">
@@ -92,7 +92,7 @@
     </update>
 
     <!-- 管理端：按条件查饮品列表（套餐编辑器里"选择包含饮品"的下拉/搜索用） -->
-    <select id="selectList" resultType="com.shanyue.entity.Dish">
+    <select id="selectList" resultType="com.shanyue.entity.Drink">
         select * from drink
         <where>
             <if test="name != null and name != ''">
@@ -109,7 +109,7 @@
     </select>
 
     <!-- C 端：按分类查启售饮品（菜单页用；status 由 Service 端装进参数=1） -->
-    <select id="getByCategoryId" resultType="com.shanyue.entity.Dish">
+    <select id="getByCategoryId" resultType="com.shanyue.entity.Drink">
         select * from drink
         <where>
             <if test="categoryId != null">

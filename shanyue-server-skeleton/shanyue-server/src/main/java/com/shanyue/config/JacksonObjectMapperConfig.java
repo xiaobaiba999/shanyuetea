@@ -80,15 +80,28 @@ public class JacksonObjectMapperConfig implements WebMvcConfigurer {
     }
 
     /**
-     * 扩展消息转换器：把定制的 Jackson 转换器插到最前面，优先生效
+     * 扩展消息转换器：改造【默认的】Jackson 转换器，替换其 ObjectMapper 为统一日期格式版
+     *
+     * ⚠ 为什么不是"新 new 一个转换器 add(0, ...)"插到最前面？（山月踩坑记录）
+     *   插到第 0 位会让它抢在 ByteArrayHttpMessageConverter 之前处理 byte[] 响应——
+     *   springdoc 的 /v3/api-docs 接口返回的就是 byte[]，被 Jackson 抢到后会整体
+     *   base64 编码成一个字符串，swagger-ui 页面打不开、Apifox 按 URL 导入也失败。
+     *   改造默认转换器（保持默认顺序：ByteArray 在前、Jackson 在后）既统一了日期格式，
+     *   又不影响 byte[]/String 走各自的专用转换器，一举两得。
      */
     @Override
     public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
-        log.info("注册自定义日期格式消息转换器（yyyy-MM-dd HH:mm:ss）...");
+        for (HttpMessageConverter<?> c : converters) {
+            if (c instanceof MappingJackson2HttpMessageConverter) {
+                ((MappingJackson2HttpMessageConverter) c).setObjectMapper(buildObjectMapper());
+                log.info("已为默认 Jackson 消息转换器设置统一日期格式（yyyy-MM-dd HH:mm:ss）...");
+                return;
+            }
+        }
+        // 兜底：万一默认转换器不存在（理论不会发生），再退回"插入到末尾"的方式
         MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
-        // 设置对象转换器：Java 对象 → JSON 使用这里的 ObjectMapper
         converter.setObjectMapper(buildObjectMapper());
-        // 插入到容器第 0 位，最先执行
-        converters.add(0, converter);
+        converters.add(converter);
+        log.info("注册自定义日期格式消息转换器（yyyy-MM-dd HH:mm:ss）...");
     }
 }

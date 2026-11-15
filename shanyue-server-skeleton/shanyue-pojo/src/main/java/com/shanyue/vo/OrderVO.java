@@ -18,8 +18,8 @@ import java.util.List;
 @AllArgsConstructor
 public class OrderVO extends Orders implements Serializable {
 
-    /** 订单菜品信息（字符串形式，课程报表用） */
-    private String orderDrinkes;
+    /** 订单饮品摘要（字符串形式，如"山月拿铁*1;桂花冰酿*2"，报表用） */
+    private String orderDrinks;
 
     /** 订单明细列表（含 specSelected 规格快照） */
     private List<OrderDetail> orderDetailList;

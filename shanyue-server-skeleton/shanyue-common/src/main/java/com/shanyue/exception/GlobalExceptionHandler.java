@@ -100,10 +100,25 @@ public class GlobalExceptionHandler {
      * 兜底：捕获其它一切未知异常（NPE、数组越界、MyBatis 异常...）
      * 1. 必须返回 MessageConstant.UNKNOWN_ERROR，不要把 e.getMessage() 直接吐给前端：
      *    异常消息可能带 SQL 语句、表名、文件路径等敏感信息，属于安全隐患（面试讲点）；
-     * 2. 服务端日志打印完整堆栈（log.error 第二个参数直接传 ex），排查问题靠日志不靠响应。
+     * 2. 服务端日志打印完整堆栈（log.error 第二个参数直接传 ex），排查问题靠日志不靠响应；
+     * 3.【山月补丁】唯一键冲突可能被 MyBatis/Spring 翻译成 DuplicateKeyException 抛上来
+     *   （直接 cause 才是 SQLIntegrityConstraintViolationException，上面的精确 handler 接不住），
+     *   兜底前先沿 cause 链把原始冲突挖出来返回友好提示，与上面 handler 的行为保持一致——
+     *   否则真实数据库里撞唯一索引时前端只会看到"未知错误"。
      */
     @ExceptionHandler(Exception.class)
     public Result handleException(Exception ex) {
+        for (Throwable t = ex; t != null; t = t.getCause()) {
+            if (t instanceof SQLIntegrityConstraintViolationException) {
+                String message = t.getMessage();
+                if (message != null && message.contains("Duplicate entry")) {
+                    String[] split = message.split(" ");
+                    String msg = split[2] + " 已存在";
+                    log.warn("唯一键冲突：{}", message);
+                    return Result.error(msg);
+                }
+            }
+        }
         log.error("系统未知异常", ex);
         return Result.error(MessageConstant.UNKNOWN_ERROR);
     }

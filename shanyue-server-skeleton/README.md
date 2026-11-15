@@ -2,7 +2,8 @@
 
 > 苍穹外卖（sky-take-out）改造版「山月茶咖」的 Java 后端。
 > **代码形态分两类**：① 主链路（员工/分类/饮品/套餐/订单/报表…）为「苍穹对照完整实现」，
-> 类名保持苍穹原名（Dish* 等）方便逐行对照课程，表名与接口路径统一为 drink 口径，可直接编译启动；
+> 饮品类命名全链统一为 Drink 系（表名 drink、URL /drink、类名 Drink*/DrinkDTO/DrinkVO 等），
+> 方便按「苍穹菜品 ↔ 山月饮品」的映射逐行对照课程，表名与接口路径统一为 drink 口径，可直接编译启动；
 > ② v2 功能包（F1 横幅 / F2 会员 / F4 券包 / F5 签到 / F6 评价 / F7 AI 点单）为「接口桩」——
 > 返回与种子一致的演示数据，类内 TODO 注释含替换为真实现的步骤与黑马章节映射（练手区）。
 > 前端工程（shanyue-vue3 管理端 + h5）与接口文档见交付包，联调只需把 baseUrl 指向本服务。
@@ -68,12 +69,12 @@ spring:
 
 ### 预置菜品图片（不复制不影响功能，只影响菜单展示效果）
 
-`data.sql` 预置的 8 个饮品 + 2 个套餐引用了 `upload-assets/` 目录里的 10 张图片，
+`data.sql` 预置的 8 个饮品 + 2 个套餐引用了交付包根目录 `../upload-assets/` 里的 10 张图片，
 把它们**全部复制**到上面 `local-storage.path` 指向的目录（如 `D:/shanyue/upload`）即可：
 
 - 数据库存的是相对路径 `/upload/latte.png`，后端把 `/upload/**` 映射到该目录，小程序拼上后端地址加载；
 - 没复制时菜单显示绿色首字占位（图片加载失败自动兜底），不影响任何功能；
-- 详细说明见 `upload-assets/README.md`。
+- 详细说明见 `../upload-assets/README.md`。
 
 ## 六、启动
 
@@ -84,9 +85,15 @@ spring:
 接口文档：http://localhost:8080/swagger-ui/index.html
 ```
 
+> 接口契约离线文件：根目录 `openapi.json`（OpenAPI 3.0.3，含全部 96 个接口、请求/响应字段级 schema），
+> 可直接导入 Apifox（项目设置 → 数据导入 → OpenAPI/Swagger → 选该文件）；
+> 服务启动后也可用在线地址 `http://localhost:8080/v3/api-docs` 导入，两者内容一致。
+
 > 说明：本工程已含双端 JWT 拦截器与全量主链路业务代码，可直接编译启动（无需先写任何类）。
 > 若你正跟着《后端手把手教程》逐章自写：可对照本工程逐行校对；v2 功能包（带 TODO 注释的桩）
 > 是留给你替换为真实现的练手区，桩阶段返回种子数据，前后端可先行联调跑通全流程。
+> **把桩换成真实现的手把手教程见 `docs/新增功能教学文档.md`**（七步法 + 6 个功能包
+> 逐个展开的代码骨架/验收 curl/常见坑 + 改名对照表）。
 
 ## 七、验证（写完登录模块后自测）
 
@@ -137,6 +144,7 @@ curl -X POST http://localhost:8080/user/user/login \
 | | `resources/mapper` | MyBatis XML（含动态 SQL 样板） | ✅ |
 | | `resources/application*.yml` | 主配置 + dev 环境配置（每项带中文注释） | ✅ |
 | **sql** | schema.sql / data.sql | 建表 + 种子数据 | ✅ |
+| **openapi.json** | 根目录 | 全量接口契约（OpenAPI 3.0.3，可导入 Apifox） | ✅ |
 
 ## 九、常见报错速查（6 条）
 
@@ -171,9 +179,10 @@ curl -X POST http://localhost:8080/user/user/login \
 
 ## 附：与课程工程的对应关系
 
-- 包名规则：`com.sky.* → com.shanyue.*`，类名保持苍穹原名，方便逐行对照课程视频/讲义；
-- 表名基本沿用课程（employee/setmeal/orders...），唯一改名：dish 表 → drink（茶饮项目更贴切）；
-  类名保持苍穹原名（Dish* 等）；接口路径自 v2 起统一为 /admin/drink、/user/drink（与三端前端、api-docs v1.6 契约一致）；山月新增 `spec_group / spec_option` 两张规格表替代 drink_flavor 的玩法（drink_flavor 保留用于对照）；
+- 包名规则：`com.sky.* → com.shanyue.*`；饮品类名已全链统一 Drink 系（完整对照表见 `docs/新增功能教学文档.md` 附录 A），
+  对照课程时按「苍穹菜品 ↔ 山月饮品」映射即可，其余类名保持苍穹原名，方便逐行对照课程视频/讲义；
+- 表名基本沿用课程（employee/setmeal/orders...），唯一改名：课程菜品表 → drink（茶饮项目更贴切）；
+  接口路径自 v2 起统一为 /admin/drink、/user/drink（与三端前端、api-docs v1.6 契约一致）；山月新增 `spec_group / spec_option` 两张规格表替代 drink_flavor 的玩法（drink_flavor 保留用于对照）；
 - 订单 v2.0 双模式：`orders.delivery_mode`（1 自取 / 2 外送）+ `pickup_number`（Redis 按天自增 A01）+ `delivery_fee`；
 - 阿里云 OSS 改为本地磁盘存储（`shanyue.local-storage.path` + `/upload/**` 静态映射），省 AK/SK 配置；
 - 接口文档：springdoc（swagger-ui），启动后访问 `/swagger-ui/index.html`，右上角可切换"管理端接口 / 用户端接口"分组。

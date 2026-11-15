@@ -24,7 +24,7 @@
 
 | 包号 | 功能 | 前端页面路径 | 接口清单 | 后端落点（桩 → 真实现） | 课程章节映射 | 预计工时 |
 | --- | --- | --- | --- | --- | --- | --- |
-| F1 | 轮播横幅 | `pages/menu/menu`（顶部轮播位；`linkUrl` 跳 menu/checkin/coupons） | `GET /user/banner/list` | `BannerController` → banner 表 + BannerMapper（status=1 按 sort 排序）；管理端可套 admin/DishController 的 CRUD | 苍穹：分类/菜品管理 CRUD 套路 | 0.5 天 |
+| F1 | 轮播横幅 | `pages/menu/menu`（顶部轮播位；`linkUrl` 跳 menu/checkin/coupons） | `GET /user/banner/list` | `BannerController` → banner 表 + BannerMapper（status=1 按 sort 排序）；管理端可套 admin/DrinkController 的 CRUD | 苍穹：分类/菜品管理 CRUD 套路 | 0.5 天 |
 | F2 | 会员等级 | `pages/level/level` | `GET /user/member/level` | `MemberController` → user.growth 冗余字段（方案 A）+ 等级常量类 | 无直接章节；「冗余字段 vs 聚合查询」的取舍（答辩讲点） | 1 天 |
 | F4 | 券包 | `pages/coupons/coupons`、`pages/submit/submit`（下单选券） | `GET /user/coupon/list`<br>`POST /user/coupon/receive/{id}`<br>`GET /user/coupon/usable?amount=` | `CouponController` → coupon/user_coupon 两表 + Redis SETNX 一人一单 + Lua 原子扣库存；用券挂进 `OrderServiceImpl.submit` 事务 | **黑马 Redis 实战：优惠券秒杀（超卖/一人一单/Lua 脚本）** | 2.5~3 天 |
 | F5 | 每日签到 | `pages/checkin/checkin` | `GET /user/checkin/info`<br>`POST /user/checkin/sign` | `CheckinController` → Redis BITMAP（`checkin:{userId}:{yyyyMM}`）+ user.points 入账 | **黑马 Redis 实战：BITMAP 签到（SETBIT/BITFIELD/BITCOUNT）** | 1.5~2 天 |

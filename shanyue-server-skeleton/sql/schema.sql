@@ -6,9 +6,9 @@
 --   3. 接着执行 data.sql 初始化种子数据
 -- 字符集统一 utf8mb4：支持 emoji 与生僻字，MySQL 5.7 / 8.0 均可用
 -- 说明：表名基本沿用课程同款命名（employee/setmeal/orders...），便于你逐行对照课程代码；
---       v1.2 全链改名：dish/dish_flavor/setmeal_dish 三张表、dish_id/dishId/dishFlavor 字段、
---       Dish* 类名、/dish 接口路径已全部统一为 drink 系（详见教程开头 v1.2 更新说明）；
---       drink_flavor（课程名 dish_flavor）为课程对照保留的"标本"表，山月业务实际走 spec_group / spec_option 两张规格表。
+--       v1.2 起饮品类全链统一 drink 口径：drink/drink_flavor/setmeal_drink 三张表、
+--       drink_id 字段、Drink* 类名、/drink 接口路径（完整改名对照表见 docs/新增功能教学文档.md 附录 A）；
+--       drink_flavor 为课程对照保留的"标本"表，山月业务实际走 spec_group / spec_option 两张规格表。
 -- =====================================================================
 
 -- ---------------------------------------------------------------------
@@ -51,7 +51,7 @@ CREATE TABLE category (
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '分类表';
 
 -- ---------------------------------------------------------------------
--- 3. 饮品表（课程里叫"菜品"表 dish；山月 v1.2 起全链改名为 drink 更贴切茶饮业务，类名同步为 Drink，文案叫"饮品"）
+-- 3. 饮品表（课程里叫"菜品"；山月 v1.2 起全链统一为 drink，更贴切茶饮业务，类名同步为 Drink，文案叫"饮品"）
 -- ---------------------------------------------------------------------
 DROP TABLE IF EXISTS drink;
 CREATE TABLE drink (
@@ -71,7 +71,7 @@ CREATE TABLE drink (
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '饮品表';
 
 -- ---------------------------------------------------------------------
--- 4. 规格组表（山月核心 v2.0：替代课程的 dish_flavor 口味表）
+-- 4. 规格组表（山月核心 v2.0：替代课程的口味表）
 --    一个饮品有多个规格组（杯型/温度/糖度），每个规格组下有多个规格选项
 -- ---------------------------------------------------------------------
 DROP TABLE IF EXISTS spec_group;
@@ -101,7 +101,7 @@ CREATE TABLE spec_option (
 
 -- ---------------------------------------------------------------------
 -- 6. 口味表（课程对照保留，山月业务请使用 spec_group/spec_option）
---    课程原版 DishDTO 里是 List<DishFlavor> flavors（本工程 v1.2 改名 DrinkDTO/DrinkFlavor），山月改为 List<SpecGroupDTO> specGroups，
+--    课程原版口味 DTO 里是 List<口味实体> flavors（本工程为 DrinkDTO/DrinkFlavor，实体字段 drinkId），山月改为 List<SpecGroupDTO> specGroups，
 --    DrinkVO 里两个都保留，便于你逐行对照课程代码过渡。
 -- ---------------------------------------------------------------------
 DROP TABLE IF EXISTS drink_flavor;
@@ -199,7 +199,7 @@ CREATE TABLE shopping_cart (
     user_id       BIGINT        NOT NULL                COMMENT '所属用户 id',
     drink_id       BIGINT                 DEFAULT NULL   COMMENT '饮品 id（与 setmeal_id 二选一）',
     setmeal_id    BIGINT                 DEFAULT NULL   COMMENT '套餐 id',
-    drink_flavor   VARCHAR(200)           DEFAULT NULL   COMMENT '口味快照（课程 dish_flavor 同款字段，v1.2 改名）',
+    drink_flavor   VARCHAR(200)           DEFAULT NULL   COMMENT '口味快照（v1.2 统一 drink 口径）',
     spec_selected VARCHAR(500)           DEFAULT NULL   COMMENT '规格快照 JSON 数组（山月 v2.0），如：[{"optionId":2,"optionName":"大杯","priceDelta":3,...}]',
     number        INT           NOT NULL DEFAULT 1      COMMENT '数量',
     amount        DECIMAL(10,2) NOT NULL DEFAULT 0.00   COMMENT '单价（含规格加价；服务端按 spec_option 表重算，不信任前端）',
@@ -258,7 +258,7 @@ CREATE TABLE order_detail (
     order_id      BIGINT        NOT NULL                COMMENT '所属订单 id',
     drink_id       BIGINT                 DEFAULT NULL   COMMENT '饮品 id（月售统计 GROUP BY 的字段）',
     setmeal_id    BIGINT                 DEFAULT NULL   COMMENT '套餐 id',
-    drink_flavor   VARCHAR(200)           DEFAULT NULL   COMMENT '口味快照（课程 dish_flavor 同款字段，v1.2 改名）',
+    drink_flavor   VARCHAR(200)           DEFAULT NULL   COMMENT '口味快照（v1.2 统一 drink 口径）',
     spec_selected VARCHAR(500)           DEFAULT NULL   COMMENT '规格快照 JSON 数组（山月 v2.0，下单瞬间的规格与加价留档）',
     number        INT           NOT NULL DEFAULT 1      COMMENT '数量',
     amount        DECIMAL(10,2) NOT NULL DEFAULT 0.00   COMMENT '单价（含规格加价）',

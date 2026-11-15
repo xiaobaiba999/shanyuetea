@@ -114,7 +114,8 @@
     <!-- 【山月 v2.0】月售统计：聚合每款饮品的已完成订单销量
          - join 条件里带 o.status = 5：只统计"已完成"的有效单（待付款/取消的不算）；
          - IFNULL(SUM(od.number), 0)：没销量返回 0 而不是 NULL；
-         - GROUP BY od.drink_id 按饮品聚合；别名 drinkId/salesNum 与 DrinkSalesVO 字段对应。
+         - GROUP BY od.drink_id 按饮品聚合；别名 drinkId/salesNum 与 DrinkSalesVO 字段对应
+           （表列 drink_id，实体字段 drinkId，SQL 里 as drinkId 完成口径衔接）。
          教学提示：要限制最近 30 天，在 where 补 "and o.order_time &gt;= date_sub(now(), interval 30 day)" -->
     <select id="getMonthSales" resultType="com.shanyue.vo.DrinkSalesVO">
         select od.drink_id as drinkId, ifnull(sum(od.number), 0) as salesNum

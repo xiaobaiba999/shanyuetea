@@ -224,7 +224,7 @@ public class ReviewController {
         return null;
     }
 
-    private long longOf(Object v) {
+    private Long longOf(Object v) {
         return v == null ? 0L : Long.parseLong(String.valueOf(v).replace(".0", ""));
     }
 

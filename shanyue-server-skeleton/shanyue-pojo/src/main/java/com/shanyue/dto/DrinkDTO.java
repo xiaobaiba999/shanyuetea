@@ -1,6 +1,6 @@
 package com.shanyue.dto;
 
-import com.shanyue.entity.DishFlavor;
+import com.shanyue.entity.DrinkFlavor;
 import com.shanyue.dto.SpecGroupDTO;
 import lombok.Data;
 
@@ -17,7 +17,7 @@ import java.util.List;
  * flavors 字段保留是为了对照课程代码；山月业务请只使用 specGroups。
  */
 @Data
-public class DishDTO implements Serializable {
+public class DrinkDTO implements Serializable {
 
     private Long id;
 
@@ -40,7 +40,7 @@ public class DishDTO implements Serializable {
     private Integer status;
 
     /** 口味（课程同款字段保留，山月不使用） */
-    private List<DishFlavor> flavors = new ArrayList<>();
+    private List<DrinkFlavor> flavors = new ArrayList<>();
 
     /** 规格组（山月 v2.0）：杯型/温度/糖度...，每组下带 options 选项列表 */
     private List<SpecGroupDTO> specGroups = new ArrayList<>();

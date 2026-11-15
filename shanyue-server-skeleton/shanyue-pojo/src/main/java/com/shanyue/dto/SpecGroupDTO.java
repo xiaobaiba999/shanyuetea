@@ -3,6 +3,8 @@ package com.shanyue.dto;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 规格组参数模型（山月 v2.0）。

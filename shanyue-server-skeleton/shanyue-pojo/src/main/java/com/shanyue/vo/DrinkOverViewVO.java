@@ -9,12 +9,13 @@ import java.io.Serializable;
 
 /**
  * 饮品总览 VO（工作台"饮品管理"卡片：起售/停售数量）。
+ * 服务工作台 Drink 口径（/admin/workspace/overviewDrinkes）。
  */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class DishOverViewVO implements Serializable {
+public class DrinkOverViewVO implements Serializable {
 
     /** 已起售数量 */
     private Integer sold;

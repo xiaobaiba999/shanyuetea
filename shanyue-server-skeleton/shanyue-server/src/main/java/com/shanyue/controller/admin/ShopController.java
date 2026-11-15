@@ -36,7 +36,7 @@ import java.util.Map;
  * 【状态值语义】1 营业中 / 0 打烊。打烊后 C 端下单会被前端提示拦截
  * （MessageConstant.SHOP_CLOSE 预留给下单入口校验）。
  */
-@RestController@RestController("adminShopController")
+@RestController("adminShopController")
 @RequestMapping("/admin/shop")
 @Tag(name = "店铺管理")
 @Slf4j

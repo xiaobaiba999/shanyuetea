@@ -1,7 +1,7 @@
 -- =====================================================================
 -- 山月茶咖 · 功能升级包 v2 建表与种子脚本（v2_features.sql）
 -- 覆盖功能包：F1 轮播横幅 / F2 会员等级 / F4 券包 / F5 每日签到 / F6 评价墙
---（F7 AI 点单无表；F8 取餐推送走 WebSocket；F9 纯前端 —— 见 docs/v2-features.md）
+--（F7 AI 点单无表；F8 取餐推送走 WebSocket；F9 纯前端 —— 见交付包根 docs/v2-features.md）
 --
 -- 使用方法（README 流程之后追加执行）：
 --   1. 先执行 schema.sql、data.sql（基础 13 张表 + v1 种子）；
@@ -10,7 +10,7 @@
 --
 -- 说明：
 --   * 本文件对既有表零侵入：5 张新表 + user 表 ALTER 加两个字段，不改任何既有列；
---   * 每张表头标注对应功能包编号（F1/F2/F4/F5/F6），与 docs/v2-features.md 的
+--   * 每张表头标注对应功能包编号（F1/F2/F4/F5/F6），与交付包根 docs/v2-features.md 的
 --     总览表、Java 控制器（controller/user 下 *Controller.java 的 TODO）三方对齐；
 --   * 种子数据与前端 utils/mock-v2.js 一一对应（横幅 3 条、券 4 张、用户券 2 张、
 --     他人评价 10 条、签到 5 天），桩换成真实现后前端无感切换；
@@ -120,7 +120,7 @@ INSERT INTO user_coupon (id, user_id, coupon_id, status, receive_time, used_time
 --    reply / visible 两列是 B 端管理页的状态位（回复、隐藏/恢复）；隐藏后 C 端
 --    评价墙与统计都当它不存在（软删除留痕，可恢复）
 --    tags 存法采用方案 1（JSON 字符串，毕设推荐）；方案 2 拆 review_tag 关联表见
---    docs/v2-features.md 的 F6 章节（MyBatis collection 一对多映射练习）
+--    交付包根 docs/v2-features.md 的 F6 章节（MyBatis collection 一对多映射练习）
 -- ---------------------------------------------------------------------
 DROP TABLE IF EXISTS review;
 CREATE TABLE review (

@@ -10,14 +10,14 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * 饮品表实体（课程里叫"菜品" Dish，山月不改类名，仅菜单文案叫"饮品"）。
+ * 饮品表实体（对应 drink 表；课程里叫"菜品"，山月 v1.2 起全链统一为 Drink，更贴切茶饮业务）。
  * 规格信息不在本表：规格组见 SpecGroup / SpecOption（山月 v2.0）。
  */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Dish implements Serializable {
+public class Drink implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

@@ -22,7 +22,7 @@ public class ShoppingCartDTO implements Serializable {
     /** 套餐 id */
     private Long setmealId;
 
-    /** 口味（课程名 dishFlavor，v1.2 改名；山月不使用） */
+    /** 口味（山月不使用，规格走 specSelected） */
     private String drinkFlavor;
 
     /** 规格快照 JSON 数组字符串（山月 v2.0，空串/不传表示该商品无规格可选） */

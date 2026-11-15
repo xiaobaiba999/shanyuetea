@@ -479,11 +479,11 @@ public class OrderServiceImpl implements OrderService {
         if (page.getResult() != null && !page.getResult().isEmpty()) {
             for (Orders orders : page.getResult()) {
                 OrderVO orderVO = buildOrderVO(orders);
-                // 课程同款：拼"订单菜品"摘要字符串（"拿铁*1; 美式*2;"），管理端列表不展开明细也能看懂卖了什么
-                String orderDrinkes = orderVO.getOrderDetailList().stream()
+                // 课程同款：拼"订单饮品"摘要字符串（"拿铁*1; 美式*2;"），管理端列表不展开明细也能看懂卖了什么
+                String orderDrinks = orderVO.getOrderDetailList().stream()
                         .map(detail -> detail.getName() + "*" + detail.getNumber() + ";")
                         .collect(Collectors.joining(" "));
-                orderVO.setOrderDrinkes(orderDrinkes);
+                orderVO.setOrderDrinks(orderDrinks);
                 orderVOList.add(orderVO);
             }
         }

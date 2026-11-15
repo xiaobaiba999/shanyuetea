@@ -8,13 +8,14 @@ import lombok.NoArgsConstructor;
 import java.io.Serializable;
 
 /**
- * 套餐内饮品条目 VO（C 端点开套餐弹窗展示"包含哪些饮品"）。
+ * 套餐内饮品条目 VO（C 端点开套餐弹窗展示"包含哪些饮品"，Drink 口径）。
+ * 供 SetmealMapper.getDrinkItemById 联表查询映射。
  */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class DishItemVO implements Serializable {
+public class DrinkItemVO implements Serializable {
 
     /** 饮品名称 */
     private String name;

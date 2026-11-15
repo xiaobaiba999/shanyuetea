@@ -1824,7 +1824,7 @@ GET /admin/order/conditionSearch?page=1&pageSize=10&status=2&deliveryMode=2&begi
 
 参数格式：application/json
 
-OrderVO = Orders 全字段 + `orderDrinkes` + `orderDetailList`，字段总表如下（后续订单类接口复用，不再重复列表）：
+OrderVO = Orders 全字段 + `orderDrinks` + `orderDetailList`，字段总表如下（后续订单类接口复用，不再重复列表）：
 
 | 参数名 | 类型 | 是否必须 | 备注 |
 | --- | --- | --- | --- |
@@ -1860,7 +1860,7 @@ OrderVO = Orders 全字段 + `orderDrinkes` + `orderDetailList`，字段总表�
 | \|- \|- deliveryMode | number | 是 | ★ 下单模式：1 门店自取 / 2 外送（v2.0 新增） |
 | \|- \|- pickupNumber | string | 是 | ★ 取餐号（自取单，如 `A01`；外送单为 null，v2.0 新增） |
 | \|- \|- deliveryFee | number | 是 | ★ 外送费（元，外送固定 5，自取为 0 或 null，v2.0 新增） |
-| \|- \|- orderDrinkes | string | 是 | 订单菜品摘要字符串（`名称*数量` 用 `;` 连接） |
+| \|- \|- orderDrinks | string | 是 | 订单菜品摘要字符串（`名称*数量` 用 `;` 连接） |
 | \|- \|- orderDetailList | object[] | 是 | 订单明细列表（OrderDetail） |
 | \|- \|- \|- id | number | 是 | 明细 id |
 | \|- \|- \|- name | string | 是 | 商品名称（快照，含所选规格摘要） |
@@ -1910,7 +1910,7 @@ OrderVO = Orders 全字段 + `orderDrinkes` + `orderDetailList`，字段总表�
         "deliveryMode": 2,
         "pickupNumber": null,
         "deliveryFee": 5,
-        "orderDrinkes": "山月拿铁*1;午后双人轻食套餐*1",
+        "orderDrinks": "山月拿铁*1;午后双人轻食套餐*1",
         "orderDetailList": [
           {
             "id": 1,
@@ -2043,7 +2043,7 @@ OrderVO = Orders 全字段 + `orderDrinkes` + `orderDetailList`，字段总表�
     "deliveryMode": 1,
     "pickupNumber": "A01",
     "deliveryFee": 0,
-    "orderDrinkes": "山月拿铁（大杯/冰）*1",
+    "orderDrinks": "山月拿铁（大杯/冰）*1",
     "orderDetailList": [
       {
         "id": 3,
@@ -4108,7 +4108,7 @@ GET /user/order/historyOrders?page=1&pageSize=10&status=2
         "deliveryMode": 1,
         "pickupNumber": "A01",
         "deliveryFee": 0,
-        "orderDrinkes": "山月拿铁（大杯/冰）*1",
+        "orderDrinks": "山月拿铁（大杯/冰）*1",
         "orderDetailList": [
           {
             "id": 3,
@@ -4190,7 +4190,7 @@ GET /user/order/historyOrders?page=1&pageSize=10&status=2
     "deliveryMode": 2,
     "pickupNumber": null,
     "deliveryFee": 5,
-    "orderDrinkes": "桂花冰酿*1",
+    "orderDrinks": "桂花冰酿*1",
     "orderDetailList": [
       {
         "id": 4,

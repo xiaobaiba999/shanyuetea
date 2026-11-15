@@ -17,6 +17,7 @@ import com.shanyue.exception.PasswordErrorException;
 import com.shanyue.mapper.EmployeeMapper;
 import com.shanyue.result.PageResult;
 import com.shanyue.service.EmployeeService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -36,6 +37,7 @@ import java.util.List;
  * 三、修改密码 editPassword：练手作业留白（教程 9.5 节）——Controller 已把 empId 覆盖为当前登录人，
  *    三步业务（查库→旧密码 MD5 比对→新密码更新）由你补全，实现步骤提示见方法注释。
  */
+@Slf4j
 @Service
 public class EmployeeServiceImpl implements EmployeeService {
 

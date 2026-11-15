@@ -134,7 +134,7 @@ public class ReviewController {
      *       读出来 JSON.parseArray 回 List —— 一条表搞定，毕设性价比最高；
      *     方案 2：另建 review_tag 关联表（review_id, tag），ReviewVO 里
      *       private List<String> tags 用 <collection> 映射一次查出 —— 练 MyBatis
-     *       一对多嵌套映射（对照苍穹 DishVO 里 flavors 的 collection 写法），
+     *       一对多嵌套映射（苍穹饮品 VO 里 flavors 的 collection 写法，山月对应 DrinkVO.flavors），
      *       标签聚合统计也更方便（见 tags() 的 TODO）。
      *  5. 一单一评的双保险：业务校验（第 1 步的 ③）+ review 表 uk_order_id 唯一索引兜底
      *     （并发双击漏过校验时插库报 Duplicate entry，全局异常处理器统一接住）；

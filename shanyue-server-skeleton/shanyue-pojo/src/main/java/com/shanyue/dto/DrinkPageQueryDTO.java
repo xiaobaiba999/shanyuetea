@@ -8,7 +8,7 @@ import java.io.Serializable;
  * 饮品分页查询参数（管理端）。
  */
 @Data
-public class DishPageQueryDTO implements Serializable {
+public class DrinkPageQueryDTO implements Serializable {
 
     private int page;
 

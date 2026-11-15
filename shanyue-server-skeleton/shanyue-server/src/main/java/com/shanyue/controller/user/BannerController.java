@@ -53,7 +53,7 @@ public class BannerController {
      *  4. 建 BannerService/BannerServiceImpl，注入 BannerMapper，返回 List<Banner>；
      *  5. 本类注入 BannerService，方法体改成一行：
      *       return Result.success(bannerService.listEnabled());
-     *  6. 管理端想加横幅管理的话，照抄既有 controller/admin/DishController 的 CRUD 套路：
+     *  6. 管理端想加横幅管理的话，照抄既有 controller/admin/DrinkController 的 CRUD 套路：
      *     新增/修改/启用禁用/按条件分页（路径挂 /admin/banner/**，被 JwtTokenAdminInterceptor 拦截）。
      *
      * 前端契约（utils/mock-v2.js SEED_BANNERS）：

@@ -9,14 +9,15 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 
 /**
- * 套餐-饮品关联实体（多对多中间表）。
+ * 套餐-饮品关联实体（多对多中间表 setmeal_drink，v1.2 起 drink 口径）。
  * name/price 是冗余字段：查询套餐包含哪些饮品时免联表，代价是饮品改名/改价后需要同步更新。
+ * 字段与 setmeal_drink 表列一一对应（drink_id ↔ drinkId 驼峰自动映射）。
  */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class SetmealDish implements Serializable {
+public class SetmealDrink implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -26,7 +27,7 @@ public class SetmealDish implements Serializable {
     private Long setmealId;
 
     /** 饮品 id */
-    private Long dishId;
+    private Long drinkId;
 
     /** 饮品名称（冗余字段） */
     private String name;
