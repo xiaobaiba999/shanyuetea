@@ -1,5 +1,7 @@
 {
-  "usingComponents": {},
+  "usingComponents": {
+    "ai-ball": "/components/ai-ball/ai-ball"
+  },
   "navigationBarTitleText": "我的订单",
   "enablePullDownRefresh": true
 }

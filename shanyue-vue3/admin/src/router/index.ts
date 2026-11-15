@@ -70,12 +70,6 @@ const router = createRouter({
           meta: { title: '优惠券管理' },
         },
         {
-          path: 'review',
-          name: 'review',
-          component: () => import('@/views/review/ReviewPage.vue'),
-          meta: { title: '评价管理' },
-        },
-        {
           path: 'shop',
           name: 'shop',
           component: () => import('@/views/shop/ShopPage.vue'),

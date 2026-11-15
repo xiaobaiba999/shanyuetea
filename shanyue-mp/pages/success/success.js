@@ -81,7 +81,7 @@ Page({
   },
 
   onBackHome() {
-    wx.switchTab({ url: '/pages/menu/menu' });
+    wx.switchTab({ url: "/pages/home/home" });
   },
 
   onViewOrder() {

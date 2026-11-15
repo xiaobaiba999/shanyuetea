@@ -6,7 +6,7 @@
         <div class="logo-cn">山月</div>
         <div class="logo-en">SHANYUE TEA &amp; COFFEE</div>
         <div class="logo-slogan">山月入杯 · 茶咖相宜</div>
-        <div class="logo-seal" aria-hidden="true">山月</div>
+        <img class="logo-seal" :src="mascotUrl" alt="品牌吉祥物茶小月" aria-hidden="true" />
       </div>
 
       <el-menu class="side-menu" :default-active="activeMenu" router>
@@ -41,10 +41,6 @@
         <el-menu-item index="/coupon">
           <el-icon><Discount /></el-icon>
           <span>优惠券管理</span>
-        </el-menu-item>
-        <el-menu-item index="/review">
-          <el-icon><Star /></el-icon>
-          <span>评价管理</span>
         </el-menu-item>
         <el-menu-item index="/shop">
           <el-icon><Setting /></el-icon>
@@ -162,9 +158,10 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import 'element-plus/es/components/message/style/css'
 import 'element-plus/es/components/message-box/style/css'
-import { Bell, BellFilled, Odometer, User, Grid, CoffeeCup, ForkSpoon, Tickets, TrendCharts, Setting, Discount, Star, ArrowDown } from '@element-plus/icons-vue'
+import { Bell, BellFilled, Odometer, User, Grid, CoffeeCup, ForkSpoon, Tickets, TrendCharts, Setting, Discount, ArrowDown } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import { useShopStore } from '@/stores/shop'
+import mascotUrl from '@/assets/brand/chaxiaoyue-avatar.jpg'
 import { editPassword as editPasswordApi } from '@/api/employee'
 import { resetMockData } from '@/mock/db'
 import { USE_MOCK } from '@/utils/env'
@@ -324,7 +321,7 @@ async function onChangePassword() {
   margin-left: 2px;
 }
 
-/* 茶金印章：34px 圆形、微倾，衬线「山月」 */
+/* 茶小月小人印章：34px 金描边圆头像，微倾（替代原「山月」小字印章） */
 .logo-seal {
   position: absolute;
   top: 24px;
@@ -333,17 +330,11 @@ async function onChangePassword() {
   height: 34px;
   border: 1.5px solid var(--gold);
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-serif);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  text-indent: 1px;
-  color: var(--gold-soft);
+  object-fit: cover;
+  background: rgba(246, 243, 236, 0.92);
   transform: rotate(-4deg);
-  opacity: 0.92;
+  opacity: 0.96;
+  display: block;
 }
 
 .logo-en {

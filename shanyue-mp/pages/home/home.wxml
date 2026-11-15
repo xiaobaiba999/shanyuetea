@@ -1,0 +1,129 @@
+<!-- pages/home/home.wxml —— 首页（从点单页抽离的门户内容，参照一点点小程序首页版式）
+     结构：品牌头（logo 小人 + 店名 + 营业状态）→ 轮播横幅 → 功能宫格（签到/券包/会员/AI点单）
+     → 热销推荐（按月售 Top6 横滑卡）→ 门店信息卡 → 底部「去点单」大按钮
+     右下角为茶小月 AI 悬浮球（components/ai-ball，滑动隐藏、静置 2 秒再现）。 -->
+<view class="page safe-bottom">
+
+  <!-- 品牌头：墨绿渐变底 + 茶小月小人 + 店名 + 营业状态徽 -->
+  <view class="brand-head">
+    <view class="bh-left">
+      <image class="bh-logo" src="/images/brand/chaxiaoyue-avatar.jpg" mode="aspectFill" />
+      <view class="bh-texts">
+        <view class="bh-name font-serif">山月茶咖</view>
+        <view class="bh-slogan">山月入杯 · 茶咖相宜</view>
+      </view>
+    </view>
+    <view class="bh-state {{shopStatus === 1 ? 'open' : 'closed'}}">
+      {{shopStatus === 1 ? '营业中' : '已打烊'}}
+    </view>
+  </view>
+
+  <!-- 轮播横幅（theme 渐变卡；数据未到时骨架位，不白屏） -->
+  <swiper
+    wx:if="{{banners.length}}"
+    class="banner-swiper"
+    indicator-dots
+    indicator-color="rgba(255,255,255,.4)"
+    indicator-active-color="#C89B5A"
+    circular
+    autoplay
+    interval="4200"
+    duration="600"
+  >
+    <swiper-item wx:for="{{banners}}" wx:key="id">
+      <view
+        class="banner-card theme-{{item.theme}}"
+        hover-class="btn-hover"
+        bindtap="onBannerTap"
+        data-url="{{item.linkUrl}}"
+      >
+        <view class="banner-texts">
+          <view class="banner-title">{{item.title}}</view>
+          <view class="banner-sub">{{item.subtitle}}</view>
+        </view>
+        <view class="banner-seal">{{item.badge}}</view>
+      </view>
+    </swiper-item>
+  </swiper>
+  <view wx:else class="banner-skeleton sk"></view>
+
+  <!-- 功能宫格：签到 / 券包 / 会员 / AI点单（评价墙已按需求移除） -->
+  <view class="grid card">
+    <view class="grid-item" hover-class="btn-hover" bindtap="onGoCheckin">
+      <view class="grid-icon">签</view>
+      <text class="grid-text">签到</text>
+    </view>
+    <view class="grid-item" hover-class="btn-hover" bindtap="onGoCoupons">
+      <view class="grid-icon">券</view>
+      <text class="grid-text">券包</text>
+    </view>
+    <view class="grid-item" hover-class="btn-hover" bindtap="onGoLevel">
+      <view class="grid-icon">员</view>
+      <text class="grid-text">会员</text>
+    </view>
+    <view class="grid-item" hover-class="btn-hover" bindtap="onGoAi">
+      <image class="grid-avatar" src="/images/brand/chaxiaoyue-avatar.jpg" mode="aspectFill" />
+      <text class="grid-text">AI 点单</text>
+    </view>
+  </view>
+
+  <!-- 热销推荐：按月售 Top6 横滑卡（点击跳点单页） -->
+  <view class="sec">
+    <view class="sec-head">
+      <view class="sec-title font-serif">热销推荐</view>
+      <view class="sec-more" hover-class="btn-hover" bindtap="onGoMenu">全部饮品 ›</view>
+    </view>
+
+    <view wx:if="{{loading && !hotDrinks.length}}" class="hot-skeleton">
+      <view wx:for="{{[1, 2, 3]}}" wx:key="*this" class="sk hot-sk-card"></view>
+    </view>
+
+    <scroll-view wx:else scroll-x class="hot-scroll" show-scrollbar="{{false}}">
+      <view class="hot-row">
+        <view
+          wx:for="{{hotDrinks}}"
+          wx:key="id"
+          class="hot-card card"
+          hover-class="btn-hover"
+          bindtap="onGoMenu"
+        >
+          <view class="hot-thumb">
+            <text class="hot-char">{{item.name[0]}}</text>
+            <image
+              wx:if="{{item.imgUrl}}"
+              class="hot-img"
+              src="{{item.imgUrl}}"
+              mode="aspectFill"
+            />
+            <view class="hot-rank">TOP{{index + 1}}</view>
+          </view>
+          <view class="hot-name font-serif">{{item.name}}</view>
+          <view class="hot-meta">
+            <text class="hot-sales">月售 {{item.monthSales}}</text>
+          </view>
+          <view class="hot-price"><text class="yen">¥</text><text class="num">{{item.priceText}}</text></view>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 门店信息卡 -->
+  <view class="card shop-card">
+    <view class="shop-row">
+      <view class="shop-name font-serif">{{shop.name}}</view>
+      <view class="shop-hours">{{shop.businessHours}}</view>
+    </view>
+    <view class="shop-row sub">
+      <text class="k">地址</text>
+      <text class="v">{{shop.address}}</text>
+    </view>
+    <view class="shop-row sub" hover-class="btn-hover" bindtap="onCallShop">
+      <text class="k">电话</text>
+      <text class="v phone">{{shop.phone}}</text>
+    </view>
+    <view class="btn-primary go-order-btn" hover-class="btn-hover" bindtap="onGoMenu">去点单</view>
+  </view>
+
+  <!-- 茶小月 AI 悬浮球（滑动隐藏 · 静置 2 秒再现） -->
+  <ai-ball id="ai-ball" />
+</view>

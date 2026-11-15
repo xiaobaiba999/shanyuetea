@@ -26,6 +26,7 @@
  *      WXML 零函数调用；_receiving 防重复点击与后端 SETNX 互为双保险
  */
 const auth = require('../../utils/auth');
+const aiBall = require('../../utils/ai-ball');
 const { request } = require('../../utils/request');
 
 /** tab 定义（label + 过滤 key；过滤纯客户端做） */
@@ -185,5 +186,10 @@ Page({
   /** 去使用：跳点单页选饮品（真正用券在下单事务里按门槛校验抵扣） */
   onUse() {
     wx.switchTab({ url: '/pages/menu/menu' });
+  },
+
+  /* ---------- AI 悬浮球：滑动隐藏 · 静置 2 秒再现 ---------- */
+  onPageScroll() {
+    aiBall.onPageScroll(this);
   }
 });

@@ -85,35 +85,6 @@
       </div>
     </div>
 
-    <!-- 门店口碑（模块 17：评价统计联动） -->
-    <button class="card card-pad rep-card" aria-label="查看评价管理" @click="router.push('/review')">
-      <div class="card-title-bar rep-head">
-        <span class="card-title">门店口碑</span>
-        <span class="rep-go">去回复 / 管理 ›</span>
-      </div>
-      <div class="rep-list">
-        <div class="rep-item">
-          <span class="rep-num amber">{{ repStats ? repStats.avgScore.toFixed(1) : '-' }}</span>
-          <span class="rep-label">平均分</span>
-        </div>
-        <div class="rep-divider" />
-        <div class="rep-item">
-          <span class="rep-num green">{{ repStats ? repStats.goodRate + '%' : '-' }}</span>
-          <span class="rep-label">好评率</span>
-        </div>
-        <div class="rep-divider" />
-        <div class="rep-item">
-          <span class="rep-num">{{ repStats?.total ?? 0 }}</span>
-          <span class="rep-label">评价数</span>
-        </div>
-        <div class="rep-divider" />
-        <div class="rep-item">
-          <span class="rep-num" :class="{ danger: (repStats?.pendingReply ?? 0) > 0 }">{{ repStats?.pendingReply ?? 0 }}</span>
-          <span class="rep-label">待回复评价</span>
-        </div>
-      </div>
-    </button>
-
     <!-- 快捷操作 + 趋势图 -->
     <div class="bottom-grid">
       <div class="card card-pad quick-card">
@@ -172,10 +143,9 @@ import { getBusinessData, getOverviewOrders } from '@/api/workspace'
 import { getDrinkPage } from '@/api/drink'
 import { searchOrders } from '@/api/order'
 import { getCouponPage } from '@/api/coupon'
-import { getReviewStats } from '@/api/review'
 import { useShopStore } from '@/stores/shop'
 import { fmtMoney, ymd } from '@/utils/format'
-import type { CouponTemplate, OrderVO, ReviewStats, TurnoverReportVO } from '@/types'
+import type { CouponTemplate, OrderVO, TurnoverReportVO } from '@/types'
 
 const router = useRouter()
 const shopStore = useShopStore()
@@ -221,19 +191,11 @@ async function loadAll() {
     }
     renderChart(trend)
     await loadTodos()
-    void loadRepStats()
   } catch {
     /* 忽略：拦截器已提示 */
   } finally {
     loading.value = false
   }
-}
-
-/* ---------------- 门店口碑（评价统计，点击直达评价管理） ---------------- */
-const repStats = ref<ReviewStats | null>(null)
-
-async function loadRepStats() {
-  repStats.value = await getReviewStats().catch(() => null)
 }
 
 /* ---------------- 待办提醒 ---------------- */

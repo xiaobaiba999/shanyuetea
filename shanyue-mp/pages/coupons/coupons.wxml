@@ -73,4 +73,8 @@
     <!-- 已使用/过期：右上角 -12deg 陶红描边印章 -->
     <view wx:if="{{item.used}}" class="stamp font-serif">{{item.stampText}}</view>
   </view>
+
+
+  <!-- 茶小月 AI 悬浮球（滑动隐藏 · 静置 2 秒再现） -->
+  <ai-ball id="ai-ball" />
 </view>

@@ -13,9 +13,6 @@
  * │               （用券在下单事务里做：submit 带 userCouponId，见 mock.js 的 applyCoupon 挂钩）│
  * │ F5 每日签到   GET  /user/checkin/info               → CheckinVO                        │
  * │               POST /user/checkin/sign               → CheckinResultVO                  │
- * │ F6 评价墙     GET  /user/review/wall?page&pageSize&drinkId → PageResult{total,records} │
- * │               GET  /user/review/tags                → [{tag, count}]                   │
- * │               POST /user/review/submit              → {pointsGained, points}           │
  * │ F7 AI 点单    GET  /user/ai/suggests                → string[]（快捷提问 chips）         │
  * │               POST /user/ai/order                   → AiOrderVO{reply, recommend}      │
  * │ F8 取餐推送   不走 REST —— utils/pickup-ws.js（WebSocket，type=3 取餐进度）            │
@@ -24,8 +21,7 @@
  * 联调口径（写 Java 时照此实现，前端 config.js USE_MOCK 改 false 即无缝切换）：
  *  - 签到：连续签到 streak 从今天（已签）或昨天往前数连续日期；积分 +5/天（写 db.user.points）
  *  - 用券：下单接口事务内校验门槛 → 抵扣 → 置已使用（一人一单 + 防超卖是 Java 练习重点）
- *  - 评价：仅「已完成 status=5」订单可评，一单一评；评价奖励 +10 积分
- *  - 成长值：下单每 1 元 +2、签到 +5、评价 +10；等级阈值 0/200/600/1200/2000（Lv1~Lv5）
+ *  - 成长值：下单每 1 元 +2、签到 +5；等级阈值 0/200/600/1200/2000（Lv1~Lv5）
  *  - AI：POST /user/ai/order 请求体 { message, history, lastRecommendId }；
  *        history 是最近几轮对话 [{role:'user'|'assistant', content}]，真实后端拼进大模型上下文
  */
@@ -63,18 +59,6 @@ const SEED_COUPONS = [
   { id: 2, name: '周五秒杀·满20减10', type: 1, thresholdAmount: 20, discountAmount: 10, discountRate: 100, totalDays: 7, seckill: true, stock: 100, remain: 37 },
   { id: 3, name: '会员日·全场88折', type: 2, thresholdAmount: 0, discountAmount: 0, discountRate: 88, totalDays: 15, seckill: false, stock: 0, remain: 0 },
   { id: 4, name: '老友回归·满50减15', type: 1, thresholdAmount: 50, discountAmount: 15, discountRate: 100, totalDays: 30, seckill: false, stock: 0, remain: 0 }
-];
-
-/** 他人评价种子（评价墙初始氛围；本人评价由 submit 接口追加在最前） */
-const SEED_REVIEWS = [
-  { id: 101, userId: 21, nickName: '月下独酌', avatarUrl: '', orderId: null, drinkId: 101, drinkName: '生椰拿铁', rating: 5, content: '椰香很正，不齁甜，下午的续命全靠它。', tags: ['椰香浓', '出餐快'], images: [], createTime: -1, likeCount: 23 },
-  { id: 102, userId: 22, nickName: '山间客', avatarUrl: '', orderId: null, drinkId: 106, drinkName: '黑糖波波奶茶', rating: 5, content: '波波弹牙，黑糖挂壁看着就治愈，大杯满足。', tags: ['分量足', '会回购'], images: [], createTime: -2, likeCount: 18 },
-  { id: 103, userId: 23, nickName: '白鹭未眠', avatarUrl: '', orderId: null, drinkId: 102, drinkName: '桂花冰酿拿铁', rating: 4, content: '桂花香是真实桂花的那种香，就是杯子小了点。', tags: ['香气足'], images: [], createTime: -3, likeCount: 9 },
-  { id: 104, userId: 24, nickName: '南山南', avatarUrl: '', orderId: null, drinkId: 104, drinkName: '美式咖啡', rating: 5, content: '双份浓缩够劲，加班救星，性价比无敌。', tags: ['提神醒脑', '性价比'], images: [], createTime: -4, likeCount: 31 },
-  { id: 105, userId: 25, nickName: '青梅煮酒', avatarUrl: '', orderId: null, drinkId: 107, drinkName: '茉莉奶绿', rating: 4, content: '茶底清清爽爽，饭后喝刚好，回甘明显。', tags: ['回甘明显', '清爽解腻'], images: [], createTime: -6, likeCount: 12 },
-  { id: 106, userId: 26, nickName: '拾月', avatarUrl: '', orderId: null, drinkId: 103, drinkName: '焦糖玛奇朵', rating: 5, content: '层次做得很好，甜度选半糖刚刚好，颜值也在线。', tags: ['颜值高', '甜度刚好'], images: [], createTime: -8, likeCount: 15 },
-  { id: 107, userId: 27, nickName: '迟迟', avatarUrl: '', orderId: null, drinkId: 105, drinkName: '澳白', rating: 5, content: '奶泡绵密入口很顺，热饮出品稳定。', tags: ['口感顺滑'], images: [], createTime: -10, likeCount: 7 },
-  { id: 108, userId: 28, nickName: '雾岛', avatarUrl: '', orderId: null, drinkId: 101, drinkName: '生椰拿铁', rating: 4, content: '冰的更好喝，建议选去冰再少一档糖。', tags: ['椰香浓'], images: [], createTime: -12, likeCount: 5 }
 ];
 
 /** AI 点单快捷提问（chips） */
@@ -140,10 +124,6 @@ function ensureV2(db) {
     couponSeq: 100,
     // 签到记录（yyyy-MM-dd 数组；种子：昨天起连签 3 天 + 更早零散 2 天 → 签到后 streak=4）
     checkin: { signedDates: [dateStr(now - DAY), dateStr(now - 2 * DAY), dateStr(now - 3 * DAY), dateStr(now - 6 * DAY), dateStr(now - 9 * DAY)] },
-    // 评价墙 + 本人已评订单号（一单一评）
-    reviews: SEED_REVIEWS.map((r) => ({ ...r, createTime: dateTimeStr(now + r.createTime * DAY) })),
-    reviewedOrderIds: [],
-    reviewSeq: 200,
     // 预留：额外成长值（演示用，默认 0；growth 主体按规则实时计算）
     growthExtra: 0
   };
@@ -152,15 +132,14 @@ function ensureV2(db) {
 
 /* ============================== 业务计算 ============================== */
 
-/** 成长值 = 已支付订单金额×2 + 累计签到天数×5 + 本人评价数×10 + growthExtra */
+/** 成长值 = 已支付订单金额×2 + 累计签到天数×5 + growthExtra */
 function calcGrowth(db) {
   const v2 = ensureV2(db);
   const paidAmount = db.orders
     .filter((o) => Number(o.payStatus) === 1 && Number(o.status) !== 6)
     .reduce((sum, o) => sum + Number(o.amount || 0), 0);
   const checkinDays = v2.checkin.signedDates.length;
-  const myReviews = v2.reviews.filter((r) => r.userId === 1).length;
-  return Math.round(paidAmount * 2) + checkinDays * 5 + myReviews * 10 + Number(v2.growthExtra || 0);
+  return Math.round(paidAmount * 2) + checkinDays * 5 + Number(v2.growthExtra || 0);
 }
 
 /** 按 LEVELS 阈值算当前等级视图 */
@@ -187,8 +166,7 @@ function memberLevelView(db) {
     levels: LEVELS,
     growthRules: [
       { text: '下单消费 1 元 = 2 成长值', icon: 'order' },
-      { text: '每日签到 = 5 成长值', icon: 'checkin' },
-      { text: '完成订单评价 = 10 成长值', icon: 'review' }
+      { text: '每日签到 = 5 成长值', icon: 'checkin' }
     ]
   };
 }
@@ -468,61 +446,6 @@ function handle(m, url, data, q, h) {
       gained: 5,
       points: db.user.points
     });
-  }
-
-  /* ---------- F6 评价墙 ---------- */
-  if (url === '/user/review/wall' && m === 'GET') {
-    requireAuth(db);
-    const page = Math.max(1, Number(q.page || 1));
-    const pageSize = Math.max(1, Number(q.pageSize || 10));
-    let list = v2.reviews.slice().sort((a, b) => (b.createTime > a.createTime ? 1 : -1));
-    if (q.drinkId !== undefined && q.drinkId !== null && q.drinkId !== '') {
-      list = list.filter((r) => r.drinkId === Number(q.drinkId));
-    }
-    const total = list.length;
-    const records = list.slice((page - 1) * pageSize, page * pageSize);
-    return ok({ total, records });
-  }
-
-  if (url === '/user/review/tags' && m === 'GET') {
-    requireAuth(db);
-    const counter = {};
-    v2.reviews.forEach((r) => (r.tags || []).forEach((t) => { counter[t] = (counter[t] || 0) + 1; }));
-    const tags = Object.keys(counter)
-      .map((tag) => ({ tag, count: counter[tag] }))
-      .sort((a, b) => b.count - a.count);
-    return ok(tags);
-  }
-
-  if (url === '/user/review/submit' && m === 'POST') {
-    requireAuth(db);
-    const body = data || {};
-    const orderId = Number(body.orderId);
-    const order = db.orders.find((o) => o.id === orderId);
-    if (!order) throw bizError('订单不存在');
-    if (Number(order.status) !== 5) throw bizError('订单完成后才能评价');
-    if (v2.reviewedOrderIds.indexOf(orderId) > -1) throw bizError('该订单已评价过啦，一单一评');
-    const first = (order.orderDetailList || [])[0] || {};
-    const rating = Math.min(5, Math.max(1, Number(body.rating || 5)));
-    v2.reviews.unshift({
-      id: v2.reviewSeq++,
-      userId: 1,
-      nickName: db.user.nickName || '山月茶咖用户',
-      avatarUrl: db.user.avatarUrl || '',
-      orderId,
-      drinkId: first.drinkId || null,
-      drinkName: first.name || '',
-      rating,
-      content: String(body.content || '').slice(0, 120),
-      tags: (body.tags || []).slice(0, 6),
-      images: [],
-      createTime: h.fmtDateTime(Date.now()),
-      likeCount: 0
-    });
-    v2.reviewedOrderIds.push(orderId);
-    db.user.points += 10; // 评价奖励
-    saveDb();
-    return ok({ pointsGained: 10, points: db.user.points });
   }
 
   /* ---------- F7 AI 点单 ---------- */

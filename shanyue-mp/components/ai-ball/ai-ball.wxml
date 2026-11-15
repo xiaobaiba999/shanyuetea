@@ -1,0 +1,7 @@
+<!-- components/ai-ball/ai-ball.wxml —— 茶小月 AI 悬浮球
+     显隐由宿主页驱动：滑动时 hide()，静置 2 秒后 show()（见 utils/ai-ball.js）。
+     点击整球进入 AI 点单聊天页。 -->
+<view class="ai-ball {{hidden ? 'hide' : ''}}" catchtap="onTap" aria-role="button" aria-label="茶小月 AI 点单助手">
+  <image class="ai-face" src="/images/brand/chaxiaoyue-avatar.jpg" mode="aspectFill" />
+  <view class="ai-tag">AI</view>
+</view>

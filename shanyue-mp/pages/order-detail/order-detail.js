@@ -6,8 +6,7 @@
  *   状态步骤条（6 状态映射视觉进度，已取消单独横幅）；
  *   自取 → 取餐号大卡（等宽大字）；外送 → 收货人/电话/地址卡；
  *   品项明细（specSelected JSON 快照解析展示）+ 金额明细（【v2/F4】含优惠券抵扣行）+
- *   订单信息（单号可复制）；底部操作按钮按状态出没：去支付 / 催单 / 取消 / 再来一单 /
- *   【v2/F6】已完成可「评价得积分」；
+ *   订单信息（单号可复制）；底部操作按钮按状态出没：去支付 / 催单 / 取消 / 再来一单；
  *   【v2/F8】自取单「制作中」时监听取餐进度推送（WebSocket type=3），
  *   推送到达 → 震动 + toast + 自动刷新状态（mock 模式 12 秒后模拟推送）。
  *
@@ -33,6 +32,7 @@ const F = require('../../utils/format');
 const auth = require('../../utils/auth');
 const { request } = require('../../utils/request');
 const pickupWs = require('../../utils/pickup-ws');
+const aiBall = require('../../utils/ai-ball');
 
 Page({
   data: {
@@ -67,8 +67,6 @@ Page({
     canRemind: false,
     canCancel: false,
     canRepeat: false,
-    /* 【v2/F6】已完成可评价 */
-    canReview: false,
     /* 【v2/F4】优惠券抵扣回显 */
     couponName: '',
     couponDiscountText: '',
@@ -171,8 +169,6 @@ Page({
       canRemind: status === 2 || status === 3,
       canCancel: status === 1 || status === 2,
       canRepeat: status === 5 || status === 6,
-      // 【v2/F6】已完成订单可评价（是否已评由后端一单一评校验，重复提交会 toast 提示）
-      canReview: status === 5,
       // 【v2/F4】优惠券抵扣回显（下单时用了券的订单）
       couponName: o.couponName || '',
       couponDiscountText: o.couponDiscount ? F.fmtMoney(o.couponDiscount) : ''
@@ -285,8 +281,8 @@ Page({
       });
   },
 
-  /** 【v2/F6】去评价：已完成订单 → 写评价页（一单一评由后端校验） */
-  onGoReview() {
-    wx.navigateTo({ url: '/pages/review-write/review-write?orderId=' + this.data.id });
+  /* ---------- AI 悬浮球：滑动隐藏 · 静置 2 秒再现 ---------- */
+  onPageScroll() {
+    aiBall.onPageScroll(this);
   }
 });

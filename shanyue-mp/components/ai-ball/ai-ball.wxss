@@ -1,0 +1,49 @@
+/* components/ai-ball/ai-ball.wxss —— AI 悬浮球（右侧、Tab 栏/购物车条上方） */
+.ai-ball {
+  position: fixed;
+  right: 24rpx;
+  bottom: 220rpx; /* tab 页在原生 Tab 栏上方；点单页在购物车条上方 */
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 50%;
+  z-index: 50;
+  box-sizing: border-box;
+  transition: opacity .32s ease, transform .32s ease;
+}
+
+/* 球体本体：茶金描边 + 呼吸投影 */
+.ai-face {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 50%;
+  border: 3rpx solid var(--gold);
+  box-sizing: border-box;
+  box-shadow: 0 6rpx 18rpx rgba(43, 38, 32, .3), 0 2rpx 6rpx rgba(200, 155, 90, .35);
+  background: var(--paper);
+}
+
+/* 「AI」小徽：右上角墨绿圆点标 */
+.ai-tag {
+  position: absolute;
+  top: -6rpx;
+  right: -6rpx;
+  width: 36rpx;
+  height: 36rpx;
+  border-radius: 50%;
+  background: linear-gradient(160deg, #3A6140, var(--pine) 60%, var(--pine-deep));
+  color: #FFFFFF;
+  font-size: 20rpx;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2rpx solid rgba(246, 243, 236, .9);
+  box-sizing: border-box;
+}
+
+/* 滚动中的隐藏态：下沉 + 淡出 + 不可点 */
+.ai-ball.hide {
+  opacity: 0;
+  transform: translateY(48rpx) scale(.72);
+  pointer-events: none;
+}

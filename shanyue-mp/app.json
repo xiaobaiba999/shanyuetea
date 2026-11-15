@@ -1,5 +1,6 @@
 {
   "pages": [
+    "pages/home/home",
     "pages/login/login",
     "pages/menu/menu",
     "pages/submit/submit",
@@ -12,9 +13,7 @@
     "pages/ai-order/ai-order",
     "pages/checkin/checkin",
     "pages/coupons/coupons",
-    "pages/level/level",
-    "pages/reviews/reviews",
-    "pages/review-write/review-write"
+    "pages/level/level"
   ],
   "window": {
     "navigationBarBackgroundColor": "#2F5233",
@@ -29,6 +28,12 @@
     "backgroundColor": "#FFFFFF",
     "borderStyle": "black",
     "list": [
+      {
+        "pagePath": "pages/home/home",
+        "text": "首页",
+        "iconPath": "images/tab-home.png",
+        "selectedIconPath": "images/tab-home-active.png"
+      },
       {
         "pagePath": "pages/menu/menu",
         "text": "点单",

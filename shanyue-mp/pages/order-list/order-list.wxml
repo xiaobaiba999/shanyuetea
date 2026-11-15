@@ -68,4 +68,8 @@
     <view wx:if="{{records.length && loading}}" class="load-more">加载中…</view>
     <view wx:if="{{records.length && !hasMore && !loading}}" class="load-more">— 没有更多了 —</view>
   </view>
+
+
+  <!-- 茶小月 AI 悬浮球（滑动隐藏 · 静置 2 秒再现） -->
+  <ai-ball id="ai-ball" />
 </view>

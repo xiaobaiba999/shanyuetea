@@ -13,7 +13,7 @@
 
 ## 快速开始
 
-1. **后端**：按 `shanyue-server-skeleton/README.md` 操作 —— JDK 17 + MySQL 8 + Redis，先执行 `sql/schema.sql` 与 `sql/data.sql` 建库（v2 功能联调前再执行 `sql/v2_features.sql`：横幅/券/评价/签到五张新表与种子），以 Maven 聚合工程方式启动，服务端口 `8080`。
+1. **后端**：按 `shanyue-server-skeleton/README.md` 操作 —— JDK 17 + MySQL 8 + Redis，执行 `sql/schema.sql` 与 `sql/data.sql` 建库，以 Maven 聚合工程方式启动，服务端口 `8080`。（v2 新增功能的后端代码已按需求移除，练手实现见 `shanyue-server-skeleton/docs/新增功能教学文档.md` 自实现教程，建表 DDL 就在各功能节里；评价墙功能已整体移除。）
 2. **管理端（免环境直测，推荐）**：无需 Node/nginx 环境，双击 `shanyue-admin-nginx/start.bat`，浏览器打开 `http://localhost` 即可测试（详见 `shanyue-admin-nginx/README.md`；Linux/WSL 用 `start.sh`）。
 3. **管理端前端（源码开发模式）**：`cd shanyue-vue3/admin && npm install && npm run dev`
 4. **H5 顾客端**：`cd shanyue-vue3/h5 && npm install && npm run dev`

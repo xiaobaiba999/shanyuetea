@@ -99,12 +99,15 @@
     </view>
   </block>
 
-  <!-- 底部操作条（按状态出没；【v2/F6】已完成可评价） -->
-  <view wx:if="{{order && (canPay || canRemind || canCancel || canRepeat || canReview)}}" class="action-bar safe-bottom">
+  <!-- 底部操作条（按状态出没） -->
+  <view wx:if="{{order && (canPay || canRemind || canCancel || canRepeat)}}" class="action-bar safe-bottom">
     <view wx:if="{{canCancel}}" class="act-btn ghost" bindtap="onCancel">取消订单</view>
-    <view wx:if="{{canReview}}" class="act-btn ghost" bindtap="onGoReview">评价得积分</view>
     <view wx:if="{{canRemind}}" class="act-btn primary" bindtap="onRemind">催单</view>
     <view wx:if="{{canPay}}" class="act-btn pay" bindtap="onPay">去支付</view>
     <view wx:if="{{canRepeat}}" class="act-btn primary" bindtap="onRepeat">再来一单</view>
   </view>
+
+
+  <!-- 茶小月 AI 悬浮球（滑动隐藏 · 静置 2 秒再现） -->
+  <ai-ball id="ai-ball" />
 </view>

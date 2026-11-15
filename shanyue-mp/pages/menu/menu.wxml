@@ -1,63 +1,10 @@
-<!-- pages/menu/menu.wxml —— 点单主页：轮播横幅 + 功能入口 + 左分类右商品 + 规格弹层 + 购物车 -->
+<!-- pages/menu/menu.wxml —— 点单页（门户内容已抽离至首页 pages/home）：左分类右商品 + 规格弹层 + 购物车 + 茶小月 AI 悬浮球 -->
 <view class="page">
   <!-- 顶部：饮品 / 套餐 切换 -->
   <view class="type-bar">
     <view class="type-item {{currentType === 1 ? 'on' : ''}}" bindtap="onSwitchType" data-type="1">饮品</view>
     <view class="type-item {{currentType === 2 ? 'on' : ''}}" bindtap="onSwitchType" data-type="2">套餐</view>
     <view class="shop-state {{shopStatus === 1 ? 'open' : 'closed'}}">{{shopStatus === 1 ? '营业中' : '已打烊'}}</view>
-  </view>
-
-  <!-- 【v2/F1】轮播横幅：theme 渐变卡（数据未到时骨架位，不白屏） -->
-  <swiper
-    wx:if="{{banners.length}}"
-    class="banner-swiper"
-    indicator-dots
-    indicator-color="rgba(255,255,255,.4)"
-    indicator-active-color="#C89B5A"
-    circular
-    autoplay
-    interval="4200"
-    duration="600"
-  >
-    <swiper-item wx:for="{{banners}}" wx:key="id">
-      <view
-        class="banner-card theme-{{item.theme}}"
-        hover-class="btn-hover"
-        bindtap="onBannerTap"
-        data-url="{{item.linkUrl}}"
-      >
-        <view class="banner-texts">
-          <view class="banner-title">{{item.title}}</view>
-          <view class="banner-sub">{{item.subtitle}}</view>
-        </view>
-        <view class="banner-seal">{{item.badge}}</view>
-      </view>
-    </swiper-item>
-  </swiper>
-  <view wx:else class="banner-skeleton sk"></view>
-
-  <!-- 【v2】功能入口行：AI点单 / 签到 / 券包 / 会员 / 评价墙 -->
-  <view class="entry-row">
-    <view class="entry-item" hover-class="btn-hover" bindtap="onGoAi">
-      <image class="entry-avatar" src="/images/brand/chaxiaoyue-avatar.jpg" mode="aspectFill" />
-      <text class="entry-text">AI 点单</text>
-    </view>
-    <view class="entry-item" hover-class="btn-hover" bindtap="onGoCheckin">
-      <view class="entry-icon">签</view>
-      <text class="entry-text">签到</text>
-    </view>
-    <view class="entry-item" hover-class="btn-hover" bindtap="onGoCoupons">
-      <view class="entry-icon">券</view>
-      <text class="entry-text">券包</text>
-    </view>
-    <view class="entry-item" hover-class="btn-hover" bindtap="onGoLevel">
-      <view class="entry-icon">员</view>
-      <text class="entry-text">会员</text>
-    </view>
-    <view class="entry-item" hover-class="btn-hover" bindtap="onGoReviews">
-      <view class="entry-icon">评</view>
-      <text class="entry-text">评价墙</text>
-    </view>
   </view>
 
   <!-- 主体：左分类右商品 -->
@@ -75,7 +22,7 @@
       </view>
     </scroll-view>
 
-    <scroll-view class="goods-panel" scroll-y>
+    <scroll-view class="goods-panel" scroll-y bindscroll="onGoodsScroll">
       <!-- 【v2/F9】骨架屏：首屏分类+商品加载期间先出骨架，不白屏 -->
       <block wx:if="{{loading && !goods.length}}">
         <view wx:for="{{[1, 2, 3]}}" wx:key="*this" class="sk-card">
@@ -275,4 +222,7 @@
       </view>
     </view>
   </view>
+
+  <!-- 茶小月 AI 悬浮球（滑动隐藏 · 静置 2 秒再现；点单页由内部 scroll-view 驱动） -->
+  <ai-ball id="ai-ball" />
 </view>

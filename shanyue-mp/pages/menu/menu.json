@@ -1,4 +1,6 @@
 {
-  "usingComponents": {},
-  "navigationBarTitleText": "山月茶咖"
+  "usingComponents": {
+    "ai-ball": "/components/ai-ball/ai-ball"
+  },
+  "navigationBarTitleText": "点单"
 }

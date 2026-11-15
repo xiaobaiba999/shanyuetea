@@ -20,12 +20,13 @@
  *   3. 退出登录从 tab 页回登录页用 reLaunch —— 与 request.js 的 401 出口口径一致，
  *      redirectTo 从 tab 页跳非 tab 页会打乱返回栈
  *   4. 门店信息取 app.globalData.shop（与 submit 页「门店自取卡」同一份数据源，避免两处硬编码不一致）
- *   5. 【v2/F2】成长值是后端聚合口径（下单×2/签到+5/评价+10），本页只拉视图不自己算
+ *   5. 【v2/F2】成长值是后端聚合口径（下单×2/签到+5），本页只拉视图不自己算
  */
 const config = require('../../utils/config');
 const auth = require('../../utils/auth');
 const { request } = require('../../utils/request');
 const { resetDb } = require('../../utils/mock');
+const aiBall = require('../../utils/ai-ball');
 
 /** 积分 storage 缓存 key（仅本页使用） */
 const POINTS_KEY = 'shanyue_points';
@@ -117,10 +118,6 @@ Page({
     wx.navigateTo({ url: '/pages/coupons/coupons' });
   },
 
-  onGoReviews() {
-    wx.navigateTo({ url: '/pages/reviews/reviews' });
-  },
-
   onGoAddress() {
     wx.navigateTo({ url: '/pages/address-list/address-list' });
   },
@@ -175,5 +172,10 @@ Page({
         wx.reLaunch({ url: '/pages/login/login' });
       }
     });
+  },
+
+  /* ---------- AI 悬浮球：滑动隐藏 · 静置 2 秒再现 ---------- */
+  onPageScroll() {
+    aiBall.onPageScroll(this);
   }
 });

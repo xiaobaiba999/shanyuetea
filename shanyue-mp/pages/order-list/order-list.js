@@ -24,6 +24,7 @@
 const F = require('../../utils/format');
 const auth = require('../../utils/auth');
 const { request } = require('../../utils/request');
+const aiBall = require('../../utils/ai-ball');
 
 const PAGE_SIZE = 10;
 
@@ -190,5 +191,10 @@ Page({
 
   onPullDownRefresh() {
     this.reload().finally(() => wx.stopPullDownRefresh());
+  },
+
+  /* ---------- AI 悬浮球：滑动隐藏 · 静置 2 秒再现 ---------- */
+  onPageScroll() {
+    aiBall.onPageScroll(this);
   }
 });

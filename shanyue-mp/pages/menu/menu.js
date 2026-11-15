@@ -1,17 +1,16 @@
 /**
- * pages/menu/menu.js —— 点单主页（核心页面）
+ * pages/menu/menu.js —— 点单页（核心页面；门户内容已抽离至首页 pages/home）
  *
  * 本页职责：
  *   左分类右商品浏览；顶部「饮品/套餐」切换（分类 type=1/2）；
  *   饮品点击弹规格底部弹层（动态渲染 specGroups、实时算价 price+ΣpriceDelta），
  *   无规格直接加购；套餐点击弹包含明细弹层后加购(setmealId)；
- *   底部购物车 bar（角标/合计/去结算）；未登录跳登录页；打烊显示遮罩。
- *   【v2】顶部轮播横幅（F1）+ 五个功能入口（AI点单/签到/券包/会员/评价墙）+
- *   商品区骨架屏（F9 极简启动：数据未到先出骨架，不白屏）。
+ *   底部购物车 bar（角标/合计/去结算）；未登录跳登录页；打烊显示遮罩；
+ *   商品区骨架屏（F9 极简启动：数据未到先出骨架，不白屏）；
+ *   茶小月 AI 悬浮球（onGoodsScroll 驱动滑动隐藏 / 静置 2 秒再现）。
  *
  * 涉及接口：
  *   GET /user/shop/status                       → data: 1 营业 / 0 打烊
- *   GET /user/banner/list                       → BannerVO[]（v2/F1：theme 渐变卡，linkUrl 跳转）
  *   GET /user/category/list?type=1|2            → 分类列表
  *   GET /user/drink/list?categoryId=             → DrinkVO[]（含 monthSales / specGroups 山月补全）
  *   GET /user/setmeal/list?categoryId=          → 套餐列表
@@ -25,12 +24,12 @@
  *   2. 金额一律用 utils/format.js 的 fenRound（转分取整）计算，避免浮点误差
  *   3. specGroups 每组单选，选中项的 priceDelta 累加到基础价
  *   4. specSelected 是 JSON 字符串（同苍穹 drinkFlavor 模式），传给购物车作为「同一杯」的判定
- *   5. 横幅跳转 goPage：tab 页必须 switchTab（navigateTo 跳 tab 页会报错），当前页则忽略
  */
 const config = require('../../utils/config');
 const F = require('../../utils/format');
 const auth = require('../../utils/auth');
 const { request } = require('../../utils/request');
+const aiBall = require('../../utils/ai-ball');
 
 Page({
   data: {
@@ -40,8 +39,6 @@ Page({
     currentCatId: null,
     goods: [],
     loading: false,
-    // 【v2/F1】轮播横幅（theme 渐变卡 + badge 印章字）
-    banners: [],
     // 购物车
     cart: [],
     cartCount: 0,
@@ -66,7 +63,6 @@ Page({
         return;
       }
       this.loadShopStatus();
-      this.loadBanners();
       this.bootstrap();
       this.refreshCart();
     });
@@ -80,39 +76,6 @@ Page({
       .then((status) => this.setData({ shopStatus: Number(status) }))
       .catch(() => { /* 店铺状态拉取失败不阻塞点单 */ });
   },
-
-  /** 【v2/F1】轮播横幅：theme → 渐变底色 + badge 印章字（新/签/券） */
-  loadBanners() {
-    request({ url: '/user/banner/list' })
-      .then((list) => {
-        const badgeMap = { pine: '新', gold: '签', terracotta: '券' };
-        const banners = (list || []).map((b) => ({ ...b, badge: badgeMap[b.theme] || '山' }));
-        this.setData({ banners });
-      })
-      .catch(() => { /* 横幅拉取失败不阻塞点单，骨架位留白 */ });
-  },
-
-  /** 【v2/F1】横幅跳转：tab 页 switchTab，非 tab 页 navigateTo，当前页忽略 */
-  onBannerTap(e) {
-    this.goPage(e.currentTarget.dataset.url);
-  },
-
-  goPage(url) {
-    if (!url || url === '/pages/menu/menu') return; // 当前页：新品横幅点击原地无动作
-    const tabPages = ['/pages/menu/menu', '/pages/order-list/order-list', '/pages/me/me'];
-    if (tabPages.indexOf(url) > -1) {
-      wx.switchTab({ url });
-    } else {
-      wx.navigateTo({ url });
-    }
-  },
-
-  /* ---------- 【v2】功能入口 ---------- */
-  onGoAi() { wx.navigateTo({ url: '/pages/ai-order/ai-order' }); },
-  onGoCheckin() { wx.navigateTo({ url: '/pages/checkin/checkin' }); },
-  onGoCoupons() { wx.navigateTo({ url: '/pages/coupons/coupons' }); },
-  onGoLevel() { wx.navigateTo({ url: '/pages/level/level' }); },
-  onGoReviews() { wx.navigateTo({ url: '/pages/reviews/reviews' }); },
 
   bootstrap() {
     this.setData({ loading: true });
@@ -365,5 +328,10 @@ Page({
       return;
     }
     wx.navigateTo({ url: '/pages/submit/submit' });
+  },
+
+  /* ---------- AI 悬浮球：商品区滚动驱动（滑动隐藏 · 静置 2 秒再现） ---------- */
+  onGoodsScroll() {
+    aiBall.onPageScroll(this);
   }
 });

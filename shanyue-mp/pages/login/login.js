@@ -11,7 +11,7 @@
  * 新手要点：
  *   1. wx.login 获取的 code 是临时授权码（5 分钟有效），由后端去微信服务器换 openid
  *   2. token 存在本地 storage（utils/auth.js），之后每个请求自动带上 token 请求头
- *   3. 登录成功 switchTab 回菜单页（menu 是 tabBar 页，只能 switchTab 跳转）
+ *   3. 登录成功 switchTab 回首页（home 是 tabBar 页，只能 switchTab 跳转）
  */
 const { loginFlow } = require('../../utils/auth');
 const app = getApp();
@@ -27,7 +27,7 @@ Page({
     // 已登录用户直接进入菜单（避免重复登录）
     const { isLoggedIn } = require('../../utils/auth');
     if (isLoggedIn()) {
-      wx.switchTab({ url: '/pages/menu/menu' });
+      wx.switchTab({ url: "/pages/home/home" });
     }
   },
 
@@ -43,7 +43,7 @@ Page({
       }
       wx.showToast({ title: '登录成功', icon: 'success' });
       setTimeout(() => {
-        wx.switchTab({ url: '/pages/menu/menu' });
+        wx.switchTab({ url: "/pages/home/home" });
       }, 400);
     });
   }
