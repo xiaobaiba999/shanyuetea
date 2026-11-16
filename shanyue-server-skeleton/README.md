@@ -157,18 +157,25 @@ curl -X POST http://localhost:8080/user/user/login \
    - Project SDK 没选 **JDK 17** → `File → Project Structure → Project` 装/选 17（JDK 8/11 导入必失败）；
    - 依赖下载超时/飘红 → 配阿里云镜像（见第二节第 4 点）。
 
-0.5. **四个模块都导入成功了，但 application.yml 只是普通粉色 Y 图标、启动类没有绿色运行箭头：IDE 版本/插件差异（不是导入失败）**
+0.5. **四个模块都导入成功了，但 application.yml 只是普通粉色 Y 图标、启动类没有绿色运行箭头：IDE 功能集差异（不是导入失败）**
    先自检导入确实成功：左侧四模块在、`src/main/java` 和 `resources` 是蓝色源码根、Java 文件是咖啡杯图标、
-   打开 `ShanyueApplication.java` 里的代码不报红——这些都在就说明 Maven 导入没问题，缺的只是 **Spring Boot 集成**：
-   - `Help → About` 看版本：**Community Edition（社区版）不带 Spring/Spring Boot 插件**——yml 永远是普通 YAML 图标（没有绿叶）、
-     启动类没有 Spring Boot 专属运行箭头，这是版本功能差异。社区版照样能把项目跑起来：
+   打开 `ShanyueApplication.java` 里的代码不报红——这些都在就说明 Maven 导入没问题，缺的只是 **Spring Boot 集成插件没有加载**。
+   **判别不要看 `Help → About` 的版本/许可文字，直接查插件实际状态**：`Settings → Plugins` → Installed 标签 → 搜 "Spring Boot"：
+   - **能搜到 Spring Boot 插件但没勾选** → 勾选启用并重启即可；另查 `Settings → Editor → General → Gutter Icons`
+     是否被关（关了连 main 方法旁的绿色箭头都不显示）；`Settings → Editor → File Types → YAML` 确认注册了 `*.yml`
+     （若被误加进 Text 列表，yml 就永远是普通文本图标）；还不行 `File → Invalidate Caches… → Invalidate and Restart` 重建索引后重新 Reload Maven。
+   - **搜不到 Spring Boot 插件 = IDE 运行在"免费功能集"**（≈原社区版水平，yml 永远普通 YAML 图标、启动类没有
+     Spring Boot 专属运行箭头）。两种常见来源：① 老版本 Community 社区版；② **IDEA 2025.3 起「统一分发」**——
+     社区版/旗舰版合并为一个安装包，Spring Boot 支持属于**订阅解锁层**，许可层未解锁时 IDE 静默降级为免费功能集；
+     此时 About 里 "Licensed to xxx / Subscription active until 2099" 之类字样**不代表**插件已加载，以 Plugins 列表为准。
+     （"升级 IDE 前图标好好的、升到 2025.3.x 突然没了"就是这个机制，与项目代码、Maven 导入无关。）
+     免费功能集照样能把项目跑起来：
      ① Maven 面板 → `shanyue-server → Plugins → spring-boot → spring-boot:run`（双击执行）；
      ② 或在本目录命令行 `mvn spring-boot:run`。
-     想要完整体验（yml 自动补全、启动类一键绿箭头）请用 IDEA Ultimate（官网下载，学生可申请免费授权，或 30 天试用）。
-   - About 显示的是 Ultimate：`Settings → Plugins` 搜 "Spring Boot" / "Spring" / "YAML" 确认没被禁用（勾选启用后重启）；
-     检查 `Settings → Editor → General → Gutter Icons` 是否被关（关了连 main 方法旁的绿色箭头都不显示）；
-     还不行就 `File → Invalidate Caches… → Invalidate and Restart` 重建索引后重新 Reload Maven。
-   - 顺带确认 `Settings → Editor → File Types → YAML` 注册了 `*.yml`（若被误加进 Text 文件列表，yml 就永远是普通文本图标）。
+     想要 yml 绿叶 + 启动类一键绿箭头，二选一：
+     ① JetBrains Marketplace 免费装开源插件 **Spring Explyt**（Apache-2.0，给社区版/免费功能集补齐
+     Spring Boot 运行配置与配置文件支持，`Settings → Plugins → Marketplace` 搜 "Spring Explyt" 安装重启）；
+     ② 换用订阅已解锁的 IDEA（学生可申请免费授权，或 30 天试用），或退回之前图标显示正常的旧版本并关闭自动更新。
 
 1. **启动报 `BeanNotFoundError` / `Field xxxMapper required a bean`：Mapper 没被扫描到**
    Mapper 接口必须放 `com.shanyue.mapper` 包（启动类默认扫描 `com.shanyue` 及子包），接口上加 `@Mapper` 注解；
