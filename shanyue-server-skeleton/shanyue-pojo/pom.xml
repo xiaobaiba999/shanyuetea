@@ -17,11 +17,7 @@
             <artifactId>lombok</artifactId>
         </dependency>
 
-        <!--
-            @JsonFormat 等注解来自 jackson-annotations（版本由 Spring Boot 父工程管理）。
-            注意：Jackson 3（tools.jackson.*）只换了 databind/core 的包名，
-            annotations 仍然保持 com.fasterxml.jackson.annotation 包 —— DTO 上的 @JsonFormat 一行不用改。
-        -->
+        <!-- @JsonFormat 等注解来自 jackson-annotations（版本由 Spring Boot 父工程管理） -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
@@ -29,11 +25,11 @@
 
         <!--
             接口文档注解（@Schema / @Tag / @Operation 属于 io.swagger.v3.oas.annotations），
-            随 springdoc 提供；Boot 4 配套 springdoc 3.x 的注解包名与 1.x 完全一致，升级零成本。
+            随 springdoc 提供；与你工程里 springdoc 3.x 的注解包名完全一致，升级零成本。
         -->
         <dependency>
             <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <artifactId>springdoc-openapi-ui</artifactId>
         </dependency>
     </dependencies>
 </project>

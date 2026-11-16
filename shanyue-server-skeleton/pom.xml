@@ -14,13 +14,13 @@
            - 继承了大量常用插件配置（如资源过滤、编译插件）
         3. <dependencyManagement> 只"声明版本"不"真正引入依赖"：
            子模块里写 <dependency> 时不写 <version>，版本统一由这里决定 —— 多模块工程版本一致性的关键。
-        4. 版本统一口径（v2.1）：Spring Boot 4.0.9 + JDK 17，整条依赖线全部换成 Boot 4 生态，
-           不再有 Boot 2.7 与 Boot 4 两套口径并存的问题。
+        4. 与你自己的工程对照：结构完全同构（common / pojo / server 三模块），
+           区别只在 groupId / artifactId 改成了 shanyue，依赖版本对齐课程教学版（Spring Boot 2.7.6）。
     -->
     <parent>
         <artifactId>spring-boot-starter-parent</artifactId>
         <groupId>org.springframework.boot</groupId>
-        <version>4.0.9</version>
+        <version>2.7.6</version>
     </parent>
 
     <groupId>com.shanyue</groupId>
@@ -34,28 +34,31 @@
     </modules>
 
     <properties>
-        <!-- Java 17：Spring Boot 4 的最低基线（低于 17 直接编译失败，装 8/11 会导致 Maven 导入失败） -->
+        <!-- Java 17：与你的工程一致 -->
         <java.version>17</java.version>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <!-- 版本集中管理：改版本只改这里（均已对齐 Spring Boot 4 生态线） -->
-        <!-- MyBatis 官方 starter 的 4.x 线 = 专为 Spring Boot 4 适配的版本 -->
-        <mybatis.spring>4.0.1</mybatis.spring>
-        <!-- PageHelper 分页插件 starter 的 4.x 线（配套 Boot 4） -->
-        <pagehelper>4.1.1</pagehelper>
-        <!-- fastjson（课程同款 1.x）：主要用于规格快照 specSelected 的 JSON 序列化/解析 -->
+        <!-- 版本集中管理：改版本只改这里 -->
+        <mybatis.spring>2.3.1</mybatis.spring>
+        <pagehelper>1.4.6</pagehelper>
         <fastjson>1.2.83</fastjson>
-        <!-- JJWT 0.12.x：Jakarta 时代的新 API（0.9.1 依赖 javax.xml.bind，在 Boot 4 上不可用） -->
-        <jjwt>0.12.6</jjwt>
-        <!-- springdoc 3.x 线 = Spring Boot 4 配套的接口文档 -->
-        <springdoc>3.1.1</springdoc>
+        <jjwt>0.9.1</jjwt>
+        <jaxb>2.3.1</jaxb>
+        <mysql.version>8.0.30</mysql.version>
+        <!--
+            接口文档：你的工程是 Spring Boot 4 + springdoc 3.1.1；
+            本骨架跟课程用 Spring Boot 2.7.6，配套的 springdoc 版本是 1.x（1.7.0 是 1.x 最后一版）。
+            好消息：@Tag / @Operation / @Schema 等注解的包名（io.swagger.v3.oas.annotations.*）完全一致，
+            将来升级 Spring Boot 3/4 时，Controller 里的注解一行都不用改，只换依赖坐标与 GroupedOpenApi 的 import。
+        -->
+        <springdoc>1.7.0</springdoc>
     </properties>
 
     <dependencyManagement>
         <dependencies>
-            <!-- MyBatis 官方提供的 Spring Boot 4 整合包（含自动配置、@Mapper 扫描） -->
+            <!-- MyBatis 官方提供的 Spring Boot 整合包（含自动配置、@Mapper 扫描） -->
             <dependency>
                 <groupId>org.mybatis.spring.boot</groupId>
                 <artifactId>mybatis-spring-boot-starter</artifactId>
@@ -78,38 +81,42 @@
 
             <!--
                 JJWT：生成与解析 JWT 令牌（登录凭证）。
-                0.12.x 拆成三件套：jjwt-api（编译）+ jjwt-impl / jjwt-jackson（运行期），
-                API 全面翻新：Jwts.builder().claims(...).signWith(key, Jwts.SIG.HS256) 生成，
-                Jwts.parser().verifyWith(key).build().parseSignedClaims(token) 解析。
-                （旧 0.9.1 依赖 javax.xml.bind，Boot 4 / Jakarta 环境下不可用；
-                  新版也不再需要 jaxb-api，密钥长度须 ≥ 32 字节。）
+                0.9.1 是课程使用的版本，API 形如 Jwts.builder().setClaims(...) / Jwts.parser().setSigningKey(...)
             -->
             <dependency>
                 <groupId>io.jsonwebtoken</groupId>
-                <artifactId>jjwt-api</artifactId>
-                <version>${jjwt}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.jsonwebtoken</groupId>
-                <artifactId>jjwt-impl</artifactId>
-                <version>${jjwt}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.jsonwebtoken</groupId>
-                <artifactId>jjwt-jackson</artifactId>
+                <artifactId>jjwt</artifactId>
                 <version>${jjwt}</version>
             </dependency>
 
             <!--
-                接口文档（springdoc 3.x 适配 Spring Boot 4）：
-                坐标从 1.x 的 springdoc-openapi-ui 换成 springdoc-openapi-starter-webmvc-ui；
-                @Tag / @Operation / @Schema 注解包名不变，Controller 一行不改；
-                仅 GroupedOpenApi 的 import 从 org.springdoc.core 换到 org.springdoc.core.models。
+                【JDK17 为什么需要 jaxb-api？】
+                jjwt 0.9.1 内部用到了 javax.xml.bind.DatatypeConverter 做 Base64 编解码。
+                JAXB（javax.xml.bind）从 JDK 8 被标记废弃，JDK 11 起从 JDK 中移除，
+                所以 JDK 17 运行 jjwt 0.9.1 必须手动补上这个依赖，否则启动/登录时抛 ClassNotFoundException。
+                （你的工程用 jjwt 0.12.6 新版就没有这个问题——新版不再依赖 JAXB）
+            -->
+            <dependency>
+                <groupId>javax.xml.bind</groupId>
+                <artifactId>jaxb-api</artifactId>
+                <version>${jaxb}</version>
+            </dependency>
+
+            <!-- MySQL 驱动：server 模块以 runtime 引入 -->
+            <dependency>
+                <groupId>mysql</groupId>
+                <artifactId>mysql-connector-java</artifactId>
+                <version>${mysql.version}</version>
+            </dependency>
+
+            <!--
+                接口文档（springdoc，Boot 2.7 对应 1.7.0）：
                 启动后访问 http://localhost:8080/swagger-ui/index.html 查看在线接口文档。
+                本骨架与你的工程一样"不加 knife4j"，保持和课程一致的最小依赖。
             -->
             <dependency>
                 <groupId>org.springdoc</groupId>
-                <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+                <artifactId>springdoc-openapi-ui</artifactId>
                 <version>${springdoc}</version>
             </dependency>
         </dependencies>

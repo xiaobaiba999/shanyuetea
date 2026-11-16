@@ -8,12 +8,12 @@ import com.shanyue.vo.UserReportVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import jakarta.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDate;
 
 /**
  * 【本类知识点：数据统计（报表）服务 —— 5 个方法全部留 TODO（阶段三动手练习）】
- * 本骨架已统一到 Spring Boot 4（jakarta.servlet.*），与课程原工程同口径。
+ * 注意：本骨架是 Spring Boot 2.7，用 javax.servlet.*；课程原工程是 Boot 4，用 jakarta.servlet.*。
  *
  * ────────────────────────────────────────────────────────────────────
  * 【SQL 聚合思路总纲（动手前先读）】
