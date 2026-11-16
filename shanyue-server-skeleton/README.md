@@ -148,7 +148,7 @@ curl -X POST http://localhost:8080/user/user/login \
 | **sql** | schema.sql / data.sql | 建表 + 种子数据 | ✅ |
 | **openapi.json** | 根目录 | 全量接口契约（OpenAPI 3.0.3，可导入 Apifox） | ✅ |
 
-## 九、常见报错速查（7 条）
+## 九、常见报错速查（8 条）
 
 0. **启动类识别不到 / yml 没有图标 / 根本运行不了：打开的目录层级不对（IDEA 导入问题，最常见）**
    检查用 `File → Open` 打开的是不是 **`shanyue-server-skeleton` 根目录**（有父 pom.xml 的那层）：
@@ -156,6 +156,19 @@ curl -X POST http://localhost:8080/user/user/login \
    - 打开后 Maven 没自动同步 → 点右侧 Maven 面板 🔄 **Reload All Maven Projects**；
    - Project SDK 没选 **JDK 17** → `File → Project Structure → Project` 装/选 17（JDK 8/11 导入必失败）；
    - 依赖下载超时/飘红 → 配阿里云镜像（见第二节第 4 点）。
+
+0.5. **四个模块都导入成功了，但 application.yml 只是普通粉色 Y 图标、启动类没有绿色运行箭头：IDE 版本/插件差异（不是导入失败）**
+   先自检导入确实成功：左侧四模块在、`src/main/java` 和 `resources` 是蓝色源码根、Java 文件是咖啡杯图标、
+   打开 `ShanyueApplication.java` 里的代码不报红——这些都在就说明 Maven 导入没问题，缺的只是 **Spring Boot 集成**：
+   - `Help → About` 看版本：**Community Edition（社区版）不带 Spring/Spring Boot 插件**——yml 永远是普通 YAML 图标（没有绿叶）、
+     启动类没有 Spring Boot 专属运行箭头，这是版本功能差异。社区版照样能把项目跑起来：
+     ① Maven 面板 → `shanyue-server → Plugins → spring-boot → spring-boot:run`（双击执行）；
+     ② 或在本目录命令行 `mvn spring-boot:run`。
+     想要完整体验（yml 自动补全、启动类一键绿箭头）请用 IDEA Ultimate（官网下载，学生可申请免费授权，或 30 天试用）。
+   - About 显示的是 Ultimate：`Settings → Plugins` 搜 "Spring Boot" / "Spring" / "YAML" 确认没被禁用（勾选启用后重启）；
+     检查 `Settings → Editor → General → Gutter Icons` 是否被关（关了连 main 方法旁的绿色箭头都不显示）；
+     还不行就 `File → Invalidate Caches… → Invalidate and Restart` 重建索引后重新 Reload Maven。
+   - 顺带确认 `Settings → Editor → File Types → YAML` 注册了 `*.yml`（若被误加进 Text 文件列表，yml 就永远是普通文本图标）。
 
 1. **启动报 `BeanNotFoundError` / `Field xxxMapper required a bean`：Mapper 没被扫描到**
    Mapper 接口必须放 `com.shanyue.mapper` 包（启动类默认扫描 `com.shanyue` 及子包），接口上加 `@Mapper` 注解；

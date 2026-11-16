@@ -24,6 +24,23 @@ Java 文件没有类图标、`ShanyueApplication` 没有绿色运行箭头、`ap
 Project SDK 为 **JDK 17**（父 pom 已锁 `java.version=17`，装 8/11 会导致 Maven 导入直接失败，同样表现为"识别不到"）。
 详细步骤见 `shanyue-server-skeleton/README.md` 第二节（含阿里云镜像配置）。
 
+### 四个模块都在，却还是"yml 没图标 / 启动类没绿箭头"？（IDE 版本差异，不是导入失败）
+
+自检：左侧四模块齐全、`src/main/java` 与 `resources` 是蓝色源码根、Java 文件是咖啡杯图标、
+打开 `ShanyueApplication.java` 代码不报红——这些都成立，说明 **Maven 导入已经成功**。
+此时如果 `application.yml` 只是普通粉色 Y 图标（没有绿叶）、启动类没有绿色运行箭头，
+缺的不是导入，而是 **IDE 的 Spring Boot 集成**：
+
+- **IDEA Community（社区版）**：不带 Spring/Spring Boot 插件——yml 永远是普通 YAML 图标、启动类没有 Spring Boot 运行支持。
+  这不影响把项目跑起来：Maven 面板 → `shanyue-server → Plugins → spring-boot → spring-boot:run`，或命令行 `mvn spring-boot:run`。
+  要完整体验（yml 自动补全、启动类一键绿箭头）需 IDEA Ultimate（学生可申请免费授权/30 天试用）。
+- **IDEA Ultimate**：`Settings → Plugins` 确认 Spring Boot / Spring / YAML 插件未被禁用；
+  `Settings → Editor → General → Gutter Icons` 被关的话连 main 方法旁的绿色箭头都不显示；
+  仍不行 `File → Invalidate Caches → Invalidate and Restart` 重建索引。
+
+完整排查步骤见 `shanyue-server-skeleton/README.md` 第九节第 0.5 条。
+
+
 
 1. **后端**：按 `shanyue-server-skeleton/README.md` 操作 —— JDK 17 + MySQL 8 + Redis，执行 `sql/schema.sql` 与 `sql/data.sql` 建库，以 Maven 聚合工程方式启动，服务端口 `8080`。（v2 新增功能的后端代码已按需求移除，练手实现见 `shanyue-server-skeleton/docs/新增功能教学文档.md` 自实现教程，建表 DDL 就在各功能节里；评价墙功能已整体移除。）
 2. **管理端（免环境直测，推荐）**：无需 Node/nginx 环境，双击 `shanyue-admin-nginx/start.bat`，浏览器打开 `http://localhost` 即可测试（详见 `shanyue-admin-nginx/README.md`；Linux/WSL 用 `start.sh`）。
