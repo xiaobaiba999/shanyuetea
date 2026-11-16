@@ -148,7 +148,14 @@ curl -X POST http://localhost:8080/user/user/login \
 | **sql** | schema.sql / data.sql | 建表 + 种子数据 | ✅ |
 | **openapi.json** | 根目录 | 全量接口契约（OpenAPI 3.0.3，可导入 Apifox） | ✅ |
 
-## 九、常见报错速查（6 条）
+## 九、常见报错速查（7 条）
+
+0. **启动类识别不到 / yml 没有图标 / 根本运行不了：打开的目录层级不对（IDEA 导入问题，最常见）**
+   检查用 `File → Open` 打开的是不是 **`shanyue-server-skeleton` 根目录**（有父 pom.xml 的那层）：
+   - 打开了**仓库根目录 `shanyuetea/`**（小程序 + 管理端 + 后端多项目并列，没有 pom.xml）→ IDEA 按普通文件夹处理，所有 Java/yml 都"识别不到"。关掉项目重新 Open 正确层级即可；
+   - 打开后 Maven 没自动同步 → 点右侧 Maven 面板 🔄 **Reload All Maven Projects**；
+   - Project SDK 没选 **JDK 17** → `File → Project Structure → Project` 装/选 17（JDK 8/11 导入必失败）；
+   - 依赖下载超时/飘红 → 配阿里云镜像（见第二节第 4 点）。
 
 1. **启动报 `BeanNotFoundError` / `Field xxxMapper required a bean`：Mapper 没被扫描到**
    Mapper 接口必须放 `com.shanyue.mapper` 包（启动类默认扫描 `com.shanyue` 及子包），接口上加 `@Mapper` 注解；
