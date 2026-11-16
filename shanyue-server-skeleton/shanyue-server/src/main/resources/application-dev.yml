@@ -24,15 +24,18 @@ spring:
     password: root
 
   # Redis（店铺营业状态 / C 端菜单缓存 / 自取订单取餐号按天自增都用它）
-  redis:
-    # 本机 Redis；远程/容器部署改成对应 IP
-    host: localhost
-    # Redis 默认端口
-    port: 6379
-    # 本地没设密码就留空（'' 表示空字符串）；服务器上设了 requirepass 就填密码
-    password: ''
-    # 使用 0 号库（Redis 默认有 0~15 共 16 个库，课程/骨架统一用 0）
-    database: 0
+  # 【Boot 4 版本变化】配置前缀从 Boot 2 的 spring.redis.* 迁移为 spring.data.redis.*
+  # （Boot 3 起整合进 Spring Data 统一命名，旧键在 Boot 4 里已不生效，忘改会连不上默认 localhost:6379的预设，看不出来但连的全是不对的实例）
+  data:
+    redis:
+      # 本机 Redis；远程/容器部署改成对应 IP
+      host: localhost
+      # Redis 默认端口
+      port: 6379
+      # 本地没设密码就留空（'' 表示空字符串）；服务器上设了 requirepass 就填密码
+      password: ''
+      # 使用 0 号库（Redis 默认有 0~15 共 16 个库，课程/骨架统一用 0）
+      database: 0
 
   # 文件上传限制：饮品图片一般几 MB，10MB 够用；
   # 不配置时 Spring Boot 默认 1MB，上传大图会直接报 MaxUploadSizeExceededException

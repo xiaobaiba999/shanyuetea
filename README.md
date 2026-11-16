@@ -8,7 +8,7 @@
 |---|---|---|
 | `shanyue-mp/` | 微信小程序端（顾客点单） | 原生微信小程序（JS + WXML / WXSS） |
 | `shanyue-vue3/` | 管理端前端 + H5 顾客端 | Vue 3 + Vite + TypeScript + Element Plus / Vant 4 + Pinia |
-| `shanyue-server-skeleton/` | 后端服务 | Java 17 + Spring Boot 2.7 + MyBatis + MySQL + Redis |
+| `shanyue-server-skeleton/` | 后端服务 | Java 17 + Spring Boot 4.0.9 + MyBatis + MySQL + Redis（版本统一口径 v2.1） |
 | `shanyue-admin-nginx/` | 管理端部署包（免安装直测） | nginx 1.20.2 + 已构建的 Vue3 产物 + 配好的反代 |
 
 ## 快速开始

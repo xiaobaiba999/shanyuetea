@@ -1,5 +1,9 @@
 # 山月茶咖 · 后端基础框架（shanyue-server-skeleton）
 
+> **版本统一口径（v2.1）：Spring Boot 4.0.9 + JDK 17** —— 整条依赖线全面对齐 Boot 4 生态
+> （Jakarta：javax→jakarta；jjwt 0.12.6；springdoc 3.1.1；Jackson 3；MyBatis starter 4.x；PageHelper 4.x），
+> 与自建工程同版本线，不再有 Boot 2.7 与 Boot 4 混用导致的"识别不到/运行不了"。
+
 > 苍穹外卖（sky-take-out）改造版「山月茶咖」的 Java 后端。
 > **代码形态分两类**：① 主链路（员工/分类/饮品/套餐/订单/报表…）为「苍穹对照完整实现」，
 > 饮品类命名全链统一为 Drink 系（表名 drink、URL /drink、类名 Drink*/DrinkDTO/DrinkVO 等），
@@ -16,7 +20,7 @@
 
 | 软件 | 版本要求 | 说明 |
 |---|---|---|
-| JDK | **17** | 父 pom 已锁 `java.version=17`，装 JDK 8 会编译失败 |
+| JDK | **17** | Spring Boot 4 的最低基线；父 pom 已锁 `java.version=17`，装 JDK 8/11 会编译失败/导入失败 |
 | Maven | **3.8+** | IDEA 自带的 Bundled Maven 也可以 |
 | MySQL | **8.x** | 5.7 也能跑（utf8mb4 兼容），但建议 8.0 |
 | Redis | 5.x / 6.x / 7.x | 店铺营业状态、菜单缓存、取餐号自增都依赖它，**必须先启动** |
@@ -27,7 +31,7 @@
 1. IDEA → `File → Open` → 选中 **shanyue-server-skeleton 根目录**（有父 pom.xml 的那层），OK。
 2. 首次打开弹窗问 **Trust Project？→ Trust**（Maven 需要执行脚本权限）。
 3. 右下角等待 Maven 同步完成；没有自动同步就点右侧 Maven 面板的 🔄 **Reload All Maven Projects**。
-   - 同步成功的标志：左侧出现 `shanyue / shanyue-common / shanyue-pojo / shanyue-server` 四个模块，且外部库里有 spring-boot 2.7.6。
+   - 同步成功的标志：左侧出现 `shanyue / shanyue-common / shanyue-pojo / shanyue-server` 四个模块，且外部库里有 spring-boot 4.0.9。
 4. 首次同步会下载大量依赖，耐心等（国内网络建议配置阿里云镜像：`~/.m2/settings.xml` 加 mirror `https://maven.aliyun.com/repository/public`）。
 
 ## 三、建库
@@ -124,14 +128,14 @@ curl -X POST http://localhost:8080/user/user/login \
 
 | 模块 | 包 | 职责 | 状态 |
 |---|---|---|---|
-| **shanyue**（父） | — | 聚合 + 版本管理（Spring Boot 2.7.6 / Java 17 / jjwt 0.9.1 / springdoc 1.7.0） | ✅ |
+| **shanyue**（父） | — | 聚合 + 版本管理（Spring Boot 4.0.9 / Java 17 / jjwt 0.12.6 / springdoc 3.1.1 / MyBatis starter 4.0.1 / PageHelper 4.1.1） | ✅ |
 | **shanyue-common** | `constant` | 提示语/状态/JWT claims 等常量（MessageConstant 含 SHOP_CLOSE、USER_NOT_LOGIN、ADDRESS_BOOK_IS_NULL） | ✅ |
 | | `context` | BaseContext：ThreadLocal 保存当前登录人 id | ✅ |
 | | `enumeration` | OperationType（INSERT/UPDATE，配 @AutoFill）、EntityType（预留） | ✅ |
 | | `exception` | BaseException 及 13 个业务异常 + **GlobalExceptionHandler**（唯一键冲突/未登录 401/业务兜底/NFE/未知异常） | ✅ |
 | | `properties` | JwtProperties / WeChatProperties / LocalStorageProperties（@ConfigurationProperties） | ✅ |
 | | `result` | Result<T> / PageResult 统一返回 | ✅ |
-| | `utils` | JwtUtil（jjwt 0.9.1 写法，JDK17 需 jaxb-api） | ✅ |
+| | `utils` | JwtUtil（jjwt 0.12.6 新 API：claims/expiration/signWith + parser().verifyWith().build().parseSignedClaims） | ✅ |
 | **shanyue-pojo** | `entity` | 13 张表的实体（与 schema.sql 列一一对应，金额 BigDecimal、时间 LocalDateTime） | ✅ 勿随意改 |
 | | `dto` | 请求参数模型（DrinkDTO 含 specGroups、OrdersSubmitDTO 含 deliveryMode…） | ✅ |
 | | `vo` | 返回视图（DrinkVO 含 specGroups/monthSales、OrderSubmitVO 含 pickupNumber/deliveryFee…） | ✅ |
@@ -168,7 +172,8 @@ curl -X POST http://localhost:8080/user/user/login \
 
 3. **启动卡住或店铺状态接口报错：Redis 没启动**
    先启动 Redis（Windows 建议用 `redis-server.exe` 或 WSL；Mac `brew services start redis`）。
-   报 `Unable to connect to Redis`：检查 `spring.redis.host/port/password` 与本机 Redis 是否一致。
+   报 `Unable to connect to Redis`：检查 `spring.data.redis.host/port/password` 与本机 Redis 是否一致
+   （⚠ Boot 4 版本变化：前缀是 `spring.data.redis.*`，旧 `spring.redis.*` 已失效，见第 6 条）。
 
 4. **所有实体类 getter/setter 报红 / 编译大量 cannot find method：Lombok 没生效**
    ① IDEA 装 Lombok 插件；② 开启 Annotation Processing（见第一步）；
@@ -179,14 +184,29 @@ curl -X POST http://localhost:8080/user/user/login \
    Mac/Linux：`lsof -i :8080` → `kill -9 pid`；
    或者改 `application.yml` 的 `server.port`（改了记得同步前端 vite proxy）。
 
-6. **登录时报 `java.lang.NoClassDefFoundError: javax/xml/bind/DatatypeConverter`：jaxb 缺失**
-   JDK 11+ 移除了 JAXB，而 jjwt 0.9.1 需要它。shanyue-common 的 pom 里已经引入了 `javax.xml.bind:jaxb-api`，
-   出现此错说明依赖没同步成功：Maven 面板 Reload，或 `mvn clean install -DskipTests` 重装一遍。
-   （将来升级到 jjwt 0.12.x 就不再需要 jaxb-api。）
+6. **Boot 4 升级后的新坑（从旧版迁移时的高频报错，v2.1 已全部修好，自查对照）**
+   - 启动报 `NoSuchBeanDefinitionException: org.springframework.cache.CacheManager`：
+     Boot 4 模块化后缓存自动配置独立成模块，只引 data-redis 不够，必须加 `spring-boot-starter-cache`（server pom 已加）；
+   - Redis 连的总不对/读不到键：yml 键必须是 `spring.data.redis.*`（Boot 3 起迁移，旧 `spring.redis.*` 静默失效）；
+   - 登录报 `WeakKeyException`：jjwt 0.12 的 `Keys.hmacShaKeyFor` 要求密钥 ≥ 32 字节
+     （yml 两个占位密钥已达标，自定义新密钥请保持长度）；
+   - `import org.springdoc.core.GroupedOpenApi` 报红：springdoc 3.x 换包了，改 `org.springdoc.core.models.GroupedOpenApi`；
+   - `mysql:mysql-connector-java` 坐标失效：Boot 4 管理的是 `com.mysql:mysql-connector-j`（版本 9.x 由父 pom 管）；
+   - `spring-boot-starter-aop` 找不到（404）：Boot 4 已移除，改引 `org.aspectj:aspectjweaver` + 启动类 `@EnableAspectJAutoProxy`；
+   - Jackson 相关：Boot 4 默认 Jackson 3（tools.jackson.*），日期定制用 `JsonMapperBuilderCustomizer`（见 JacksonObjectMapperConfig）；
+     DTO 上的 `@JsonFormat` 包名不变（com.fasterxml.jackson.annotation），一行不用改。
 
 ---
 
 ## 附：与课程工程的对应关系
+
+- **版本口径（v2.1 统一）**：本骨架 = Spring Boot 4.0.9 + JDK 17（与自建工程同线）；课程视频/讲义基于 Boot 2.7.6——
+  对照学习时代码逻辑完全一致，仅以下技术点存在版本差异，全部已在本仓库内适配完毕：
+  ① `javax.* → jakarta.*`（servlet/websocket）；② jjwt 0.9.1 → 0.12.6（JwtUtil 已重写，新增/解析 API 均新链）；
+  ③ springdoc 1.7 → 3.1.1（注解包名不变，GroupedOpenApi 换 models 子包）；
+  ④ Jackson 2 → Jackson 3（日期定制改 JsonMapperBuilderCustomizer）；
+  ⑤ spring-boot-starter-aop → aspectjweaver + @EnableAspectJAutoProxy；
+  ⑥ spring.redis.* → spring.data.redis.*；⑦ MySQL 驱动坐标换 com.mysql:mysql-connector-j。
 
 - 包名规则：`com.sky.* → com.shanyue.*`；饮品类名已全链统一 Drink 系（完整对照表见 `docs/新增功能教学文档.md` 附录 A），
   对照课程时按「苍穹菜品 ↔ 山月饮品」映射即可，其余类名保持苍穹原名，方便逐行对照课程视频/讲义；

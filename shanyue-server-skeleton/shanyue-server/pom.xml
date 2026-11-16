@@ -24,56 +24,82 @@
             <version>1.0-SNAPSHOT</version>
         </dependency>
 
-        <!-- web 容器（Tomcat 内嵌）+ Spring MVC -->
+        <!-- web 容器（Tomcat 内嵌）+ Spring MVC + Jackson 3（JSON 消息转换器全家桶） -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
-        <!-- MyBatis 整合包：@Mapper 接口代理、yml 配置数据源 -->
+        <!-- MyBatis 整合包（4.x 线适配 Spring Boot 4）：@Mapper 接口代理、yml 配置数据源 -->
         <dependency>
             <groupId>org.mybatis.spring.boot</groupId>
             <artifactId>mybatis-spring-boot-starter</artifactId>
         </dependency>
 
-        <!-- PageHelper 分页插件：PageHelper.startPage(page, pageSize) -->
+        <!-- PageHelper 分页插件（4.x 线适配 Boot 4）：PageHelper.startPage(page, pageSize) -->
         <dependency>
             <groupId>com.github.pagehelper</groupId>
             <artifactId>pagehelper-spring-boot-starter</artifactId>
         </dependency>
 
-        <!-- MySQL 驱动：只在运行期使用，scope=runtime -->
+        <!--
+            MySQL 驱动：只在运行期使用，scope=runtime。
+            【Boot 4 版本变化】坐标从旧的 mysql:mysql-connector-java 换成 com.mysql:mysql-connector-j
+            （MySQL 官方 8.0.31 起的新坐标），版本 9.x 由 Boot 父工程统一管理，无需写 version。
+            驱动类名不变：com.mysql.cj.jdbc.Driver。
+        -->
         <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Redis：店铺营业状态 / C 端菜单缓存 / 自选取餐号按天自增 -->
+        <!-- Redis：店铺营业状态 / C 端菜单缓存 / 自选取餐号按天自增（yml 键为 spring.data.redis.*） -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
 
-        <!-- WebSocket：来单提醒 / 催单提醒（骨架预留 /ws/{sid}） -->
+        <!--
+            缓存抽象（@EnableCaching / @Cacheable 的 CacheManager 自动装配）。
+            【Boot 4 版本变化】缓存自动配置从单体 autoconfigure 拆到了独立模块，
+            只引 data-redis 时 @EnableCaching 会因"没有 CacheManager"启动失败
+            （NoSuchBeanDefinitionException: CacheManager），必须补上本 starter；
+            类路径有 Redis → 自动装配 RedisCacheManager，@Cacheable 的 setmealCache 落到 Redis。
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-cache</artifactId>
+        </dependency>
+
+        <!-- WebSocket：来单提醒 / 催单提醒（骨架预留 /ws/{sid}，jakarta.websocket.* 注解） -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-websocket</artifactId>
         </dependency>
 
-        <!-- AOP：AutoFillAspect 公共字段自动填充需要 aspectjweaver -->
+        <!--
+            AOP：AutoFillAspect 公共字段自动填充需要 AspectJ 织入。
+            【Boot 4 版本变化】spring-boot-starter-aop 已在 Boot 4 模块化重构中移除，
+            改为直接引入 aspectjweaver（版本由 Boot 父工程管理）；
+            切面自动代理由启动类上的 @EnableAspectJAutoProxy 显式开启（见 ShanyueApplication）。
+        -->
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-aop</artifactId>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjweaver</artifactId>
         </dependency>
 
-        <!-- 接口文档（springdoc 1.7.0 适配 Boot 2.7）：/swagger-ui/index.html -->
+        <!--
+            接口文档（springdoc 3.1.1 适配 Boot 4）：
+            坐标从 1.x 的 springdoc-openapi-ui 换成 springdoc-openapi-starter-webmvc-ui，
+            /swagger-ui/index.html 照常访问，分组 GroupedOpenApi 的 import 见 WebMvcConfiguration。
+        -->
         <dependency>
             <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-ui</artifactId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
         </dependency>
 
-        <!-- fastjson：规格快照 specSelected 的 JSON 序列化/解析 -->
+        <!-- fastjson：规格快照 specSelected 的 JSON 序列化/解析（课程同款 1.x） -->
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>

@@ -21,25 +21,39 @@
             引入 web starter 的原因：common 里放了统一返回 Result/PageResult 与全局异常处理器
             （@RestControllerAdvice / @ExceptionHandler / HttpStatus 都属于 spring-web）。
             server 模块依赖 common 后会传递获得，无需重复引入。
+            （Boot 4 的 starter-web 依然是"webmvc + json(Jackson 3) + 内嵌 Tomcat"的全家桶组合。）
         -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
-        <!-- JWT 工具 JwtUtil 使用（0.9.1，配合 jaxb-api 才能在 JDK17 上运行，见父 pom 注释） -->
+        <!--
+            JWT 工具 JwtUtil 依赖（0.12.x 三件套，Jakarta 时代 API）：
+            - jjwt-api：编译期接口（Jwts / Claims / Keys）
+            - jjwt-impl：实现（运行期生效即可，scope 默认 compile 也可，这里按官方推荐拆开）
+            - jjwt-jackson：token 的 JSON 序列化支撑
+            官方推荐写法：api 正常引入 + impl/jackson 运行期引入。
+        -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt</artifactId>
+            <artifactId>jjwt-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax.xml.bind</groupId>
-            <artifactId>jaxb-api</artifactId>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <scope>runtime</scope>
         </dependency>
 
         <!--
             配置属性提示：@ConfigurationProperties 类（JwtProperties 等）编译时生成元数据，
             IDEA 编辑 application.yml 时会有配置项自动补全。optional=true 表示不向下传递。
+            （Boot 4 该坐标不变，版本由父工程管理。）
         -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

@@ -5,12 +5,12 @@ import com.shanyue.vo.SalesTop10ReportVO;
 import com.shanyue.vo.TurnoverReportVO;
 import com.shanyue.vo.UserReportVO;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import java.time.LocalDate;
 
 /**
  * 数据统计（报表）服务接口 —— 5 个方法全部留 TODO（教学练习，可逐行对照课程 ReportServiceImpl）
- * 注意：Spring Boot 2.7 骨架用 javax.servlet；课程原工程是 Boot 4（jakarta.servlet）。
+ * 本骨架已统一到 Spring Boot 4（jakarta.servlet），与课程原工程同口径。
  */
 public interface ReportService {
 
