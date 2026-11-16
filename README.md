@@ -13,6 +13,18 @@
 
 ## 快速开始
 
+### ⚠️ IDEA 导入必看（启动类 / yml 识别不到？看这里）
+
+后端是 Maven 聚合工程，**pom.xml 在 `shanyue-server-skeleton/` 这一层，仓库根目录没有 pom**。
+用 IDEA `File → Open` 打开时，必须选中 **`shanyue-server-skeleton` 目录本身**（能看到 pom.xml 的那一层），
+而不是仓库根目录 `shanyuetea/` —— 打开了仓库根目录，IDEA 会把它当普通文件夹：
+Java 文件没有类图标、`ShanyueApplication` 没有绿色运行箭头、`application.yml` 也没有配置图标，什么都运行不了。
+
+导入成功的标志：右下角 Maven 同步完成后，左侧出现 `shanyue / shanyue-common / shanyue-pojo / shanyue-server` 四个模块，
+Project SDK 为 **JDK 17**（父 pom 已锁 `java.version=17`，装 8/11 会导致 Maven 导入直接失败，同样表现为"识别不到"）。
+详细步骤见 `shanyue-server-skeleton/README.md` 第二节（含阿里云镜像配置）。
+
+
 1. **后端**：按 `shanyue-server-skeleton/README.md` 操作 —— JDK 17 + MySQL 8 + Redis，执行 `sql/schema.sql` 与 `sql/data.sql` 建库，以 Maven 聚合工程方式启动，服务端口 `8080`。（v2 新增功能的后端代码已按需求移除，练手实现见 `shanyue-server-skeleton/docs/新增功能教学文档.md` 自实现教程，建表 DDL 就在各功能节里；评价墙功能已整体移除。）
 2. **管理端（免环境直测，推荐）**：无需 Node/nginx 环境，双击 `shanyue-admin-nginx/start.bat`，浏览器打开 `http://localhost` 即可测试（详见 `shanyue-admin-nginx/README.md`；Linux/WSL 用 `start.sh`）。
 3. **管理端前端（源码开发模式）**：`cd shanyue-vue3/admin && npm install && npm run dev`
